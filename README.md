@@ -2,6 +2,8 @@
 
 A cozy creature-care browser game for ages 8–11: raise a secret baby dragon, learn how to care for it, and protect it from a collector. See [`SPEC.md`](SPEC.md) for the full game design.
 
+**▶ Play it:** https://jschell.github.io/Drawer-dragon/ (best on an iPad or iPhone held sideways; tap Share → Add to Home Screen for full screen)
+
 ## Status: Prototype 1 of 3 (milestone M0a): Morning Care
 
 A playable toy of the morning care loop (about 3–5 minutes):
