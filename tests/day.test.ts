@@ -131,10 +131,10 @@ describe('evening', () => {
     expect(told.evening.awaiting).toBeNull();
   });
 
-  it('a prepared dragon stays quiet through a knock', () => {
+  it('a prepared dragon stays calm through a knock', () => {
     const { state, events } = run(evening({ blanket: true }), [{ type: 'lamp' }, { type: 'blanket' }, ...ticks(30)]);
-    expect(events).toContainEqual({ type: 'knock', visitorId: 'kit', quiet: true });
-    expect(state.evening.quiet).toBe(1);
+    expect(events).toContainEqual({ type: 'knock', visitorId: 'kit', calm: true });
+    expect(state.evening.calmKnocks).toBe(1);
   });
 
   it('spotting BLINK lowers attention; missing it raises attention, more with the lamp on', () => {
@@ -162,6 +162,50 @@ describe('evening', () => {
     expect(attentionWord(0)).toBe('Unnoticed');
     expect(attentionWord(25)).toBe('Curious');
     expect(attentionWord(70)).toBe('Watching!');
+  });
+});
+
+describe('telling family (child-safety rule)', () => {
+  it('every family visitor offers "show them the dragon" first', () => {
+    for (const v of content.evening.visitors) {
+      expect(v.choices[0].joins, v.id).toBe(v.member);
+      expect(v.choices[0].label, v.id).toMatch(/^Show (Kit|Mom|Dad) the dragon$/);
+    }
+  });
+
+  it('rejects content where a family visitor cannot be told', async () => {
+    const { parseContent } = await import('../src/core/content');
+    const items = (await import('../content/items.json')).default;
+    const recipes = (await import('../content/recipes.json')).default;
+    const thoughts = (await import('../content/thoughts.json')).default;
+    const bad = structuredClone(content.evening);
+    bad.visitors[1].choices = bad.visitors[1].choices.filter((c) => !c.joins);
+    expect(() => parseContent({ items, recipes, thoughts, evening: bad })).toThrow(/show them the dragon/);
+  });
+
+  it('showing Mom the dragon brings both parents into the Keeper Circle, with no penalty', () => {
+    // Skip to Mom's knock with a scared dragon.
+    let s = evening();
+    s = { ...s, evening: { ...s.evening, visitorIdx: 1, t: 45 } };
+    s = run(s, ticks(14)).state;
+    expect(s.evening.awaiting).toBe('mom');
+    const calmBefore = s.dragon.calm;
+    const r = step(s, { type: 'visitorChoice', choiceId: 'tell' });
+    expect(r.state.world.circle).toContain('parents');
+    expect(r.state.stickers).toContain('I Trusted My Family');
+    expect(r.state.dragon.calm).toBeGreaterThanOrEqual(calmBefore);
+  });
+
+  it('family who already know come in to help instead of startling the dragon', () => {
+    let s = evening();
+    s = { ...s, world: { ...s.world, circle: [...s.world.circle, 'parents'] }, evening: { ...s.evening, visitorIdx: 2, t: 85 } };
+    const calmBefore = s.dragon.calm;
+    const { state, events } = run(s, ticks(16));
+    expect(events).toContainEqual({ type: 'helper-visit', visitorId: 'dad' });
+    expect(events.some((e) => e.type === 'knock')).toBe(false);
+    expect(state.evening.awaiting).toBeNull();
+    expect(state.evening.helpers).toBe(1);
+    expect(state.dragon.calm).toBeGreaterThanOrEqual(Math.min(calmBefore, content.evening.calmBase));
   });
 });
 
@@ -195,26 +239,26 @@ describe('evening autoplay', () => {
     return null;
   };
 
-  it('a careful keeper with the blanket gets a quiet night and spots every scout', () => {
+  it('a careful keeper with the blanket gets a calm night and spots every scout', () => {
     const s = play(evening({ blanket: true }), careful);
     expect(s.evening.over).toBe(true);
-    expect(s.evening.noisy).toBe(0);
+    expect(s.evening.scaredKnocks).toBe(0);
     expect(s.evening.missed).toBe(0);
     const done = step(s, { type: 'finishDay' }).state;
     expect(done.part).toBe('end');
-    expect(done.stickers).toEqual(expect.arrayContaining(['Quiet Night', 'Scout Spotter']));
+    expect(done.stickers).toEqual(expect.arrayContaining(['Calm Night', 'Scout Spotter']));
   });
 
   it('a keeper who does nothing still reaches the end of the night', () => {
     const s = play(evening(), () => null);
     expect(s.evening.over).toBe(true);
-    expect(s.evening.noisy).toBe(content.evening.visitors.length);
+    expect(s.evening.scaredKnocks).toBe(content.evening.visitors.length);
     expect(step(s, { type: 'finishDay' }).state.part).toBe('end');
   });
 
-  it('humming alone, without the blanket, is enough for a quiet night', () => {
+  it('humming alone, without the blanket, is enough for a calm night', () => {
     const s = play(evening(), careful);
-    expect(s.evening.noisy).toBe(0);
+    expect(s.evening.scaredKnocks).toBe(0);
   });
 });
 
@@ -229,13 +273,13 @@ describe('evening tuning', () => {
     return s.evening;
   };
   it('doing nothing, or only dimming the lamp, is not enough', () => {
-    expect(sim(evening(), [], false).quiet).toBe(0);
-    expect(sim(evening(), [{ type: 'lamp' }], false).quiet).toBe(0);
+    expect(sim(evening(), [], false).calmKnocks).toBe(0);
+    expect(sim(evening(), [{ type: 'lamp' }], false).calmKnocks).toBe(0);
   });
-  it('the researched blanket plus a dim lamp keeps every visit quiet', () => {
-    expect(sim(evening({ blanket: true }), [{ type: 'lamp' }, { type: 'blanket' }], false).noisy).toBe(0);
+  it('the researched blanket plus a dim lamp keeps the dragon calm at every visit', () => {
+    expect(sim(evening({ blanket: true }), [{ type: 'lamp' }, { type: 'blanket' }], false).scaredKnocks).toBe(0);
   });
   it('without the blanket, steady humming also works', () => {
-    expect(sim(evening(), [{ type: 'lamp' }], true).noisy).toBe(0);
+    expect(sim(evening(), [{ type: 'lamp' }], true).scaredKnocks).toBe(0);
   });
 });

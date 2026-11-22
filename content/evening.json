@@ -4,60 +4,132 @@
   "calmLampDim": 12,
   "calmBlanket": 18,
   "calmDriftPerSec": 0.8,
-  "quietCalm": 65,
-  "knockCalm": { "normal": 8, "blanket": 4 },
+  "calmEnough": 65,
+  "knockCalm": {
+    "normal": 8,
+    "blanket": 4
+  },
+  "friendlyCalm": 5,
   "endAt": 125,
-  "attention": { "missed": 10, "missedBright": 5, "spotted": -8, "share": 25 },
+  "attention": {
+    "missed": 10,
+    "missedBright": 5,
+    "spotted": -8,
+    "share": 25
+  },
   "visitors": [
     {
       "id": "kit",
       "name": "Kit",
       "role": "your little sibling",
+      "member": "kit",
       "emoji": "🧒",
       "at": 24,
       "warn": 12,
       "line": "\"Hey, can I borrow a marker?\"",
-      "quietLine": "Kit grabs a marker and skips back down the hall. Your dragon didn't make a peep!",
+      "calmLine": "Kit grabs a marker and skips back down the hall. Your dragon stayed calm and cozy.",
+      "knownLine": "Kit tiptoes in to whisper goodnight to the dragon, then helps you hum. Your dragon loves it.",
       "noisyLine": "Squeak! \"What was that?\" Kit peeks around the door, curious.",
       "choices": [
-        { "id": "tell", "label": "Show Kit the dragon", "result": "Kit gasps... then promises to help keep the dragon safe from Crane. Kit joins the Keeper Circle!", "calm": 5, "joins": "kit" },
-        { "id": "soon", "label": "\"I'm looking after something special. Can I show you tomorrow?\"", "result": "Kit grins. \"Tomorrow! Don't forget!\"", "calm": 0 },
-        { "id": "quiet", "label": "\"Can I have some quiet time, please?\"", "result": "\"Fine!\" Kit wanders off, still curious.", "calm": -3 }
+        {
+          "id": "tell",
+          "label": "Show Kit the dragon",
+          "result": "Kit gasps... then promises to help keep the dragon safe from Crane. Kit joins the Keeper Circle!",
+          "calm": 5,
+          "joins": "kit"
+        },
+        {
+          "id": "soon",
+          "label": "\"I'm looking after something special. Can I show you tomorrow?\"",
+          "result": "Kit grins. \"Tomorrow! Don't forget!\"",
+          "calm": 0
+        },
+        {
+          "id": "quiet",
+          "label": "\"Can I have some quiet time, please?\"",
+          "result": "\"Fine!\" Kit wanders off, still curious.",
+          "calm": -3
+        }
       ]
     },
     {
       "id": "mom",
       "name": "Mom",
       "role": "your mom",
+      "member": "parents",
       "emoji": "👩",
       "at": 58,
       "warn": 12,
       "line": "\"Lights out in ten minutes, sweetie!\"",
-      "quietLine": "Mom blows you a kiss and heads downstairs. All quiet!",
+      "calmLine": "Mom blows you a kiss and heads downstairs. Your dragon stayed calm and cozy.",
+      "knownLine": "Mom peeks in with a warm towel for the nest. \"Goodnight, you two.\" Your dragon snuggles in.",
       "noisyLine": "Chirp! Mom tilts her head. \"Did you hear something?\"",
       "choices": [
-        { "id": "later", "label": "\"Something's on my mind. Can we talk tomorrow?\"", "result": "Mom smiles. \"Of course. Whenever you're ready.\"", "calm": 3 },
-        { "id": "quiet", "label": "\"Can I have a few minutes of quiet, please?\"", "result": "\"Sure thing. Ten minutes!\"", "calm": 0 }
+        {
+          "id": "tell",
+          "label": "Show Mom the dragon",
+          "result": "Mom's eyes go wide... then she sits on the bed and asks lots of careful questions. \"Thank you for telling me. We'll keep this little one safe together. Just one rule: no fire indoors, so smoke rings by the open window only.\" Mom and Dad join the Keeper Circle!",
+          "calm": 5,
+          "joins": "parents"
+        },
+        {
+          "id": "later",
+          "label": "\"Something's on my mind. Can we talk tomorrow?\"",
+          "result": "Mom smiles. \"Of course. Whenever you're ready.\"",
+          "calm": 3
+        },
+        {
+          "id": "quiet",
+          "label": "\"Can I have a few minutes of quiet, please?\"",
+          "result": "\"Sure thing. Ten minutes!\"",
+          "calm": 0
+        }
       ]
     },
     {
       "id": "dad",
       "name": "Dad",
       "role": "your dad",
+      "member": "parents",
       "emoji": "👨",
       "at": 100,
       "warn": 12,
       "line": "\"Goodnight, kiddo. Sweet dreams!\"",
-      "quietLine": "Dad yawns, smiles and closes the door. Goodnight!",
+      "calmLine": "Dad yawns, smiles and closes the door. Your dragon stayed calm and cozy. Goodnight!",
+      "knownLine": "Dad brings an extra sock for the nest and whispers, \"Night night, little dragon.\"",
       "noisyLine": "Hiccup! Dad raises an eyebrow. \"Was that a hiccup?\"",
       "choices": [
-        { "id": "later", "label": "\"There's something I want to tell you soon. Can it wait till tomorrow?\"", "result": "Dad nods. \"Tomorrow it is. I'm proud of you.\"", "calm": 3 },
-        { "id": "quiet", "label": "\"I'm okay, just need some quiet. Goodnight!\"", "result": "\"Night night!\"", "calm": 0 }
+        {
+          "id": "tell",
+          "label": "Show Dad the dragon",
+          "result": "Dad blinks twice, then grins. \"A dragon! Thank you for trusting me. Let's tell Mom together, and keep it safe from strangers. Smoke rings by the open window only, deal?\" Mom and Dad join the Keeper Circle!",
+          "calm": 5,
+          "joins": "parents"
+        },
+        {
+          "id": "later",
+          "label": "\"There's something I want to tell you soon. Can it wait till tomorrow?\"",
+          "result": "Dad nods. \"Tomorrow it is. I'm proud of you.\"",
+          "calm": 3
+        },
+        {
+          "id": "quiet",
+          "label": "\"I'm okay, just need some quiet. Goodnight!\"",
+          "result": "\"Night night!\"",
+          "calm": 0
+        }
       ]
     }
   ],
   "windowThings": [
-    { "id": "moth", "art": "moth", "at": 26, "stay": 8, "suspicious": false, "tapLine": "Just a moth, fluttering at the glass." },
+    {
+      "id": "moth",
+      "art": "moth",
+      "at": 26,
+      "stay": 8,
+      "suspicious": false,
+      "tapLine": "Just a moth, fluttering at the glass."
+    },
     {
       "id": "blink",
       "art": "blink",
@@ -67,7 +139,14 @@
       "tapLine": "A drone with a red light that never blinks: it's BLINK, the collector's camera! You close the curtains.",
       "missLine": "A red light hovered at the window... then zipped away."
     },
-    { "id": "cat", "art": "cat", "at": 72, "stay": 8, "suspicious": false, "tapLine": "It's Pickles, the neighbor's cat, out for a stroll." },
+    {
+      "id": "cat",
+      "art": "cat",
+      "at": 72,
+      "stay": 8,
+      "suspicious": false,
+      "tapLine": "It's Pickles, the neighbor's cat, out for a stroll."
+    },
     {
       "id": "surveyor",
       "art": "surveyor",

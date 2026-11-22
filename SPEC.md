@@ -164,13 +164,18 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 |---|---|---|---|
 | Aunt June | Day 1 evening | Field Journal, charcoal, advice line ("Ask June" hint button) | "The dragon's needs come first, then the fun." |
 | Kit | Day 3 | Lookout during evenings (warns of visitors) | "Kit gets to name one of the dragon's tricks." |
-| Mom & Dad | Chapter 2 opening (default), or any time from Day 2 if the player tells them | Bigger grocery budget, the garage | "No fire indoors." In Chapter 1 this means smoke rings by the open window only; from Chapter 2 the nest moves to the treehouse. |
+| Mom & Dad | Chapter 2 opening (default), or any time the player shows them the dragon, from Day 1 | Bigger grocery budget, the garage | "No fire indoors." In Chapter 1 this means smoke rings by the open window only; from Chapter 2 the nest moves to the treehouse. |
 
 - **Discovery is never a failure.** When a family member is about to notice, the player can:
   - **Tell them now** (they join early, and the player gets an "I trusted my family" journal sticker), or
   - **Wait for the right moment** with Aunt June's help (the planned story beat).
   - Neither choice is ever "wrong," and neither is a lie.
-- **Telling Mom & Dad early.** From Day 2 morning, a "Tell Mom & Dad" option appears in the Journal and in any scene where a parent is present.
+- **A player can always tell family (child-safety rule).** Personal-safety programs teach kids that they can always tell a parent or trusted adult, and that a trusted adult asking is a good moment to tell. So:
+  - Every time a family member asks about the dragon, the **first** choice is "Show Mom/Dad/Kit the dragon", on every day, including Day 1. The content schema rejects any family visitor without it.
+  - Telling is never penalised: it calms the dragon, earns the "I Trusted My Family" sticker, and that person joins the Keeper Circle. On Day 1 the parents' rule is the gentle Chapter 1 version (smoke rings by the open window only).
+  - Family who already know never startle the dragon again; they come in to help.
+  - The evening goal is the dragon's **calm** (knocks startle young dragons, like nesting birds), never that nobody noticed. The sticker is "Calm Night", not "Quiet Night".
+- **Telling Mom & Dad early.** Besides the evening visits, a "Tell Mom & Dad" option will appear in the Journal from Day 2.
   - It plays a short, warm scene: surprise, a few worried questions, then they say yes, with the rule.
   - It sets the flag `parentsJoined` and the chapter-pinned story still plays. Scenes written around "Mom & Dad don't know yet" get an alternate version, e.g. the Day 2 "set the table" beat becomes "Dad helps you prep the dragon's evening snack."
   - **Chapter 2 opens with two variants:** the planned "telling the parents" scene if they don't know yet, or a "family meeting about the treehouse" if they already do.
@@ -664,7 +669,7 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 | 3 | Voice | **Generated voice, optional and off by default.** Reading on-screen text is the main experience (§5.7). |
 | 4 | Classroom mode | **Deferred.** Not in v1 scope. |
 | 5 | Length | **3 chapters × 3 days.** Revisit after the Chapter 1 playtests. |
-| 6 | Telling parents early | **Allowed** from Day 2 (§5.4); both branches are tested (§10.3). |
+| 6 | Telling parents early | **Always allowed, from Day 1** (§5.4): the first choice at every family visit. Changed from "from Day 2" after a child-safety review. Both branches are tested (§10.3). |
 | 7 | Story arc | **Hybrid:** expose Crane on Day 7, then the dragon and player choose Stay or Fly on Day 9; every ending is happy (§6.2–6.4). |
 | 8 | Voice tech | **Pre-generated lines at build time** (Kokoro or Piper) with **device voices as fallback**. The dragon is not voiced (§9.4). |
 | 9 | Licence | **MIT** for code and content (`LICENSE`). Third-party voice models and voices keep their own licences, recorded in `VOICES.md`. |

@@ -345,7 +345,7 @@ export class BedroomScene extends Phaser.Scene {
         break;
       case 'knock':
         this.cameras.main.shake(180, 0.003);
-        if (!e.quiet) {
+        if (!e.calm) {
           this.busy(1400);
           this.showMouth('mouthOpen');
           this.tweens.add({ targets: this.dragon, y: this.by - 18 * this.bs, duration: 110, yoyo: true, repeat: 1 });
@@ -353,6 +353,10 @@ export class BedroomScene extends Phaser.Scene {
         } else {
           this.floatUp('heart', this.bx + 30, this.by - 70);
         }
+        break;
+      case 'helper-visit':
+        this.floatUp('heart', this.bx, this.by - 70);
+        this.time.delayedCall(300, () => this.floatUp('heart', this.bx + 30, this.by - 60));
         break;
       case 'spotted':
         if (e.suspicious) this.closeCurtains();

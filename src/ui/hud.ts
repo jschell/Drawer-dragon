@@ -194,11 +194,17 @@ export class Hud {
         sfx.play('knock');
         const v = content.evening.visitors.find((x) => x.id === e.visitorId)!;
         this.toast(`<b>Knock knock!</b> ${esc(v.name)}: ${esc(v.line)}`);
-        if (e.quiet) setTimeout(() => this.toast(esc(v.quietLine)), 2600);
+        if (e.calm) setTimeout(() => this.toast(esc(v.calmLine)), 2600);
         else {
           sfx.play('chirp');
           setTimeout(() => this.showVisitor(v.id), 1500);
         }
+        break;
+      }
+      case 'helper-visit': {
+        sfx.play('purr');
+        const v = content.evening.visitors.find((x) => x.id === e.visitorId)!;
+        this.toast(esc(v.knownLine));
         break;
       }
       case 'visitor-left':
@@ -271,7 +277,7 @@ export class Hud {
   private renderEvening() {
     const s = this.state;
     const e = s.evening;
-    const quiet = content.evening.quietCalm;
+    const quiet = content.evening.calmEnough;
     const a = s.world.collectorAttention;
     const meter = (k: string, emo: string, label: string, value: number, ok: boolean, word: string) => {
       const on = Math.round(value / 20);
@@ -766,7 +772,7 @@ export class Hud {
       const p = content.archive.pages.find((x) => x.id === id)!;
       return (p.credibility === 'trusted' && rating === 'trust') || (p.credibility === 'mixed' && rating !== 'trust') || (p.credibility === 'trap' && rating === 'distrust');
     }).length;
-    const circle = s.world.circle.map((m) => (m === 'june' ? 'Aunt June' : m === 'kit' ? 'Kit' : m));
+    const circle = s.world.circle.map((m) => ({ june: 'Aunt June', kit: 'Kit', parents: 'Mom & Dad' })[m] ?? m);
     this.openPanel(`
       <h2>Day 1 complete! 🌙</h2>
       <div class="summary">
@@ -779,7 +785,7 @@ export class Hud {
             ${Object.keys(r.ratings).length ? line(ratedRight > 0, `Judged ${ratedRight} of ${Object.keys(r.ratings).length} websites right`) : line(false, 'Checked a website before trusting it')}
             ${Object.keys(r.trapChoices).length ? line(!Object.values(r.trapChoices).includes('share'), 'Kept your address private') : line(false, 'Spotted a trap website')}</ul></div>
           <div><b>🌙 Evening</b><ul class="checklist">
-            ${line(e.noisy === 0, `${e.quiet} of ${content.evening.visitors.length} visits stayed quiet`)}
+            ${line(e.scaredKnocks === 0, `Stayed calm at ${e.calmKnocks + e.helpers} of ${content.evening.visitors.length} visits`)}
             ${line(e.missed === 0, `Spotted ${e.spotted} of ${content.evening.windowThings.filter((w) => w.suspicious).length} scouts`)}</ul></div>
         </div>
       </div>

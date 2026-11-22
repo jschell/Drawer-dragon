@@ -112,23 +112,33 @@ const ChoiceSchema = z.object({
   label: z.string(),
   result: z.string(),
   calm: z.number(),
-  joins: z.literal('kit').optional(),
+  joins: z.enum(['kit', 'parents']).optional(),
   // Guardrail (spec §5.4): no dialogue option may be a lie.
   deceptive: z.never().optional(),
 });
 
-const VisitorSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  role: z.string(),
-  emoji: z.string(),
-  at: z.number().positive(),
-  warn: z.number().positive(),
-  line: z.string(),
-  quietLine: z.string(),
-  noisyLine: z.string(),
-  choices: z.array(ChoiceSchema).min(2),
-});
+const VisitorSchema = z
+  .object({
+    id: z.string(),
+    name: z.string(),
+    role: z.string(),
+    /** The Keeper Circle group this family member belongs to. */
+    member: z.enum(['kit', 'parents']),
+    emoji: z.string(),
+    at: z.number().positive(),
+    warn: z.number().positive(),
+    line: z.string(),
+    calmLine: z.string(),
+    /** Shown instead of a knock when this person already knows about the dragon. */
+    knownLine: z.string(),
+    noisyLine: z.string(),
+    choices: z.array(ChoiceSchema).min(2),
+  })
+  // Child-safety rule (spec §5.4): a player can always tell family. The first choice
+  // for every family visitor must be to show them the dragon.
+  .refine((v) => v.choices[0]?.joins === v.member, {
+    message: 'Every family visitor must offer "show them the dragon" as the first choice',
+  });
 
 const WindowThingSchema = z.object({
   id: z.string(),
@@ -146,8 +156,9 @@ const EveningSchema = z.object({
   calmLampDim: z.number(),
   calmBlanket: z.number(),
   calmDriftPerSec: z.number().positive(),
-  quietCalm: z.number(),
+  calmEnough: z.number(),
   knockCalm: z.object({ normal: z.number(), blanket: z.number() }),
+  friendlyCalm: z.number(),
   endAt: z.number().positive(),
   attention: z.object({ missed: z.number(), missedBright: z.number(), spotted: z.number(), share: z.number() }),
   visitors: z.array(VisitorSchema).min(1),

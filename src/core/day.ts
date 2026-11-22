@@ -165,7 +165,7 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
     }
     case 'finishDay':
       if (s.part !== 'evening' || !e.over) return true;
-      if (e.noisy === 0) addSticker(s, 'Quiet Night');
+      if (e.scaredKnocks === 0) addSticker(s, 'Calm Night');
       if (e.spotted >= 2) addSticker(s, 'Scout Spotter');
       s.part = 'end';
       events.push({ type: 'day-finished' });
@@ -195,18 +195,27 @@ export function tickEvening(s: GameState, dt: number, events: GameEvent[], c: Co
   }
   if (e.visitor && e.t >= e.visitor.knockAt) {
     const id = e.visitor.id;
+    const v = ev.visitors.find((x) => x.id === id)!;
     e.visitor = null;
-    d.calm = clamp(d.calm - (e.blanket ? ev.knockCalm.blanket : ev.knockCalm.normal));
-    const quiet = d.calm >= ev.quietCalm;
-    events.push({ type: 'knock', visitorId: id, quiet });
-    if (quiet) {
-      e.quiet += 1;
+    if (s.world.circle.includes(v.member)) {
+      // Family who already know come in to help: no startle, a little extra calm.
+      d.calm = clamp(d.calm + ev.friendlyCalm);
+      e.helpers += 1;
       e.visitorIdx += 1;
-      events.push({ type: 'visitor-left', visitorId: id, choiceId: null, joined: false });
+      events.push({ type: 'helper-visit', visitorId: id });
     } else {
-      e.noisy += 1;
-      e.awaiting = id;
-      return;
+      d.calm = clamp(d.calm - (e.blanket ? ev.knockCalm.blanket : ev.knockCalm.normal));
+      const calm = d.calm >= ev.calmEnough;
+      events.push({ type: 'knock', visitorId: id, calm });
+      if (calm) {
+        e.calmKnocks += 1;
+        e.visitorIdx += 1;
+        events.push({ type: 'visitor-left', visitorId: id, choiceId: null, joined: false });
+      } else {
+        e.scaredKnocks += 1;
+        e.awaiting = id;
+        return;
+      }
     }
   }
 
