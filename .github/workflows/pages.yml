@@ -1,7 +1,11 @@
 name: Deploy to GitHub Pages
 
 # Publishes the prototype so it can be opened on an iPad or iPhone.
-# One-time setup: repo Settings → Pages → Source: "GitHub Actions".
+# One-time setup:
+#   1. Settings → Pages → Source: "GitHub Actions".
+#   2. Settings → Environments → github-pages → Deployment branches: allow `main`.
+#      (Otherwise the job is rejected with "Branch main is not allowed to deploy
+#      to github-pages due to environment protection rules" and writes no logs.)
 on:
   push:
     branches: [main]
