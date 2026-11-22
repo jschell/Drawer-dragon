@@ -23,7 +23,19 @@ async function hatch(page: Page) {
 type Rect = { left: number; top: number; right: number; bottom: number };
 const overlaps = (a: Rect, b: Rect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 
-test('the food tray never covers the dragon', async ({ page }) => {
+for (const toolbar of [false, true]) {
+  test(`the food tray never covers the dragon${toolbar ? ' (with the Safari toolbar showing)' : ''}`, async ({ page }) => {
+    if (toolbar) {
+      // In Safari (not added to the Home Screen) the toolbar takes about 64px of an iPhone SE's height.
+      test.skip(!test.info().project.use.hasTouch, 'phone-only case');
+      const vp = page.viewportSize()!;
+      await page.setViewportSize({ width: vp.width, height: vp.height - 64 });
+    }
+    await trayCheck(page);
+  });
+}
+
+async function trayCheck(page: Page) {
   await hatch(page);
   await page.locator('.act[data-act="food"]').click();
   await expect(page.locator('#tray')).toBeVisible();
@@ -43,7 +55,11 @@ test('the food tray never covers the dragon', async ({ page }) => {
   await page.locator('.food[data-food="beef"]').click();
   await tapWorld(page, 720, 446);
   await expect(page.locator('#toast')).toContainText('gobbles up the beef');
-});
+
+  // ...and it doesn't hide the sound and read-aloud buttons either.
+  const buttons = (await page.locator('#topright').boundingBox())!;
+  expect(trayRect.top).toBeGreaterThanOrEqual(buttons.y + buttons.height);
+}
 
 test('checking a website keeps your place on the page', async ({ page }) => {
   await hatch(page);
