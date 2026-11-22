@@ -51,6 +51,10 @@ npm run e2e        # browser tests (iPhone SE, iPad, desktop); needs Playwright'
 
 To try it on an iPad or iPhone, run `npm run dev` and open the "Network" address it prints, on the same Wi-Fi. Or turn on GitHub Pages (Settings → Pages → Source: "GitHub Actions") and merge to `main`; the `pages` workflow publishes it.
 
+## Writing for players
+
+The dragon is always kept **safe from strangers** (the collector and his helpers), **never hidden from family**, and every dialogue choice is honest. Child-safety programs teach kids that being asked to hide things from family is a warning sign, so the game never frames the dragon that way. The full rule and the word to avoid are in [`SPEC.md`](SPEC.md) §5.4. Tests enforce it on all game text, this README, and everything shown on screen during the browser tests.
+
 ## Code layout
 
 | Path | What |
