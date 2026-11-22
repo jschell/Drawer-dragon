@@ -21,6 +21,10 @@ async function toAfternoon(page: Page, speed = 1) {
   await page.locator('.act.go').click({ force: true });
   await page.getByRole('button', { name: 'Go anyway' }).click();
   await page.getByRole('button', { name: /the afternoon/ }).click();
+  // Aunt June explains who the collector is and why the dragon needs protecting.
+  await expect(page.locator('#panel')).toContainText('Silas Crane');
+  await expect(page.locator('#panel')).toContainText('glass case');
+  await page.getByRole('button', { name: 'Thanks, Aunt June!' }).click();
   await page.getByRole('button', { name: 'Start searching' }).click();
   await expect(page.locator('#research')).toBeVisible();
 }
@@ -68,7 +72,8 @@ test('evening: an unprepared night still ends well, with honest choices only', a
 
   // With no preparation, the dragon squeaks when Kit knocks.
   await expect(page.getByText('What do you say?')).toBeVisible({ timeout: 20_000 });
-  await page.getByRole('button', { name: 'Tell Kit the secret' }).click();
+  await expect(page.locator('#panel')).not.toContainText(/secret/i);
+  await page.getByRole('button', { name: 'Show Kit the dragon' }).click();
 
   // Later visitors may also hear it; answer any of them honestly until bedtime.
   const goodnight = page.getByRole('button', { name: /^Goodnight, / });

@@ -1,0 +1,15 @@
+{
+  "juneIntro": {
+    "title": "Aunt June's porch",
+    "emoji": "👵",
+    "paragraphs": [
+      "On the way to the library, your great-aunt June waves you over. She peeks into your backpack... and smiles. \"A hatchling! I looked after a dragon too, when I was your age.\"",
+      "\"Now listen carefully. There's a man in town called Silas Crane. He collects rare things and keeps them in glass cases.\"",
+      "\"A dragon in a glass case can't stretch its wings, can't grow, and never gets to fly. That's why we keep dragons safe from people like him.\"",
+      "\"Crane has helpers: a drone with a red light that never blinks, and people with clipboards who pretend to count birds. He even makes fake websites to find out where dragons live.\"",
+      "\"We keep your dragon safe from strangers like Crane. But never from your family: when you're ready, the people who love you can help.\""
+    ],
+    "closing": "Aunt June is the first member of your Keeper Circle. Now you're not looking after the dragon alone.",
+    "button": "Thanks, Aunt June!"
+  }
+}

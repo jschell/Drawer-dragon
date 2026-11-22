@@ -19,8 +19,8 @@
       "quietLine": "Kit grabs a marker and skips back down the hall. Your dragon didn't make a peep!",
       "noisyLine": "Squeak! \"What was that?\" Kit peeks around the door, curious.",
       "choices": [
-        { "id": "tell", "label": "Tell Kit the secret", "result": "Kit gasps... then pinky-promises to help keep the dragon safe. Kit joins the Keeper Circle!", "calm": 5, "joins": "kit" },
-        { "id": "soon", "label": "\"It's a secret for now. I'll tell you soon, I promise.\"", "result": "Kit squints at you. \"Okay. Pinky promise!\"", "calm": 0 },
+        { "id": "tell", "label": "Show Kit the dragon", "result": "Kit gasps... then promises to help keep the dragon safe from Crane. Kit joins the Keeper Circle!", "calm": 5, "joins": "kit" },
+        { "id": "soon", "label": "\"I'm looking after something special. Can I show you tomorrow?\"", "result": "Kit grins. \"Tomorrow! Don't forget!\"", "calm": 0 },
         { "id": "quiet", "label": "\"Can I have some quiet time, please?\"", "result": "\"Fine!\" Kit wanders off, still curious.", "calm": -3 }
       ]
     },

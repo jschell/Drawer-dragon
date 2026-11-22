@@ -4,6 +4,7 @@ import recipesJson from '../../content/recipes.json';
 import thoughtsJson from '../../content/thoughts.json';
 import archiveJson from '../../content/archive.json';
 import eveningJson from '../../content/evening.json';
+import storyJson from '../../content/story.json';
 
 export const NUTRIENTS = ['protein', 'greens', 'minerals'] as const;
 export type Nutrient = (typeof NUTRIENTS)[number];
@@ -152,6 +153,17 @@ const EveningSchema = z.object({
   windowThings: z.array(WindowThingSchema).min(1),
 });
 
+const StorySchema = z.object({
+  juneIntro: z.object({
+    title: z.string(),
+    emoji: z.string(),
+    paragraphs: z.array(z.string()).min(1),
+    closing: z.string(),
+    button: z.string(),
+  }),
+});
+
+export type StoryDef = z.infer<typeof StorySchema>;
 export type FoodDef = z.infer<typeof FoodSchema>;
 export type PageDef = z.infer<typeof PageSchema>;
 export type ArchiveDef = z.infer<typeof ArchiveSchema>;
@@ -171,6 +183,7 @@ export interface Content {
   thoughts: ThoughtDef[];
   archive: ArchiveDef;
   evening: EveningDef;
+  story: StoryDef;
 }
 
 /** Validates raw content and checks cross-references. Throws with a readable message on failure. */
@@ -198,7 +211,7 @@ export function parseContent(raw: { items: unknown; recipes: unknown; thoughts: 
   const dup = ids.find((id, i) => ids.indexOf(id) !== i);
   if (dup) throw new Error(`Duplicate content id "${dup}"`);
 
-  return { ...items, ...recipes, thoughts: thoughts.thoughts, archive, evening };
+  return { ...items, ...recipes, thoughts: thoughts.thoughts, archive, evening, story: StorySchema.parse(storyJson) };
 }
 
 export const content: Content = parseContent({ items: itemsJson, recipes: recipesJson, thoughts: thoughtsJson, archive: archiveJson, evening: eveningJson });

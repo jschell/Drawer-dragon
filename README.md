@@ -1,6 +1,6 @@
 # Dragon Keeper
 
-A cozy creature-care browser game for ages 8–11: raise a secret baby dragon, learn how to care for it, and protect it from a collector. See [`SPEC.md`](SPEC.md) for the full game design.
+A cozy creature-care browser game for ages 8–11: raise a baby dragon, learn how to care for it, and keep it safe from a collector who wants it for a glass case. See [`SPEC.md`](SPEC.md) for the full game design.
 
 **▶ Play it:** https://jschell.github.io/Drawer-dragon/ (best on an iPad or iPhone held sideways; tap Share → Add to Home Screen for full screen)
 
@@ -16,6 +16,7 @@ One full in-game day, about 10–12 minutes. Every part saves automatically.
    - **Hum**, **Warm sock** and **petting** calm it down. **Dragon thoughts** are picture riddles; wrong answers only give free hints.
 
 **📚 Afternoon: research** (prototype 2)
+- On the way, **Aunt June** explains who Silas Crane is: a collector who keeps rare things in glass cases, where a dragon could never grow or fly. She describes his helpers (a drone, fake bird-counters with clipboards, fake websites) and why the dragon is kept safe from strangers, never from family.
 - At the library computer, find out how to keep a hatchling calm when someone knocks.
 - Build searches from **keyword chips**: one broad word gives too many results, two good ones find the answer.
 - **Check the Nest** on each page (*Who made it? When? Why does it exist? Does another source agree?*), then decide whether to trust it.
@@ -24,7 +25,7 @@ One full in-game day, about 10–12 minutes. Every part saves automatically.
 
 **🌙 Evening: protect** (prototype 3)
 - Kit, Mom and Dad stop by. **Footsteps** give a countdown before each knock: dim the lamp, hum and use the blanket so the dragon stays quiet.
-- If it squeaks, every reply on offer is **honest**. Telling Kit the secret makes Kit join the **Keeper Circle**.
+- If it squeaks, every reply on offer is **honest**. Showing Kit the dragon makes Kit join the **Keeper Circle**.
 - **Watch the window:** tap the collector's camera drone **BLINK** and the fake "wildlife surveyor" to close the curtains. A moth or the neighbor's cat are harmless. Missed scouts (and a bright lamp) raise **Collector Attention**.
 - The day ends with a summary, a photo of the sleeping dragon, and stickers. There is no fail state anywhere.
 
