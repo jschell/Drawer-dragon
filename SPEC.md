@@ -1,10 +1,11 @@
-# Dragon Keeper — Game Spec (v0.3)
+# Dragon Keeper — Game Spec (v0.4)
 
 > Working title. A cozy creature-care, light-stealth, and detective game for ages 8–11 (grades 3–5), played in the browser on iPad, iPhone, and laptops.
 
 **Status:** Draft spec for the Chapter 1 vertical slice (Days 1–3).
 **Changes since v0.1 brief:** device targets set; secrecy reframed so lying is not a mechanic; original names throughout; meters cut from six to five, with at most three on screen at once.
 **Changes in v0.3:** two-parent household fixed; generated art; generated voice optional with text first; length set at 3 chapters × 3 days; parents can join early; classroom mode deferred (see §12).
+**Changes in v0.4:** Chapter 2–3 outline (expose the collector, then the dragon's choice); voice pipeline (pre-generated lines with device-voice fallback, §9.4).
 
 **Scope:** 3 chapters × 3 days each (9 days, roughly 1.5–2 hours total). Chapter 1 is the vertical slice.
 
@@ -73,11 +74,11 @@ Minimum browser: Safari on iOS/iPadOS 16+. Chromebooks are **not** a target for 
 | **Mom & Dad** | Family (two-parent household, fixed) | Busy, kind, observant. Join the Keeper Circle together, in Chapter 2 by default or earlier if the player tells them (§5.4). |
 | **Kit** (younger sibling, age 7) | Family | Nosy and funny. Joins the Keeper Circle on Day 3. |
 | **Silas Crane** | Antagonist | Collector of "Rare and Remarkable Things." Pompous, never scary-violent; he wants the dragon for a display case. |
-| **Crane's scouts** | Threats | A "Neighborhood Wildlife Survey" person with a clipboard (fake), and a camera drone named BLINK. |
+| **Crane's scouts** | Threats | A "Neighborhood Wildlife Survey" person with a clipboard (fake), and a camera drone named BLINK. BLINK is left behind when Crane leaves (Day 7) and Kit reprograms it as a friendly lookout. |
 | **Mr. Patel** | Corner store owner | Friendly. Runs sales, gives change, has opinions about dandelions. |
 | **Ms. Ortiz** | Librarian | Helps with search skills. Not in the Circle, just good at her job. |
 
-**Setting:** Larkspur Lane, a small, walkable neighborhood. Locations: Bedroom, Kitchen, Living room, Backyard (with treehouse, unlocked later), Aunt June's porch, Corner store, Larkspur Library, Creek path.
+**Setting:** Larkspur Lane, a small, walkable neighborhood. Locations: Bedroom, Kitchen, Living room, Backyard (with treehouse, unlocked in Chapter 2), Aunt June's porch, Corner store, Larkspur Library (with a community room), Creek path, Larkspur Hill (Chapter 3 flight scenes).
 
 ### 3.1 In-game websites
 In-game sites use the fictional ending **`.keep`**, so they can never point to a real domain.
@@ -196,7 +197,8 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
   - 👀 + 🪟 + "A red eye that does not blink" means BLINK is outside.
 - **Three-step hints:** (1) highlight a word, (2) Field Journal link, (3) Aunt June spells it out. Hints are free; using them earns no penalty.
 - **Text first.** All dialogue and thoughts are on-screen text that the player reads; that's the default experience.
-- **Generated voice (optional):** a read-aloud button on every text panel uses generated speech (the device's built-in voices via the Web Speech API in v1). It's off by default and can be turned on in Settings. It's a support for struggling readers, not a replacement for reading.
+- **Generated voice (optional):** a read-aloud button on every text panel plays a generated voice (pipeline in §9.4). It's off by default and can be turned on in Settings. It's a support for struggling readers, not a replacement for reading.
+- **The dragon never speaks aloud.** Its thoughts play a chirp, trill or hum sound, with the text and icons on screen.
 
 ### 5.8 Corner store (Money & budgeting)
 - Weekly allowance plus optional chores (help a neighbor, water plants).
@@ -207,9 +209,11 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 
 ---
 
-## 6. Chapter 1 script (vertical slice, Days 1–3)
+## 6. Story script
 
-### Day 1: "The Warm Rock"
+### 6.1 Chapter 1: "Hatchling" (vertical slice, Days 1–3)
+
+#### Day 1: "The Warm Rock"
 - **Prologue (2 min):** Creek path. The player finds a warm, leathery, speckled stone. Tutorial: walk, tap, pick up.
 - **Morning: Care**
   1. Bedroom. The "rock" twitches.
@@ -223,7 +227,7 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
   1. Tutorial visitor event: Kit knocks to borrow a marker. The player keeps the dragon calm (dim lamp, sock nest).
   2. Journal page. Teaser: a car with "CRANE CURIOSITIES" on the side drives slowly past.
 
-### Day 2: "Cold Belly"
+#### Day 2: "Cold Belly"
 - **Morning: Care**
   1. Dragon thought: 🌧️ + 🥶 + "Cold rain inside my belly." The player infers Spark is low.
   2. **First spice mix** (ratio). Overdoing it gives hiccup smoke rings and a scorched sock, which starts the **first Fix-It** (stitch the sock).
@@ -236,7 +240,7 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
   1. A parent asks the player to help set the table, so they're out of the room. The player uses a **pantry plan** board to set the dragon up for the evening (food left out, nest warmed).
   2. First **scout spotting** at the window: the clipboard "surveyor."
 
-### Day 3: "The Red Light"
+#### Day 3: "The Red Light"
 - **Morning: Care**
   1. Growth spurt: the recipe needs **one and a half times** the amounts (scaling).
   2. The dragon chews a slipper, which starts a Fix-It that includes **owning up** to Kit.
@@ -251,16 +255,102 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
   3. The player and Kit spot BLINK together and close the curtain. Kit names the dragon's first trick (a smoke ring).
   4. **Chapter cliffhanger:** the dragon has outgrown the shoebox. Aunt June: *"Time to think bigger. And time to talk to your parents."*
 
+### 6.2 Chapter 2: "Bigger Nest" (Days 4–6)
+**Arc:** the dragon becomes a **Fledgling**, moves to the treehouse, and learns to fly and control its fire. Crane changes tactics: instead of sneaking, he tries to get the neighborhood to bring him the dragon.
+**New this chapter:** Mom & Dad's Help and Rule (if they haven't joined yet, they join in the Day 4 opening), the treehouse scene, the backyard flight area, and a bigger weekly budget.
+
+#### Day 4: "Family Meeting"
+- **Opening (two variants, §5.4):**
+  - If the parents don't know yet: the planned "telling Mom & Dad" scene, set up by Aunt June.
+  - If they already know: a "family meeting about the treehouse" scene.
+  - Either way, the family agrees on the Rule ("No fire indoors") and the move.
+- **Morning: Care.** **Nest-building puzzle (energy & materials):** the player picks treehouse insulation from wool, straw, foil, newspaper and bubble wrap. They test each with June's thermometer (a reading after "an hour") and pick the warmest dry combination. New diet need: minerals (crushed eggshells for calcium).
+- **Afternoon: Explore.** Posters appear on the lane: *"REWARD! Lost exotic lizard. Call Larkspur Wildlife Rescue."* The player looks at the poster closely (no phone number, odd logo, the same handwriting as the fake survey clipboard). A Journal page starts the **Evidence Board**.
+- **Evening: Protect.** First night in the treehouse: keep the dragon calm in a new place (it's scared of owls and wind). Light discipline: a lit window shows from the street, so Collector Attention goes up if the lamp is left on.
+
+#### Day 5: "First Flight"
+- **Morning: Care.** **Flight practice** in the backyard at dawn, with hops, glides and a landing target. The player records each try's distance on a **bar graph** in the Journal and spots the improvement (data & graphs). The fence and hedge hide the dragon from the street, but a high flight raises Collector Attention.
+- **Afternoon: Explore.**
+  1. Search Keeper's Commons for "fledgling" + "flying." Then the player finds **`larkspurwildliferescue.keep`**, Crane's fake rescue site.
+  2. Check the Nest: the site was made last week, has no address and no staff names, and its "rescued animals" photos are the same image flipped.
+  3. **Cross-check:** the library's community directory lists the town's real wildlife rescue at a different name and address. This goes on the Evidence Board.
+  4. **Corner store:** food doubles for a Fledgling. **Bulk buying** with Dad's grocery money: is the big bag really cheaper per scoop? One "deal" is a trick (bigger bag, higher unit price).
+- **Evening: Protect.** BLINK patrols at night with a searchlight. A **Stepping Stones** moment: the dragon is hungry, the treehouse lamp is on, and Kit has left the gate open. Kit's lookout Help warns of BLINK's path.
+
+#### Day 6: "Fire Control"
+- **Morning: Care.**
+  - Spark recipe at **2×** with a new ingredient (smoked paprika).
+  - Fire-control practice: the dragon learns "glow" (a warm belly light), "puff" (a smoke ring) and "spark" (a tiny flame aimed at June's fireproof stone slab). The player picks the right one for each situation (warming the nest = glow).
+  - The player never lights or handles fire; only the dragon does, and only outdoors on the slab.
+- **Afternoon: Explore.** Library: Ms. Ortiz helps the player search the **newspaper archive**. They find an old article: *"Crane Curiosities: private collector's display of rare animals closed after complaints."* This is the strongest evidence yet.
+- **Evening: Protect.**
+  - Crane himself knocks at the door, posing as a "rescue volunteer."
+  - The parents answer politely and honestly ("No, thank you, we're not interested"). Crane leaves a business card with the fake rescue's name.
+  - The player spots 3 clues during the conversation: muddy treehouse-ladder boots, BLINK's remote in his pocket, the business card matching the poster.
+- **Cliffhanger:** that night the dragon sends a new kind of thought: 🏔️ + 🐉🐉🐉 + *"Many wings, far away, calling."* June goes quiet: *"I've seen that one before."*
+
+### 6.3 Chapter 3: "The Call" (Days 7–9)
+**Arc:** the Circle exposes Crane (Day 7). Then the dragon feels the pull of its flock and, with the family, chooses where its home is (Day 9). **Every ending is happy.**
+
+#### Day 7: "The Evidence Board"
+- **Morning: Care.** Routine care, now quick (players have mastered it). This is a breather with a new trick to teach (Kit's named trick from Day 3).
+- **Afternoon: Explore. Evidence puzzle (argument from evidence):**
+  1. The player reviews everything on the Evidence Board: the posters, the fake site's Check the Nest results, the directory cross-check, the newspaper article, the business card, the clipboard handwriting.
+  2. They choose the **3 strongest pieces** and put them in order. Some pieces are weak ("He has a mean face"), and June gently explains why those don't count.
+  3. They present at the **neighborhood meeting** in the library's community room.
+  4. The dragon itself stays secret: the player shows that the "rescue" is fake, without revealing why they care.
+- **Evening: Protect.**
+  - Neighbors take down the posters, and the real wildlife rescue posts a warning about the fake one.
+  - **Comic exit:** Crane's van rattles out of town with an empty display case strapped on top. BLINK, left behind, gets stuck in the treehouse.
+  - Kit reprograms it: **BLINK joins as a friendly lookout.** Collector Attention drops to zero for good.
+
+#### Day 8: "Many Wings"
+- **Morning: Care.**
+  - The dragon is restless and eats more. Its thoughts keep showing mountains and wings.
+  - June shares the story of her own dragon: it chose to fly with its flock, and it visited every summer.
+  - **Reading:** a longer Journal passage, June's letter from 60 years ago, with inference questions.
+- **Afternoon: Explore.** **Migration research:**
+  1. Keeper's Commons pages on how "dragons follow warm winds south and gather at the high lakes."
+  2. A **map puzzle**: read a grid map with compass directions, plot the flight path, and work out the distance with the map scale.
+  3. **Travel rations:** plan and buy food for the journey whichever way the dragon chooses, including rationing over several days.
+- **Evening: Protect.** **Endurance flight** at Larkspur Hill at dusk, with BLINK as lookout. It's the biggest flight yet and the dragon's wings are fully grown. A quiet moment: the whole Circle on the hill, watching the dragon circle overhead.
+
+#### Day 9: "Choose Together"
+- **Morning: Care.** The last care routine, made special: the player picks the dragon's favorite food, its favorite sock, and its favorite spot.
+- **Afternoon: Explore.**
+  - The player visits everyone in the Circle and the neighborhood (Mr. Patel, Ms. Ortiz). Each gives a small gift or a memory.
+  - **Memory cards montage:** the Journal shows every memory card collected over the 9 days.
+- **Evening: The choice.**
+  - At sunset on the hill, the dragon sends its final thought: both pictures at once, home and the flock.
+  - The player and dragon **choose together**:
+    - **Stay on Larkspur Lane:** the dragon becomes the neighborhood's secret guardian, and the treehouse gets a dragon-sized upgrade. *Epilogue:* the first snow, with the dragon warming the family on the porch.
+    - **Fly with the flock:** a big flight scene over the town as the flock arrives. *Epilogue:* a postcard (a memory card) from the high lakes, then next summer, a shape in the sky heading back to Larkspur Lane.
+  - **Bond** (hidden, §6.4) only adds extra epilogue moments. It never decides or limits the choice.
+
+### 6.4 Bond (hidden, never shown as a score)
+- **Bond** is computed at the end of the game from:
+  - how much of the time the dragon was calm;
+  - how balanced its diet was;
+  - Fix-Its handled by owning up;
+  - good privacy choices on trap sites;
+  - how many dragon thoughts the player solved (hints count the same as solving alone).
+- Bond tiers add **bonus epilogue moments**: the dragon's drawing of the family, a secret trick, a second postcard, or June's old dragon appearing in the flock.
+- Bond **never** unlocks a "good" or "bad" ending, and is never shown as a number, grade or rank.
+- An all-hints, all-mistakes playthrough still gets a warm, complete ending.
+
 ---
 
 ## 7. Learning map (alignment to verify with an educator)
 
 | Pillar | Where in the game | Grade 3–5 standards (indicative) |
 |---|---|---|
-| Biology & ecology | Egg nest puzzle, diet balance, Field Journal | NGSS 3-LS1-1 (life cycles), 4-LS1-1 (structures and function), 5-LS2-1 (food webs, light touch) |
+| Biology & ecology | Egg nest puzzle, diet balance, Field Journal, migration (Ch. 3) | NGSS 3-LS1-1 (life cycles), 4-LS1-1 (structures and function), 5-LS2-1 (food webs, light touch) |
+| Energy & materials | Treehouse insulation test (Ch. 2) | NGSS 4-PS3-2 (energy transfer as heat), 3-5-ETS1-3 (fair tests) |
 | Kitchen chemistry & scaling | Spice mixing ratios as "parts," batch scaling | CCSS 4.NF.B, 5.NF.B.5 (multiplication as scaling); NGSS 5-PS1-4 (mixing substances) |
-| Information literacy & privacy | Keeper's Commons, Check the Nest, trap sites, library catalog | ISTE Student 1.2 (Digital Citizen), 1.3 (Knowledge Constructor); AASL standards |
-| Money & budgeting | Corner store, unit prices, change, pantry plan | CCSS 3.MD.A, 4.MD.A.2 (money word problems), 3.OA / 4.OA multi-step problems |
+| Information literacy & privacy | Keeper's Commons, Check the Nest, trap sites, library catalog, fake rescue site, newspaper archive (Ch. 2) | ISTE Student 1.2 (Digital Citizen), 1.3 (Knowledge Constructor); AASL standards |
+| Argument from evidence | Evidence Board and neighborhood meeting (Ch. 3) | CCSS W.4.1 / W.5.1 (opinion supported by reasons and evidence), RI.4.8 / RI.5.8 |
+| Data, maps & measurement | Flight practice bar graph (Ch. 2), grid map, compass directions, map scale (Ch. 3) | CCSS 3.MD.B.3 (bar graphs), 5.G.A.1–2 (coordinate grids), 4.MD.A.1–2 (measurement & distance) |
+| Money & budgeting | Corner store, unit prices, change, pantry plan, bulk-buying trick (Ch. 2), travel rations (Ch. 3) | CCSS 3.MD.A, 4.MD.A.2 (money word problems), 3.OA / 4.OA multi-step problems |
 | Reading & inference | Dragon thoughts, journal passages, riddles | CCSS RL.3.1 / RL.4.1 / RI.5.1 (refer to text, draw inferences) |
 | Social-emotional learning | Stepping Stones, Keeper Circle honesty choices, Fix-It amends | CASEL: self-management, responsible decision-making, relationship skills |
 
@@ -380,8 +470,21 @@ type Effect =
   | { type: 'circleJoin'; member: CircleMemberId }
   | { type: 'goto'; sceneId: string };
 
+interface DialogueLine {
+  id: string;                 // stable id; also the audio file name
+  speaker: CharacterId | 'keeper' | 'narrator';
+  text: string;               // may contain {dragonName} / {nickname} only if voice: 'dynamic'
+  voice: 'pregen' | 'dynamic' | 'none';   // see §9.4
+  audio?: { src: string; hash: string; durationMs: number; wordTimingsMs?: number[] };
+}
+
+interface BondInputs {        // computed at Day 9; never shown as a number (§6.4)
+  calmShare: number; dietBalance: number; ownedUpFixIts: number;
+  privacyGoodChoices: number; thoughtsSolved: number;
+}
+
 interface Settings {
-  readAloud: boolean; textSize: 'normal' | 'large'; dyslexiaFont: boolean;
+  readAloud: boolean;         // off by default textSize: 'normal' | 'large'; dyslexiaFont: boolean;
   reducedMotion: boolean; timerMultiplier: 1 | 1.5 | 2 | 0 /* 0 = off */;
   gradeBand: 3 | 4 | 5;   // tunes math difficulty and reading length
   volume: { music: number; sfx: number; voice: number };
@@ -400,8 +503,9 @@ content/
   stepping-stones.json
   circle.json
   schedules.json
-  story/chapter1.json      # StoryEvents
-  dialogue/chapter1.json   # dialogue trees
+  story/chapter1.json      # StoryEvents (chapter2.json, chapter3.json later)
+  dialogue/chapter1.json   # dialogue trees of DialogueLine
+  voices.json              # speaker → voice casting (§9.4)
   journal.json             # Field Journal entries
 ```
 Content is validated at build time by a schema check (e.g., zod). The build fails on:
@@ -449,7 +553,44 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 - Gentle music loop per phase, using Web Audio. A sound for every dragon reaction (chirp, trill, sneeze, hiccup).
 - Separate volume sliders. Muted by default on the first visit until the player taps "Sound on."
 
-### 9.4 Accessibility
+### 9.4 Voice pipeline
+**Approach:** every scripted line is **pre-generated at build time** with an open-source text-to-speech model and shipped as audio files. The device's built-in voices (Web Speech API) are the **fallback** for anything dynamic or not yet generated.
+
+- **Models:** **Kokoro** first choice, **Piper** as the alternative. Both run locally at build time; no cloud service, and no text ever leaves the build machine.
+  - Check the licence of **each voice** (not just each model) before shipping.
+  - Record the model, voice and licence for every character in `VOICES.md`.
+- **Casting** (`content/voices.json`):
+
+  | Speaker | Voice brief |
+  |---|---|
+  | Aunt June | Older, warm, amused, unhurried |
+  | Kit | Young and bright. Use a light, higher adult voice: never clone or imitate a real child. |
+  | Mom, Dad | Warm, everyday, distinct from each other |
+  | Silas Crane | Pompous and theatrical, comic rather than menacing |
+  | Ms. Ortiz, Mr. Patel | Friendly, distinct |
+  | Narrator / Journal | Calm and clear |
+  | The Keeper | Not voiced (it's the player) |
+  | The dragon | Not voiced: sound effects only |
+
+  No voice is cloned from a real person.
+- **Writing rule: voiced lines never contain player-chosen names.** June calls the dragon "little one," and the Keeper is "kiddo" or "you."
+  - Lines that must use a name are marked `voice: 'dynamic'` and read by the device voice.
+  - A content lint warns if more than 5% of a chapter's lines are dynamic.
+- **Build step:** `npm run voices`
+  1. Reads every `DialogueLine` with `voice: 'pregen'`.
+  2. Hashes the text + voice settings, and generates only new or changed lines (cached).
+  3. Writes `public/voice/<chapter>/<lineId>.m4a` (AAC mono, about 32 kbps, plays on every target browser) plus a manifest of hashes and durations.
+  4. Records word timings where the model provides them.
+- **CI check:** fails if a pregen line's text hash doesn't match its audio, so no line can play the wrong words after a script edit.
+- **Speed:** default speaking rate 0.9× for young listeners, adjustable in Settings (0.8×–1.1×).
+- **Highlighting:** words highlight as they're read when timings exist; otherwise the whole sentence highlights.
+- **Download:**
+  - Voice packs are about 1.5–3 MB per chapter, assuming about 10 minutes of voiced lines.
+  - They're **not** part of the core load budget (§2.2). A chapter's pack downloads and caches only when read-aloud is turned on.
+  - If read-aloud is turned on while offline, the device voice is used until the pack downloads.
+- **Fallback quality:** if no good device voice exists (common on some Windows PCs), the read-aloud button only plays pre-generated lines and shows dynamic lines as text.
+
+### 9.5 Accessibility
 - Optional read-aloud (generated voice, off by default) for all text. Large text and dyslexia-friendly font options.
 - Meters use icon + shape + color. Meets WCAG 2.1 AA contrast. Reduced-motion mode.
 - Timers can be lengthened or turned off.
@@ -479,6 +620,7 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
   - It asserts each day is always completable, no state is stuck, and meters stay within bounds.
   - It asserts every NPC is where its schedule says.
   - It runs **both branches**: parents told early (on each possible day) and parents told in the planned Chapter 2 scene.
+  - It reaches **both endings** (Stay and Fly) at every Bond tier, including the all-hints, all-mistakes run.
 - **End-to-end tests (Playwright, WebKit + Chromium)** on the iPhone SE, iPad (gen 9), and Desktop 1280×720 presets: load, play the Day 1 tutorial, save and reload, plus a check that the page makes no network requests after load.
 - **Real device check** on an iPhone SE 2 and an iPad 9th gen before each milestone.
 - **Kid playtests:** 5–8 kids aged 8–11 per milestone, observed. Note where they smile, where they stall, and which hints they use.
@@ -499,7 +641,9 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 | M1 | **Day 1 playable** | Reducer, save, Bedroom + Aunt June scenes, hatch puzzle, first feeding, Circle join | Autoplay bot passes; runs at 60 fps on iPad 9 and iPhone SE 2 |
 | M2 | **Days 1–3 vertical slice** | All Chapter 1 systems, placeholder audio | All tests green; 5-kid playtest done |
 | M3 | **Fun pass** | Tuning, dragon reactions, surprise-and-delight moments, journal memory cards | Playtesters ask "what happens next?" |
-| M4 | **Polish & offline** | Final art and audio for Ch. 1, PWA, accessibility audit | WCAG AA check; offline play verified on iOS |
+| M4 | **Polish & offline** | Final art and audio for Ch. 1 (including the voice pack), PWA, accessibility audit | WCAG AA check; offline play verified on iOS |
+| M5 | **Chapter 2** | Treehouse, flight, fire control, fake rescue, early-telling variants | Autoplay passes both parent branches; playtest |
+| M6 | **Chapter 3 & endings** | Evidence Board, migration, both endings, Bond epilogues | Autoplay reaches every ending; playtest; full-game timing 1.5–2 h |
 
 ---
 
@@ -513,7 +657,9 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 | 4 | Classroom mode | **Deferred.** Not in v1 scope. |
 | 5 | Length | **3 chapters × 3 days.** Revisit after the Chapter 1 playtests. |
 | 6 | Telling parents early | **Allowed** from Day 2 (§5.4); both branches are tested (§10.3). |
+| 7 | Story arc | **Hybrid:** expose Crane on Day 7, then the dragon and player choose Stay or Fly on Day 9; every ending is happy (§6.2–6.4). |
+| 8 | Voice tech | **Pre-generated lines at build time** (Kokoro or Piper) with **device voices as fallback**. The dragon is not voiced (§9.4). |
 
 ### Still open
-- Chapter 2 and 3 outlines (to write after the M2 playtest).
-- Which generated voice to use, and whether to ship a bundled voice later if device voices are uneven.
+- Final Kokoro vs Piper choice and per-voice licence check (do this in M4).
+- Detailed dialogue for Chapters 2–3 (write after the M2 playtest; the outline above is the plan).
