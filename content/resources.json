@@ -1,0 +1,18 @@
+{
+  "allowedHosts": ["www.goodreads.com", "www.google.com"],
+  "inspiration": {
+    "series": "Dragon Keepers",
+    "author": "Kate Klimo",
+    "blurb": "Dragon Keeper was inspired by the idea of a kid secretly raising a dragon, like in the Dragon Keepers books by Kate Klimo. The game has its own characters and story.",
+    "disclaimer": "This game is a fan-made learning project. It is not made by, or connected to, the author or publisher of the Dragon Keepers books.",
+    "links": [
+      { "label": "Dragon Keepers series on Goodreads", "url": "https://www.goodreads.com/series/45674-dragon-keepers" },
+      { "label": "Book 1: The Dragon in the Sock Drawer", "url": "https://www.goodreads.com/book/show/3097745-the-dragon-in-the-sock-drawer" }
+    ]
+  },
+  "libraryFinder": {
+    "searchUrl": "https://www.google.com/maps/search/?api=1&query=",
+    "zipQuery": "public library near {zip}",
+    "nearMeQuery": "public library near me"
+  }
+}

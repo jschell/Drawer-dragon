@@ -629,7 +629,10 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 - **Kid playtests:** 5–8 kids aged 8–11 per milestone, observed. Note where they smile, where they stall, and which hints they use.
 
 ### 10.4 Privacy & safety
-- No accounts, analytics, ads, in-app purchases, external links, or chat.
+- No accounts, analytics, ads, in-app purchases, or chat.
+- **External links appear in one place only:** the "Find out more" page at the end of the day. It sits behind a grown-up check (a multiplication question) and only links to approved sites (`content/resources.json`, enforced by a test):
+  - the Dragon Keepers series by Kate Klimo on Goodreads, credited as the inspiration, with a note that the game isn't made by or connected to the author or publisher;
+  - a library finder: a grown-up enters a 5-digit ZIP code (or uses their location) to open a map search for nearby public libraries. The ZIP code is never saved or sent by the game itself; it only goes into the map link the grown-up opens.
 - Nicknames and saves never leave the device.
 - Trap-site puzzles never collect real data; they only offer choices.
 - This is designed to stay well clear of US children's privacy law (COPPA) and school data rules (FERPA). Confirm with counsel before any school distribution.

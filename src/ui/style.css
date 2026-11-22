@@ -1024,3 +1024,26 @@ input.name {
 .polaroid.small figcaption {
   font-size: calc(var(--u) * 1);
 }
+
+/* ---------- Find out more ---------- */
+.small-print {
+  font-size: calc(var(--u) * 0.85) !important;
+}
+.find-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: calc(var(--u) * 1.4);
+  text-align: left;
+}
+.find-cols .col {
+  margin: 0;
+}
+.zip-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.zip-row input.zip {
+  width: 7.5em;
+}

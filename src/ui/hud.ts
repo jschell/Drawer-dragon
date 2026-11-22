@@ -6,6 +6,7 @@ import { isReady, step, TUNING } from '../core/reducer';
 import { clearSave, loadPref, savePref, writeSave } from '../core/save';
 import { initialState, type Action, type GameEvent, type GameState } from '../core/state';
 import type { BedroomScene } from '../scenes/BedroomScene';
+import { showFindOutMore } from './findOutMore';
 import { ResearchScreen } from './research';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -752,8 +753,15 @@ export class Hud {
       <p>👁️ The collector is <b>${attentionWord(a).replace('!', '')}</b>${a < 20 ? '. Your secret is safe!' : a < 50 ? '. Be careful tomorrow.' : '. BLINK will be back...'} · 🤝 Keeper Circle: ${esc(circle.join(', '))}</p>
       <div>${s.stickers.map((x) => `<span class="sticker">⭐ ${esc(x)}</span>`).join('')}</div>
       <p class="sub">Thanks for playtesting Day 1!</p>
-      <div class="row"><button class="btn big" data-x="again">Play again</button></div>`);
+      <div class="row">
+        <button class="btn big" data-x="again">Play again</button>
+        <button class="btn big ghost" data-x="more">📖 Find out more</button>
+      </div>`);
     sfx.play('trill');
+    $('#panel [data-x="more"]').addEventListener('click', () => {
+      sfx.play('tap');
+      showFindOutMore($('#panel'), () => void this.showDaySummary());
+    });
     $('#panel [data-x="again"]').addEventListener('click', () => {
       this.newGame();
       this.toast('Tap the egg to help it hatch!');

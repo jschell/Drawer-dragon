@@ -28,9 +28,13 @@ One full in-game day, about 10–12 minutes. Every part saves automatically.
 - **Watch the window:** tap the collector's camera drone **BLINK** and the fake "wildlife surveyor" to close the curtains. A moth or the neighbor's cat are harmless. Missed scouts (and a bright lamp) raise **Collector Attention**.
 - The day ends with a summary, a photo of the sleeping dragon, and stickers. There is no fail state anywhere.
 
+**📖 Find out more** (on the end-of-day summary)
+- Credits the *Dragon Keepers* books by Kate Klimo as the inspiration and encourages kids to ask a grown-up to find them at a library.
+- **For grown-ups**, behind a simple multiplication check: links to the series on Goodreads, and a library finder that turns a ZIP code (or the device's location) into a map search for public libraries. The ZIP code is not saved. These are the only links out of the game.
+
 Tip for playtesting: add `?speed=4` to the address to run the clock 4× faster (up to 20×).
 
-Everything is generated in code: art (SVG), sound effects (Web Audio) and optional read-aloud (the device's built-in voice). The game makes no network requests and stores its save only in the browser.
+Everything is generated in code: art (SVG), sound effects (Web Audio) and optional read-aloud (the device's built-in voice). The game itself makes no network requests (the only outside links are on the grown-ups' Find out more page) and stores its save only in the browser.
 
 ## Running it
 
