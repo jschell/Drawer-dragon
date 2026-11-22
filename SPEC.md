@@ -157,7 +157,7 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 ### 5.4 The Keeper Circle (secrecy without lying)
 - The dragon is hidden **from Crane and strangers**, never in order to deceive family.
 - **Why it matters (told on Day 1):** Aunt June explains that Crane keeps rare things in glass cases, and a dragon in a glass case can never stretch its wings, grow or fly. His helpers (the BLINK drone, fake "bird counters" with clipboards, and fake websites) are trying to find where dragons live.
-- **Wording rule: never call it a "secret."** Child-safety programs teach kids that being asked to keep secrets from family is a warning sign. In everything players see, the dragon is kept *safe* or *out of sight* from strangers, and family can always be told. A test fails the build if player-facing text uses the word "secret".
+- **Wording rule: never call it a "secret."** Child-safety programs teach kids that being asked to keep secrets from family is a warning sign. In everything players see, the dragon is kept *safe* or *out of sight* from strangers, and family can always be told. Two tests enforce this: `tests/wording.test.ts` checks every content and source file, and `e2e/wording.ts` watches everything shown on screen during every browser test (text, short-lived messages, and the labels read-aloud uses). Either one fails the build if the word "secret" appears.
 - **Members** each grant a **Help** (a new ability) and a **Rule** (a new constraint that shapes play):
 
 | Member | Joins | Help | Rule |
