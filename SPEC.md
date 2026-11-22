@@ -659,6 +659,7 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 | 6 | Telling parents early | **Allowed** from Day 2 (§5.4); both branches are tested (§10.3). |
 | 7 | Story arc | **Hybrid:** expose Crane on Day 7, then the dragon and player choose Stay or Fly on Day 9; every ending is happy (§6.2–6.4). |
 | 8 | Voice tech | **Pre-generated lines at build time** (Kokoro or Piper) with **device voices as fallback**. The dragon is not voiced (§9.4). |
+| 9 | Licence | **MIT** for code and content (`LICENSE`). Third-party voice models and voices keep their own licences, recorded in `VOICES.md`. |
 
 ### Still open
 - Final Kokoro vs Piper choice and per-voice licence check (do this in M4).
