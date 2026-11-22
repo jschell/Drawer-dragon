@@ -1,0 +1,76 @@
+{
+  "thoughts": [
+    {
+      "id": "cold-belly",
+      "condition": "spark-low",
+      "icons": ["🌧️", "🥶"],
+      "riddle": "Cold rain inside my belly.",
+      "meaning": "My inner fire is low. I need a spice mix!",
+      "hints": [
+        "Look at the word \"cold\". Where is the dragon cold?",
+        "Journal: a dragon's Spark lives in its belly. Spice mixes make it glow.",
+        "\"Cold belly\" means the Spark is low. Try the spice tin!"
+      ],
+      "answerChoices": [
+        { "id": "spice", "label": "Make a spice mix", "correct": true },
+        { "id": "water", "label": "Give it water", "correct": false },
+        { "id": "bath", "label": "Give it a bath", "correct": false }
+      ],
+      "pulse": "spice"
+    },
+    {
+      "id": "rumble",
+      "condition": "hungry",
+      "icons": ["⛈️", "🕳️"],
+      "riddle": "Thunder in my middle. A hole that wants filling.",
+      "meaning": "My tummy is rumbling. I'm hungry!",
+      "hints": [
+        "What makes a rumbling sound in your middle?",
+        "Journal: hatchlings eat often, like baby birds.",
+        "A rumbling, empty middle means hungry. Try the food tray!"
+      ],
+      "answerChoices": [
+        { "id": "food", "label": "Get some food", "correct": true },
+        { "id": "storm", "label": "Close the window", "correct": false },
+        { "id": "nap", "label": "Let it nap", "correct": false }
+      ],
+      "pulse": "food"
+    },
+    {
+      "id": "too-loud",
+      "condition": "calm-low",
+      "icons": ["📢", "🌙"],
+      "riddle": "Too loud, too bright. I want soft and dark.",
+      "meaning": "I'm scared and need to feel safe and cozy.",
+      "hints": [
+        "What does the dragon want instead of loud and bright?",
+        "Journal: frightened hatchlings calm down with soft sounds and warm hiding spots.",
+        "It wants soft and cozy. Hum to it, or give it a warm sock!"
+      ],
+      "answerChoices": [
+        { "id": "cozy", "label": "Hum softly or give a warm sock", "correct": true },
+        { "id": "play", "label": "Play a fun loud game", "correct": false },
+        { "id": "light", "label": "Turn on more lights", "correct": false }
+      ],
+      "pulse": "hum"
+    },
+    {
+      "id": "crunchy",
+      "condition": "minerals-missing",
+      "icons": ["🦴", "🤍"],
+      "riddle": "Crunchy and white, like tiny stones.",
+      "meaning": "I need minerals to grow strong bones and scales.",
+      "hints": [
+        "Look at the food tray. Which food is white and crunchy?",
+        "Journal: young reptiles and birds need calcium for strong bones and shells.",
+        "Crushed eggshell is crunchy, white, and full of calcium!"
+      ],
+      "answerChoices": [
+        { "id": "eggshell", "label": "Crushed eggshell", "correct": true },
+        { "id": "beef", "label": "More ground beef", "correct": false },
+        { "id": "rocks", "label": "Pebbles from outside", "correct": false }
+      ],
+      "pulse": "food"
+    }
+  ]
+}

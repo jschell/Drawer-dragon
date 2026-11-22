@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <meta name="theme-color" content="#FBE6C8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Dragon Keeper" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icon.svg" />
+    <title>Dragon Keeper</title>
+  </head>
+  <body>
+    <div id="app">
+      <div id="game"></div>
+
+      <div id="hud" hidden>
+        <div id="meters" aria-live="polite"></div>
+        <div id="topright">
+          <button class="icon-btn" id="btn-sound" aria-label="Sound on or off">🔊</button>
+          <button class="icon-btn" id="btn-read" aria-label="Read aloud on or off">🗣️</button>
+        </div>
+        <button id="bubble" hidden aria-label="The dragon is thinking something. Tap to read it."></button>
+        <div id="toast" role="status" aria-live="polite"></div>
+        <div id="tray" hidden></div>
+        <div id="actions">
+          <button class="act" data-act="food"><span class="emo">🍽️</span><span>Food</span></button>
+          <button class="act" data-act="spice"><span class="emo">🫙</span><span>Spice tin</span></button>
+          <button class="act" data-act="hum"><span class="emo">🎵</span><span>Hum</span></button>
+          <button class="act" data-act="sock"><span class="emo">🧦</span><span>Warm sock</span></button>
+          <button class="act go" data-act="finish"><span class="emo">🎒</span><span>Off to school</span></button>
+        </div>
+      </div>
+
+      <div id="overlay" hidden><div id="panel" role="dialog" aria-modal="true"></div></div>
+
+      <div id="rotate">
+        <div class="rotate-card">
+          <div class="rotate-emo">🐉💤</div>
+          <p>Turn your device sideways to play!</p>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

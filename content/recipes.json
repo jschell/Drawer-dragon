@@ -1,0 +1,16 @@
+{
+  "plateTargets": {
+    "hatchling": { "protein": 2, "greens": 1, "minerals": 1 }
+  },
+  "spiceRecipes": [
+    {
+      "id": "warm-belly",
+      "name": "Warm Belly Mix",
+      "card": "2 parts cinnamon to 1 part ginger. A hatchling needs a 1x batch: 3 scoops.",
+      "parts": { "cinnamon": 2, "ginger": 1 },
+      "baseScoops": 3,
+      "scaleByStage": { "egg": 0, "hatchling": 1, "fledgling": 2, "youngling": 3 },
+      "perfectSpark": 30
+    }
+  ]
+}

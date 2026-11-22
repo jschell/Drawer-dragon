@@ -1,0 +1,14 @@
+{
+  "foods": [
+    { "id": "beef", "name": "Ground beef", "nutrient": "protein", "hunger": 20, "art": "beef" },
+    { "id": "greens", "name": "Dandelion greens", "nutrient": "greens", "hunger": 12, "art": "greens" },
+    { "id": "eggshell", "name": "Crushed eggshell", "nutrient": "minerals", "hunger": 6, "art": "eggshell" },
+    { "id": "apple", "name": "Apple slice", "nutrient": "greens", "hunger": 10, "art": "apple" }
+  ],
+  "spices": [
+    { "id": "cinnamon", "name": "Cinnamon", "sparkPerScoop": 10, "color": "#B8612E", "effect": "warm" },
+    { "id": "ginger", "name": "Ginger", "sparkPerScoop": 10, "color": "#E8C15A", "effect": "warm" },
+    { "id": "pepper", "name": "Black pepper", "sparkPerScoop": 14, "color": "#4A4440", "effect": "sneeze" },
+    { "id": "chili", "name": "Dried chili", "sparkPerScoop": 25, "color": "#D8342A", "effect": "hiccup" }
+  ]
+}

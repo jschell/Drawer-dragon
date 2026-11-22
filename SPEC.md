@@ -116,6 +116,8 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 | **Coins** | Player | — | Weekly allowance, chores (by helping, not hiding) | Buying supplies | Can't overspend; the store just says "not enough." |
 | **Collector Attention** | World | Low | Leaving clues online, smoke seen outside, sharing info on trap sites, scout sightings ignored | Good privacy choices, spotting scouts, Aunt June's help | Thresholds trigger story beats (BLINK patrols more), never a loss. |
 
+**Hunger is shown to players as "Tummy"** (how full the dragon is), so that on every dragon meter more pips means better. Each meter also shows a word (Hungry / Full, Chilly / Just right / Too hot!, Scared / Calm) and a ✓ when it's in the good zone.
+
 **No Suspicion Meter and no Panic meter.** Family noticing things is handled by the Keeper Circle (§5.4). Feeling overwhelmed is handled by Stepping Stones (§5.6).
 
 ---

@@ -1,0 +1,12 @@
+{
+  "name": "Dragon Keeper",
+  "short_name": "Dragon Keeper",
+  "description": "Raise a secret baby dragon. A cozy care game for ages 8-11.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#FBE6C8",
+  "theme_color": "#FBE6C8",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }]
+}
