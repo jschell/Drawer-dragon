@@ -43,6 +43,7 @@ export class ResearchScreen {
   private chips: string[] = [];
   private view: 'search' | string = 'search';
   private homeAsked = false;
+  private renderedView: string | null = null;
 
   constructor(private host: ResearchHost) {
     this.root = document.getElementById('research')!;
@@ -64,6 +65,10 @@ export class ResearchScreen {
 
   render() {
     if (this.root.hidden) return;
+    // Re-rendering replaces the page, so keep the reader's place unless they opened a new page.
+    const oldViewport = this.root.querySelector<HTMLElement>('.viewport');
+    const keepScroll = oldViewport && this.renderedView === this.view ? oldViewport.scrollTop : 0;
+    this.renderedView = this.view;
     const s = this.host.state;
     const a = s.world.collectorAttention;
     const done = s.research.tipSaved;
@@ -81,7 +86,19 @@ export class ResearchScreen {
         </div>
         <div class="viewport">${this.view === 'search' ? this.searchView() : this.pageView(this.page(this.view))}</div>
       </div>`;
+    const viewport = this.root.querySelector<HTMLElement>('.viewport');
+    if (viewport) viewport.scrollTop = keepScroll;
     this.bind();
+  }
+
+  /** Brings an element into view only if it is outside the visible part of the page. */
+  private reveal(sel: string) {
+    const el = this.root.querySelector<HTMLElement>(sel);
+    const vp = this.root.querySelector<HTMLElement>('.viewport');
+    if (!el || !vp) return;
+    const r = el.getBoundingClientRect();
+    const v = vp.getBoundingClientRect();
+    if (r.bottom > v.bottom || r.top < v.top) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
   private page(id: string) {
@@ -209,6 +226,7 @@ export class ResearchScreen {
       b.addEventListener('click', () => {
         tap();
         this.host.dispatch({ type: 'check', pageId: this.view, check: b.dataset.check as CheckKey });
+        this.reveal(`[data-check="${b.dataset.check}"]`);
       }),
     );
     q('[data-rate]').forEach((b) =>
@@ -216,6 +234,7 @@ export class ResearchScreen {
         const evs = this.host.dispatch({ type: 'rate', pageId: this.view, rating: b.dataset.rate as Rating });
         const ok = evs.some((e) => e.type === 'rated' && e.correct);
         sfx.play(ok ? 'sparkle' : 'sniff');
+        this.reveal(this.root.querySelector('.tip-box') ? '.tip-box' : '.nest-check .hint');
       }),
     );
     q('[data-trap]').forEach((b) =>

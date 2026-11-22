@@ -223,13 +223,14 @@ button {
   }
 }
 
+/* The food tray sits on the right, over the bed, so it never covers the dragon. */
 #tray {
   position: absolute;
   bottom: calc(max(calc(var(--u) * 0.7), env(safe-area-inset-bottom)) + max(52px, calc(var(--u) * 4.6)) + var(--u));
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: calc(var(--u) * 0.6);
+  right: max(calc(var(--u) * 0.8), env(safe-area-inset-right));
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: calc(var(--u) * 0.5);
   background: var(--paper);
   border: 3px solid var(--paper-edge);
   border-radius: calc(var(--u) * 1.4);
@@ -237,12 +238,11 @@ button {
   box-shadow: var(--shadow);
 }
 .tray-hint {
-  position: absolute;
-  top: calc(var(--u) * -1.9);
-  left: 0;
-  right: 0;
+  grid-column: 1 / -1;
+  max-width: calc(max(56px, calc(var(--u) * 5.6)) * 2 + var(--u) * 0.5);
   text-align: center;
-  font-size: calc(var(--u) * 0.9);
+  line-height: 1.2;
+  font-size: calc(var(--u) * 0.85);
   font-weight: bold;
   color: var(--ink);
   text-shadow: 0 1px 0 #fff;

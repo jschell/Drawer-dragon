@@ -875,7 +875,7 @@ export class Hud {
   private buildTray() {
     const tray = $('#tray');
     tray.innerHTML =
-      `<div class="tray-hint">Drag food to your dragon (or tap food, then tap the dragon)</div>` +
+      `<div class="tray-hint">Drag food to your dragon, or tap a food then the dragon</div>` +
       content.foods
         .map((f) => `<button class="food" data-food="${f.id}"><img src="${dataUri(foodArt[f.art], 2)}" alt="" />${esc(f.name)}</button>`)
         .join('');
