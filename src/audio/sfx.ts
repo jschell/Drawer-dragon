@@ -17,7 +17,9 @@ type Sound =
   | 'tap'
   | 'vacuum'
   | 'doorbell'
-  | 'dog';
+  | 'dog'
+  | 'knock'
+  | 'steps';
 
 class Sfx {
   private ctx: AudioContext | null = null;
@@ -130,6 +132,15 @@ class Sfx {
       case 'doorbell':
         this.tone(659, 0.5, { type: 'triangle', vol: 0.2 });
         this.tone(523, 0.7, { type: 'triangle', vol: 0.2, delay: 0.45 });
+        break;
+      case 'knock':
+        for (let i = 0; i < 3; i++) {
+          this.tone(110, 0.12, { to: 70, type: 'sine', vol: 0.5, delay: i * 0.22 });
+          this.noise(0.06, { freq: 300, q: 1, vol: 0.4, delay: i * 0.22 });
+        }
+        break;
+      case 'steps':
+        for (let i = 0; i < 4; i++) this.noise(0.07, { freq: 220, q: 1.2, vol: 0.18, delay: i * 0.45, type: 'lowpass' });
         break;
       case 'dog':
         for (let i = 0; i < 2; i++) {

@@ -1,0 +1,119 @@
+{
+  "question": "How can I keep a hatchling calm when someone knocks on my door?",
+  "answerPageId": "commons-calm",
+  "chips": ["dragon", "hatchling", "calm", "scared", "noise", "food", "fire", "free", "help", "cute"],
+  "maxChips": 3,
+  "tooMany": 4,
+  "pages": [
+    {
+      "id": "trap-lookalike",
+      "rank": 1,
+      "site": "keeperscomons.keep",
+      "title": "Keeper's Commons: FREE Expert Dragon Help",
+      "credibility": "trap",
+      "keywords": ["hatchling", "help", "free", "calm", "scared", "dragon"],
+      "snippet": "Scared hatchling? Our experts will visit your home for FREE tonight!",
+      "body": [
+        "Is your hatchling scared? Don't worry! Our dragon experts will come to YOUR house and fix everything.",
+        "It's totally free. We just need to know where you live."
+      ],
+      "trap": { "prompt": "Get a FREE expert visit tonight! Just tell us your street name." },
+      "checks": {
+        "who": "No About page and no names. And look closely at the web address: \"comons\" has only one m!",
+        "when": "This site was made last week.",
+        "why": "It keeps asking where you live. That's what it really wants.",
+        "proof": "The real Keeper's Commons never asks for your address."
+      }
+    },
+    {
+      "id": "commons-calm",
+      "rank": 2,
+      "site": "keeperscommons.keep",
+      "title": "Calming a Frightened Hatchling",
+      "credibility": "trusted",
+      "keywords": ["hatchling", "calm", "scared", "noise", "dragon", "help"],
+      "snippet": "Hatchlings feel safest when they are covered and hear a low, steady hum.",
+      "body": [
+        "Young dragons are startled by sudden sounds like knocks, doorbells and vacuums.",
+        "In the wild, hatchlings hide under their parent's wing. A dark, soft cover over the nest feels just like that.",
+        "A low, steady hum and dim light also help. Avoid shouting: it makes hatchlings more frightened, not less."
+      ],
+      "tip": { "text": "Drape a soft, dark blanket over the nest. Covered hatchlings feel hidden and stay calm, even when someone knocks.", "unlocks": "blanket" },
+      "checks": {
+        "who": "Written by the Keeper's Commons volunteers. Their About page lists their names and how to contact them.",
+        "when": "Updated three weeks ago.",
+        "why": "To help keepers look after young dragons. Nothing is for sale.",
+        "proof": "Aunt June's notebook says the same thing: \"Cover the nest, hum low.\""
+      }
+    },
+    {
+      "id": "fanpage",
+      "rank": 3,
+      "site": "dragonfacts4u.keep",
+      "title": "TOP 10 DRAGON FACTS!!!",
+      "credibility": "mixed",
+      "keywords": ["dragon", "fire", "cute", "scared", "calm", "food", "noise"],
+      "snippet": "Fact #7: Scared dragons calm down if you SHOUT so they know who's boss!",
+      "body": [
+        "Fact #3: Baby dragons are called hatchlings. (True!)",
+        "Fact #7: Scared dragons calm down if you SHOUT so they know who's boss!",
+        "Fact #9: Dragons LOVE glitter. Sprinkle some on their food!"
+      ],
+      "checks": {
+        "who": "No name. The About page just says \"by a dragon fan.\"",
+        "when": "No date anywhere on the page.",
+        "why": "For fun, and to show lots of ads.",
+        "proof": "Fact #3 matches other sources, but Fact #7 disagrees with Keeper's Commons and with Aunt June's notebook."
+      }
+    },
+    {
+      "id": "trap-prize",
+      "rank": 4,
+      "site": "free-dragon-help.keep",
+      "title": "YOU WON a Dragon Care Kit!!",
+      "credibility": "trap",
+      "keywords": ["free", "help", "dragon", "cute", "food"],
+      "snippet": "CONGRATULATIONS! Claim your prize in the next 60 seconds!",
+      "body": ["🎉 You are our 1,000,000th visitor! 🎉", "ACT NOW! This offer ends in 60 seconds!"],
+      "trap": { "prompt": "Tell us your street so we can deliver your prize!" },
+      "checks": {
+        "who": "No names, no About page.",
+        "when": "The countdown starts again every time you reload. It's fake.",
+        "why": "It rushes you so you don't stop and think.",
+        "proof": "Nobody really picks a \"millionth visitor.\" It's a trick that's been used for years."
+      }
+    },
+    {
+      "id": "commons-food",
+      "rank": 5,
+      "site": "keeperscommons.keep",
+      "title": "What Hatchlings Eat",
+      "credibility": "trusted",
+      "keywords": ["hatchling", "food", "dragon"],
+      "snippet": "A balanced plate: protein, leafy greens and crunchy minerals.",
+      "body": ["Hatchlings need protein (like ground beef), leafy greens, and minerals such as crushed eggshell for strong bones."],
+      "checks": {
+        "who": "The Keeper's Commons volunteers.",
+        "when": "Updated last month.",
+        "why": "To help keepers. Nothing for sale.",
+        "proof": "It matches what your dragon ate this morning!"
+      }
+    },
+    {
+      "id": "commons-fire",
+      "rank": 6,
+      "site": "keeperscommons.keep",
+      "title": "The Spark: A Dragon's Inner Fire",
+      "credibility": "trusted",
+      "keywords": ["fire", "dragon", "hatchling"],
+      "snippet": "A dragon's Spark lives in its belly and is fed by spice mixes.",
+      "body": ["Spark is a dragon's inner fire. Feed it with spice mixes in the right parts. Too much gives hiccups and smoke rings!"],
+      "checks": {
+        "who": "The Keeper's Commons volunteers.",
+        "when": "Updated two months ago.",
+        "why": "To help keepers. Nothing for sale.",
+        "proof": "Aunt June's recipe card agrees."
+      }
+    }
+  ]
+}

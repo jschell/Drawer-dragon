@@ -195,7 +195,26 @@ export const bowl = art(
 
 // ---------- Room (1334×750) ----------
 
-export const ROOM = { w: 1334, h: 750, dragonX: 720, dragonY: 440, nestX: 270, nestY: 548, bowlX: 930, bowlY: 650, sockX: 470, sockY: 590 };
+export const ROOM = {
+  w: 1334,
+  h: 750,
+  dragonX: 720,
+  dragonY: 440,
+  nestX: 270,
+  nestY: 548,
+  bowlX: 930,
+  bowlY: 650,
+  sockX: 470,
+  sockY: 590,
+  /** Inside of the window frame, where night sky and window visitors appear. */
+  win: { x: 101, y: 75, w: 340, h: 290 },
+  /** Where the dragon curls up in the nest at night. */
+  nightX: 270,
+  nightY: 512,
+  nightScale: 0.6,
+  lampX: 548,
+  lampY: 318,
+};
 
 export const bedroom = art(
   1334,
@@ -244,3 +263,86 @@ export const bedroom = art(
    <pattern id="wall" width="1334" height="500" patternUnits="userSpaceOnUse"><rect width="1334" height="500" fill="url(#wall0)"/><rect width="1334" height="500" fill="url(#dots)"/></pattern>
    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD9A8"/><stop offset="1" stop-color="#BFE3F7"/></linearGradient>`,
 );
+
+// ---------- Night (evening phase) ----------
+
+export const nightWindow = art(
+  340,
+  290,
+  `<rect width="340" height="290" fill="url(#night)"/>
+   <circle cx="270" cy="60" r="26" fill="#FFF4C9"/><circle cx="282" cy="52" r="24" fill="url(#night)"/>
+   ${[[30, 40], [90, 24], [150, 60], [200, 30], [60, 100], [230, 110], [310, 140], [120, 130]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2" fill="#fff" opacity="0.85"/>`).join('')}
+   <path d="M0,230 Q85,190 170,215 Q260,190 340,230 L340,290 L0,290 Z" fill="#1E3A2E"/>
+   <path d="M0,262 L340,262" stroke="#3A2A1E" stroke-width="5"/>
+   ${[10, 40, 70, 100, 130, 160, 190, 220, 250, 280, 310].map((x) => `<rect x="${x}" y="244" width="12" height="40" fill="#4A3626"/>`).join('')}
+   <rect x="52" y="120" width="8" height="150" fill="#2C2C3A"/><path d="M40,120 L72,120 L64,108 L48,108 Z" fill="#2C2C3A"/>
+   <ellipse cx="56" cy="128" rx="40" ry="16" fill="#FFE9A8" opacity="0.35"/>
+   <path d="M170,0 L170,290 M0,145 L340,145" stroke="#C9A27A" stroke-width="10"/>`,
+  `<linearGradient id="night" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#141B3C"/><stop offset="1" stop-color="#2D3A6B"/></linearGradient>`,
+);
+
+export const floorLamp = art(
+  120,
+  300,
+  `<rect x="56" y="70" width="8" height="210" fill="#7A6A5A"/>
+   <ellipse cx="60" cy="286" rx="34" ry="10" fill="#7A6A5A"/>
+   <path d="M22,74 L98,74 L82,14 L38,14 Z" fill="#FFD98A" stroke="#C99A3A" stroke-width="5" stroke-linejoin="round"/>
+   <path d="M30,60 L90,60" stroke="#F2C060" stroke-width="4"/>`,
+);
+
+export const lampGlow = art(
+  400,
+  400,
+  `<circle cx="200" cy="200" r="200" fill="url(#lg)"/>`,
+  `<radialGradient id="lg"><stop offset="0" stop-color="#FFE7A8" stop-opacity="0.55"/><stop offset="1" stop-color="#FFE7A8" stop-opacity="0"/></radialGradient>`,
+);
+
+export const blanketArt = art(
+  240,
+  120,
+  `<path d="M10,40 Q60,10 120,22 Q180,10 230,40 L222,110 L18,110 Z" fill="#5B4AA8" stroke="#2F2470" stroke-width="5" stroke-linejoin="round"/>
+   ${[[50, 50], [100, 70], [150, 45], [190, 80], [70, 90], [130, 95]].map(([x, y]) => `<path d="M${x},${y - 6} L${x + 2},${y - 2} L${x + 6},${y} L${x + 2},${y + 2} L${x},${y + 6} L${x - 2},${y + 2} L${x - 6},${y} L${x - 2},${y - 2} Z" fill="#FFE27A"/>`).join('')}`,
+);
+
+export const nestFront = art(
+  220,
+  60,
+  `<path d="M6,4 L214,4 L204,56 L16,56 Z" fill="#C98A4B" stroke="#7F5228" stroke-width="5" stroke-linejoin="round"/>
+   <text x="110" y="40" text-anchor="middle" font-family="Trebuchet MS, Verdana, sans-serif" font-size="22" font-weight="bold" fill="#7F5228">NEST</text>`,
+);
+
+export const windowThingArt: Record<string, Art> = {
+  moth: art(
+    60,
+    50,
+    `<ellipse cx="18" cy="22" rx="16" ry="12" fill="#D9CBB0" stroke="#8C7B57" stroke-width="3"/><ellipse cx="42" cy="22" rx="16" ry="12" fill="#D9CBB0" stroke="#8C7B57" stroke-width="3"/>
+     <ellipse cx="30" cy="28" rx="5" ry="14" fill="#8C7B57"/><path d="M28,14 Q22,4 16,4 M32,14 Q38,4 44,4" stroke="#8C7B57" stroke-width="2" fill="none"/>`,
+  ),
+  blink: art(
+    120,
+    80,
+    `<path d="M10,20 L46,30 M110,20 L74,30" stroke="#5A5F6E" stroke-width="6" stroke-linecap="round"/>
+     <ellipse cx="14" cy="18" rx="14" ry="4" fill="#9AA1B2"/><ellipse cx="106" cy="18" rx="14" ry="4" fill="#9AA1B2"/>
+     <circle cx="60" cy="44" r="28" fill="#6B7285" stroke="#2E3240" stroke-width="5"/>
+     <circle cx="60" cy="46" r="13" fill="#20222B"/><circle cx="60" cy="46" r="7" fill="#FF2E3E"/><circle cx="57" cy="43" r="2.5" fill="#fff"/>`,
+  ),
+  cat: art(
+    120,
+    90,
+    `<path d="M20,88 Q16,52 40,46 L86,46 Q104,48 104,70 L104,88 Z" fill="#14141C"/>
+     <circle cx="90" cy="40" r="18" fill="#14141C"/><path d="M76,30 L78,12 L88,26 Z M98,26 L106,12 L106,32 Z" fill="#14141C"/>
+     <path d="M22,70 Q2,60 8,36" stroke="#14141C" stroke-width="8" fill="none" stroke-linecap="round"/>
+     <circle cx="85" cy="38" r="3" fill="#C9F27A"/><circle cx="96" cy="38" r="3" fill="#C9F27A"/>`,
+  ),
+  surveyor: art(
+    90,
+    150,
+    `<path d="M20,40 L70,40 L64,28 L26,28 Z" fill="#0E0F16"/><rect x="14" y="38" width="62" height="6" rx="3" fill="#0E0F16"/>
+     <circle cx="45" cy="58" r="16" fill="#0E0F16"/>
+     <path d="M18,150 L22,84 Q45,70 68,84 L72,150 Z" fill="#0E0F16"/>
+     <rect x="54" y="92" width="26" height="34" rx="3" fill="#E8E3D4" transform="rotate(10 67 109)"/>
+     <path d="M58,100 L76,103 M57,108 L75,111 M56,116 L70,118" stroke="#7A7464" stroke-width="2" transform="rotate(10 67 109)"/>`,
+  ),
+};
+
+export const zzz = art(60, 50, `<text x="6" y="40" font-family="Trebuchet MS, Verdana, sans-serif" font-size="34" font-weight="bold" fill="#B9C6FF" stroke="#2F2470" stroke-width="2">z</text>`);

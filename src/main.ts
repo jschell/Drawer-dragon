@@ -45,6 +45,7 @@ async function boot() {
       onScorchedSockTap: () => hud.onScorchedSockTap(),
       onReady: () => hud.onReady(),
       onCreated: () => hud.onSceneCreated(scene, save !== null),
+      onWindowTap: (id: string) => hud.onWindowTap(id),
     },
   });
   (window as unknown as { __dk: unknown }).__dk = { hud, game };

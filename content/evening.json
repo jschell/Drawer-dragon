@@ -1,0 +1,87 @@
+{
+  "startCalm": 50,
+  "calmBase": 45,
+  "calmLampDim": 12,
+  "calmBlanket": 18,
+  "calmDriftPerSec": 0.8,
+  "quietCalm": 65,
+  "knockCalm": { "normal": 8, "blanket": 4 },
+  "endAt": 125,
+  "attention": { "missed": 10, "missedBright": 5, "spotted": -8, "share": 25 },
+  "visitors": [
+    {
+      "id": "kit",
+      "name": "Kit",
+      "emoji": "🧒",
+      "at": 24,
+      "warn": 12,
+      "line": "\"Hey, can I borrow a marker?\"",
+      "quietLine": "Kit grabs a marker and skips back down the hall. Your dragon didn't make a peep!",
+      "noisyLine": "Squeak! \"What was that?\" Kit peeks around the door, curious.",
+      "choices": [
+        { "id": "tell", "label": "Tell Kit the secret", "result": "Kit gasps... then pinky-promises to help keep the dragon safe. Kit joins the Keeper Circle!", "calm": 5, "joins": "kit" },
+        { "id": "soon", "label": "\"It's a secret for now. I'll tell you soon, I promise.\"", "result": "Kit squints at you. \"Okay. Pinky promise!\"", "calm": 0 },
+        { "id": "quiet", "label": "\"Can I have some quiet time, please?\"", "result": "\"Fine!\" Kit wanders off, still curious.", "calm": -3 }
+      ]
+    },
+    {
+      "id": "mom",
+      "name": "Mom",
+      "emoji": "👩",
+      "at": 58,
+      "warn": 12,
+      "line": "\"Lights out in ten minutes, sweetie!\"",
+      "quietLine": "Mom blows you a kiss and heads downstairs. All quiet!",
+      "noisyLine": "Chirp! Mom tilts her head. \"Did you hear something?\"",
+      "choices": [
+        { "id": "later", "label": "\"Something's on my mind. Can we talk tomorrow?\"", "result": "Mom smiles. \"Of course. Whenever you're ready.\"", "calm": 3 },
+        { "id": "quiet", "label": "\"Can I have a few minutes of quiet, please?\"", "result": "\"Sure thing. Ten minutes!\"", "calm": 0 }
+      ]
+    },
+    {
+      "id": "dad",
+      "name": "Dad",
+      "emoji": "👨",
+      "at": 100,
+      "warn": 12,
+      "line": "\"Goodnight, kiddo. Sweet dreams!\"",
+      "quietLine": "Dad yawns, smiles and closes the door. Goodnight!",
+      "noisyLine": "Hiccup! Dad raises an eyebrow. \"Was that a hiccup?\"",
+      "choices": [
+        { "id": "later", "label": "\"There's something I want to tell you soon. Can it wait till tomorrow?\"", "result": "Dad nods. \"Tomorrow it is. I'm proud of you.\"", "calm": 3 },
+        { "id": "quiet", "label": "\"I'm okay, just need some quiet. Goodnight!\"", "result": "\"Night night!\"", "calm": 0 }
+      ]
+    }
+  ],
+  "windowThings": [
+    { "id": "moth", "art": "moth", "at": 26, "stay": 8, "suspicious": false, "tapLine": "Just a moth, fluttering at the glass." },
+    {
+      "id": "blink",
+      "art": "blink",
+      "at": 40,
+      "stay": 9,
+      "suspicious": true,
+      "tapLine": "A drone with a red light that never blinks: it's BLINK, the collector's camera! You close the curtains.",
+      "missLine": "A red light hovered at the window... then zipped away."
+    },
+    { "id": "cat", "art": "cat", "at": 72, "stay": 8, "suspicious": false, "tapLine": "It's Pickles, the neighbor's cat, out for a stroll." },
+    {
+      "id": "surveyor",
+      "art": "surveyor",
+      "at": 84,
+      "stay": 9,
+      "suspicious": true,
+      "tapLine": "A \"wildlife surveyor\" with a clipboard... in the dark? Suspicious! You close the curtains.",
+      "missLine": "Someone with a clipboard was peering at the house..."
+    },
+    {
+      "id": "blink2",
+      "art": "blink",
+      "at": 112,
+      "stay": 9,
+      "suspicious": true,
+      "tapLine": "BLINK is back! Curtains closed. Nice spotting.",
+      "missLine": "BLINK's red light swept past the window."
+    }
+  ]
+}

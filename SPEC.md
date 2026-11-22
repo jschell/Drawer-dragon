@@ -3,6 +3,7 @@
 > Working title. A cozy creature-care, light-stealth, and detective game for ages 8–11 (grades 3–5), played in the browser on iPad, iPhone, and laptops.
 
 **Status:** Draft spec for the Chapter 1 vertical slice (Days 1–3).
+**Built so far:** M0 prototypes (a) morning care, (b) Keeper's Commons search with Check the Nest, and (c) the evening visitors, combined into one playable Day 1. The evening adds window "scout spotting" (§5.5) and lets the player tell Kit early (§5.4).
 **Changes since v0.1 brief:** device targets set; secrecy reframed so lying is not a mechanic; original names throughout; meters cut from six to five, with at most three on screen at once.
 **Changes in v0.3:** two-parent household fixed; generated art; generated voice optional with text first; length set at 3 chapters × 3 days; parents can join early; classroom mode deferred (see §12).
 **Changes in v0.4:** Chapter 2–3 outline (expose the collector, then the dragon's choice); voice pipeline (pre-generated lines with device-voice fallback, §9.4).

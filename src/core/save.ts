@@ -8,7 +8,7 @@ export function loadSave(): GameState | null {
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     const s = JSON.parse(raw) as GameState;
-    if (s?.version !== SAVE_VERSION || s.phase === 'done') return null;
+    if (s?.version !== SAVE_VERSION || s.part === 'end') return null;
     return s;
   } catch {
     return null;
@@ -17,7 +17,7 @@ export function loadSave(): GameState | null {
 
 export function writeSave(s: GameState): void {
   try {
-    if (s.phase === 'done') localStorage.removeItem(KEY);
+    if (s.part === 'end') localStorage.removeItem(KEY);
     else localStorage.setItem(KEY, JSON.stringify(s));
   } catch {
     /* ignore: the prototype still plays without saving */

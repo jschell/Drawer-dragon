@@ -1,5 +1,26 @@
 import Phaser from 'phaser';
-import { bowl, dragonParts, egg, eggCracks, foodArt, heart, note, ROOM, sockArt, sparkle, bedroom, type Art } from '../art/svg';
+import {
+  bedroom,
+  blanketArt,
+  bowl,
+  dragonParts,
+  egg,
+  eggCracks,
+  floorLamp,
+  foodArt,
+  heart,
+  lampGlow,
+  nestFront,
+  nightWindow,
+  note,
+  ROOM,
+  sockArt,
+  sparkle,
+  windowThingArt,
+  zzz,
+  type Art,
+} from '../art/svg';
+import { content } from '../core/content';
 import type { GameEvent, GameState } from '../core/state';
 
 export const TEX_SCALE = 2;
@@ -15,7 +36,14 @@ export function textureList(): Record<string, Art> {
     note,
     sock: sockArt(false),
     sockScorched: sockArt(true),
+    nightWindow,
+    floorLamp,
+    lampGlow,
+    blanket: blanketArt,
+    nestFront,
+    zzz,
   };
+  for (const [k, a] of Object.entries(windowThingArt)) list[`thing-${k}`] = a;
   for (const [k, a] of Object.entries(dragonParts)) list[`dragon-${k}`] = a;
   eggCracks.forEach((a, i) => (list[`crack${i}`] = a));
   for (const [k, a] of Object.entries(foodArt)) list[`food-${k}`] = a;
@@ -29,7 +57,11 @@ export interface SceneCallbacks {
   onScorchedSockTap(): void;
   onReady(): void;
   onCreated(scene: BedroomScene): void;
+  onWindowTap(thingId: string): void;
 }
+
+// Draw order, back to front.
+const DEPTH = { room: 0, decor: 1, overlay: 5, window: 6, thing: 7, curtain: 8, glow: 9, dragon: 10, blanket: 11, nestFront: 12, fx: 20, input: 30 };
 
 type Mood = 'content' | 'happy' | 'cold' | 'hungry' | 'nervous';
 
@@ -54,6 +86,22 @@ export class BedroomScene extends Phaser.Scene {
   private petDistance = 0;
   private lastPetPoint: Phaser.Math.Vector2 | null = null;
   private shiver = 0;
+  // Where the dragon sits now: the rug by day, the nest at night.
+  private bx = ROOM.dragonX;
+  private by = ROOM.dragonY;
+  private bs = 1;
+  private zone!: Phaser.GameObjects.Zone;
+  private night = false;
+  private sleeping = false;
+  private overlay!: Phaser.GameObjects.Graphics;
+  private nightWin!: Phaser.GameObjects.Image;
+  private glowImg!: Phaser.GameObjects.Image;
+  private blanketImg!: Phaser.GameObjects.Image;
+  private nestFrontImg!: Phaser.GameObjects.Image;
+  private curtains: Phaser.GameObjects.Rectangle[] = [];
+  private thing: { id: string; img: Phaser.GameObjects.Image } | null = null;
+  private lampDim: boolean | null = null;
+  private moving = false;
 
   constructor() {
     super('bedroom');
@@ -70,6 +118,15 @@ export class BedroomScene extends Phaser.Scene {
     this.mood = 'content';
     this.busyUntil = 0;
     this.shiver = 0;
+    this.bx = ROOM.dragonX;
+    this.by = ROOM.dragonY;
+    this.bs = 1;
+    this.night = false;
+    this.sleeping = false;
+    this.thing = null;
+    this.lampDim = null;
+    this.curtains = [];
+    this.moving = false;
   }
 
   create() {
@@ -83,8 +140,11 @@ export class BedroomScene extends Phaser.Scene {
     img(ROOM.bowlX, ROOM.bowlY, 'bowl');
     this.floorSock = img(ROOM.sockX, ROOM.sockY, 'sockScorched').setVisible(false).setInteractive({ useHandCursor: true });
     this.floorSock.on('pointerdown', () => this.cb.onScorchedSockTap());
+    this.floorSock.setDepth(DEPTH.decor + 1);
     this.tweens.add({ targets: this.floorSock, angle: { from: -6, to: 6 }, duration: 380, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    img(ROOM.lampX, ROOM.lampY, 'floorLamp').setDepth(DEPTH.decor);
 
+    this.buildNight();
     this.buildDragon();
     this.buildEgg();
     this.setupPetting();
@@ -117,8 +177,8 @@ export class BedroomScene extends Phaser.Scene {
     const worried = this.part('mouthWorried', 150, 160).setVisible(false);
     this.headC = this.add.container(0, 160 - 150, [head, this.eyesC, smile, open, worried]);
 
-    this.dragon = this.add.container(ROOM.dragonX, ROOM.dragonY, [wingL, wingR, tail, body, glow, this.headC]);
-    this.dragon.setVisible(false);
+    this.dragon = this.add.container(this.bx, this.by, [wingL, wingR, tail, body, glow, this.headC]);
+    this.dragon.setVisible(false).setDepth(DEPTH.dragon);
 
     this.tweens.add({ targets: [body, glow], scaleY: HALF * 1.025, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
     this.tweens.add({ targets: this.headC, y: this.headC.y - 3, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
@@ -128,12 +188,13 @@ export class BedroomScene extends Phaser.Scene {
   private buildEgg() {
     const e = this.add.image(0, 0, 'egg').setScale(HALF);
     this.cracks = [0, 1, 2].map((i) => this.add.image(0, 0, `crack${i}`).setScale(HALF).setVisible(false));
-    this.eggC = this.add.container(ROOM.dragonX, ROOM.dragonY + 6, [e, ...this.cracks]);
+    this.eggC = this.add.container(this.bx, this.by + 6, [e, ...this.cracks]).setDepth(DEPTH.dragon);
     this.tweens.add({ targets: this.eggC, angle: { from: -2, to: 2 }, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
   }
 
   private setupPetting() {
-    const zone = this.add.zone(ROOM.dragonX, ROOM.dragonY + 20, 230, 270).setInteractive({ useHandCursor: true });
+    const zone = this.add.zone(this.bx, this.by + 20, 230, 270).setInteractive({ useHandCursor: true }).setDepth(DEPTH.input);
+    this.zone = zone;
     zone.on('pointerdown', (p: Phaser.Input.Pointer) => {
       if (this.state?.phase === 'egg') return this.cb.onEggTap();
       this.lastPetPoint = new Phaser.Math.Vector2(p.x, p.y);
@@ -141,7 +202,8 @@ export class BedroomScene extends Phaser.Scene {
       this.cb.onDragonTap();
     });
     zone.on('pointermove', (p: Phaser.Input.Pointer) => {
-      if (!p.isDown || !this.lastPetPoint || this.state?.phase !== 'care') return;
+      const canPet = this.state && ((this.state.part === 'morning' && this.state.phase === 'care') || (this.state.part === 'evening' && !this.state.evening.over));
+      if (!p.isDown || !this.lastPetPoint || !canPet) return;
       this.petDistance += Phaser.Math.Distance.Between(p.x, p.y, this.lastPetPoint.x, this.lastPetPoint.y);
       this.lastPetPoint.set(p.x, p.y);
       if (this.petDistance > 90) {
@@ -166,16 +228,18 @@ export class BedroomScene extends Phaser.Scene {
       this.dragon.setVisible(hatched);
       this.cracks.forEach((c, i) => c.setVisible(i < s.eggTaps));
     }
-    this.nestSock.setVisible(s.sockInNest);
-    this.floorSock.setVisible(s.fixIt !== null);
+    this.nestSock.setVisible(s.sockInNest && !this.night);
+    this.floorSock.setVisible(s.fixIt !== null && s.part === 'morning');
+    if (s.part === 'evening' || s.part === 'end') this.applyNight(s, first);
     const spark = s.dragon.spark;
     this.parts.glow.setAlpha(Phaser.Math.Clamp((spark - 10) / 70, 0, 1) * 0.9);
     this.applyMood(this.moodFor(s));
   }
 
   private moodFor(s: GameState): Mood {
-    if (s.phase !== 'care' && s.phase !== 'done') return 'content';
     const d = s.dragon;
+    if (s.part === 'evening') return d.calm < 50 ? 'nervous' : d.calm >= 70 ? 'happy' : 'content';
+    if (s.part !== 'morning' || (s.phase !== 'care' && s.phase !== 'done')) return 'content';
     if (d.calm < 40) return 'nervous';
     if (d.spark < 35) return 'cold';
     if (d.hunger > 55) return 'hungry';
@@ -209,14 +273,15 @@ export class BedroomScene extends Phaser.Scene {
   }
 
   private blink() {
-    if (!this.dragon.visible) return;
+    if (!this.dragon.visible || this.sleeping) return;
     this.tweens.add({ targets: this.eyesC, scaleY: 0.1, duration: 80, yoyo: true });
     if (Math.random() < 0.3) this.time.delayedCall(260, () => this.tweens.add({ targets: this.eyesC, scaleY: 0.1, duration: 80, yoyo: true }));
   }
 
   update(time: number) {
     if (!this.dragon.visible) return;
-    this.dragon.x = ROOM.dragonX + (this.shiver ? Math.sin(time / 22) * this.shiver : 0);
+    if (this.moving) return;
+    this.dragon.x = this.bx + (this.shiver ? Math.sin(time / 22) * this.shiver : 0);
   }
 
   // ---------- reactions ----------
@@ -258,7 +323,7 @@ export class BedroomScene extends Phaser.Scene {
         this.time.delayedCall(900, () => this.puffAt(ROOM.sockX, ROOM.sockY - 20));
         break;
       case 'hum':
-        for (let i = 0; i < 4; i++) this.time.delayedCall(i * 350, () => this.floatUp('note', ROOM.dragonX - 120 + i * 60, ROOM.dragonY - 120));
+        for (let i = 0; i < 4; i++) this.time.delayedCall(i * 350, () => this.floatUp('note', this.bx - 120 + i * 60, this.by - 120));
         this.tweens.add({ targets: this.headC, angle: { from: -6, to: 6 }, duration: 500, yoyo: true, repeat: 1 });
         break;
       case 'sock':
@@ -268,15 +333,41 @@ export class BedroomScene extends Phaser.Scene {
       case 'startle':
         this.busy(1200);
         this.showMouth('mouthWorried');
-        this.tweens.add({ targets: this.dragon, y: ROOM.dragonY - 26, duration: 120, yoyo: true, ease: 'Quad.out' });
+        this.tweens.add({ targets: this.dragon, y: this.by - 26 * this.bs, duration: 120, yoyo: true, ease: 'Quad.out' });
         this.tweens.add({ targets: this.eyesC, scale: 1.2, duration: 120, yoyo: true, hold: 700 });
         this.cameras.main.shake(250, 0.004);
         break;
       case 'thought-solved':
-        this.floatUp('sparkle', ROOM.dragonX, ROOM.dragonY - 150);
+        this.floatUp('sparkle', this.bx, this.by - 150);
         break;
       case 'fixed':
         this.sparklesAt(ROOM.sockX, ROOM.sockY, 6);
+        break;
+      case 'knock':
+        this.cameras.main.shake(180, 0.003);
+        if (!e.quiet) {
+          this.busy(1400);
+          this.showMouth('mouthOpen');
+          this.tweens.add({ targets: this.dragon, y: this.by - 18 * this.bs, duration: 110, yoyo: true, repeat: 1 });
+          this.tweens.add({ targets: this.eyesC, scale: 1.2, duration: 120, yoyo: true, hold: 700 });
+        } else {
+          this.floatUp('heart', this.bx + 30, this.by - 70);
+        }
+        break;
+      case 'spotted':
+        if (e.suspicious) this.closeCurtains();
+        this.hideThing(true);
+        break;
+      case 'window-gone':
+        this.hideThing(false);
+        break;
+      case 'blanket':
+        this.blanketImg.setVisible(true);
+        this.tweens.add({ targets: this.blanketImg, alpha: e.on ? 1 : 0, y: this.blanketImg.y, duration: 300, onComplete: () => this.blanketImg.setVisible(e.on) });
+        if (e.on) this.floatUp('heart', this.bx, this.by - 60);
+        break;
+      case 'day-finished':
+        this.sleep();
         break;
       default:
         break;
@@ -298,14 +389,14 @@ export class BedroomScene extends Phaser.Scene {
       ease: 'Back.in',
       onComplete: () => this.eggC.setVisible(false),
     });
-    this.puffAt(ROOM.dragonX, ROOM.dragonY + 40, 14);
+    this.puffAt(this.bx, this.by + 40, 14);
     this.dragon.setVisible(true).setScale(0.3).setAlpha(0);
     this.tweens.add({ targets: this.dragon, scale: 1, alpha: 1, duration: 600, delay: 250, ease: 'Back.out' });
     this.time.delayedCall(900, () => this.sparkles(10));
   }
 
   private hop(times: number) {
-    this.tweens.add({ targets: this.dragon, y: ROOM.dragonY - 34, duration: 180, yoyo: true, repeat: times - 1, ease: 'Quad.out' });
+    this.tweens.add({ targets: this.dragon, y: this.by - 34 * this.bs, duration: 180, yoyo: true, repeat: times - 1, ease: 'Quad.out' });
     this.tweens.add({ targets: [this.parts.wingL], angle: -25, duration: 120, yoyo: true, repeat: times * 2 - 1 });
     this.tweens.add({ targets: [this.parts.wingR], angle: 25, duration: 120, yoyo: true, repeat: times * 2 - 1 });
   }
@@ -318,7 +409,7 @@ export class BedroomScene extends Phaser.Scene {
       yoyo: false,
       onComplete: () => {
         this.tweens.add({ targets: this.headC, angle: 8, duration: 90, yoyo: true, onComplete: () => this.headC.setAngle(0) });
-        this.puffAt(ROOM.dragonX, ROOM.dragonY - 10, 8, 0xd8d0c4);
+        this.puffAt(this.bx, this.by - 10, 8, 0xd8d0c4);
       },
     });
   }
@@ -326,21 +417,21 @@ export class BedroomScene extends Phaser.Scene {
   private hiccup(n: number) {
     for (let i = 0; i < n; i++) {
       this.time.delayedCall(i * 420, () => {
-        this.tweens.add({ targets: this.dragon, y: ROOM.dragonY - 14, duration: 90, yoyo: true });
-        this.smokeRing(ROOM.dragonX, ROOM.dragonY - 20);
+        this.tweens.add({ targets: this.dragon, y: this.by - 14, duration: 90, yoyo: true });
+        this.smokeRing(this.bx, this.by - 20);
       });
     }
   }
 
   private smokeRing(x: number, y: number) {
-    const g = this.add.graphics({ x, y });
+    const g = this.add.graphics({ x, y }).setDepth(DEPTH.fx);
     g.lineStyle(10, 0x8a8a8a, 0.8).strokeEllipse(0, 0, 40, 26);
     this.tweens.add({ targets: g, y: y - 170, scale: 2.4, alpha: 0, duration: 1400, ease: 'Sine.out', onComplete: () => g.destroy() });
   }
 
   private puffAt(x: number, y: number, count = 8, color = 0xb9b0a6) {
     for (let i = 0; i < count; i++) {
-      const c = this.add.circle(x, y, Phaser.Math.Between(10, 20), color, 0.8);
+      const c = this.add.circle(x, y, Phaser.Math.Between(10, 20), color, 0.8).setDepth(DEPTH.fx);
       const a = (Math.PI * 2 * i) / count;
       this.tweens.add({
         targets: c,
@@ -356,12 +447,12 @@ export class BedroomScene extends Phaser.Scene {
   }
 
   private floatUp(key: string, x: number, y: number) {
-    const im = this.add.image(x, y, key).setScale(HALF * 1.2);
+    const im = this.add.image(x, y, key).setScale(HALF * 1.2).setDepth(DEPTH.fx);
     this.tweens.add({ targets: im, y: y - 90, x: x + Phaser.Math.Between(-20, 20), alpha: 0, duration: 1100, ease: 'Sine.out', onComplete: () => im.destroy() });
   }
 
   private sparkles(n: number) {
-    this.sparklesAt(ROOM.dragonX, ROOM.dragonY, n);
+    this.sparklesAt(this.bx, this.by, n);
   }
 
   private sparklesAt(x: number, y: number, n: number) {
@@ -373,16 +464,139 @@ export class BedroomScene extends Phaser.Scene {
   /** Flies a food from a screen point into the dragon's mouth. */
   flyFood(foodId: string, clientX: number, clientY: number) {
     const p = this.clientToWorld(clientX, clientY);
-    const im = this.add.image(p.x, p.y, `food-${foodId}`).setScale(HALF * 0.9);
+    const im = this.add.image(p.x, p.y, `food-${foodId}`).setScale(HALF * 0.9).setDepth(DEPTH.fx);
     this.tweens.add({
       targets: im,
-      x: ROOM.dragonX,
-      y: ROOM.dragonY - 20,
+      x: this.bx,
+      y: this.by - 20,
       scale: HALF * 0.3,
       duration: 380,
       ease: 'Quad.in',
       onComplete: () => im.destroy(),
     });
+  }
+
+  // ---------- night ----------
+
+  private buildNight() {
+    const W = ROOM.win;
+    this.overlay = this.add.graphics().setDepth(DEPTH.overlay).setVisible(false);
+    this.nightWin = this.add.image(W.x + W.w / 2, W.y + W.h / 2, 'nightWindow').setScale(HALF).setDepth(DEPTH.window).setVisible(false);
+    this.curtains = [0, 1].map((i) =>
+      this.add
+        .rectangle(i === 0 ? W.x - W.w / 2 : W.x + W.w * 1.5, W.y + W.h / 2, W.w / 2 + 6, W.h + 10, 0xf28c8c)
+        .setStrokeStyle(4, 0xc25f5f)
+        .setDepth(DEPTH.curtain)
+        .setVisible(false),
+    );
+    this.glowImg = this.add
+      .image(ROOM.lampX, ROOM.lampY - 110, 'lampGlow')
+      .setScale(HALF * 1.6)
+      .setBlendMode(Phaser.BlendModes.ADD)
+      .setDepth(DEPTH.glow)
+      .setVisible(false);
+    this.blanketImg = this.add.image(ROOM.nightX, ROOM.nightY + 52, 'blanket').setScale(HALF * 0.86).setDepth(DEPTH.blanket).setVisible(false);
+    this.nestFrontImg = this.add.image(ROOM.nestX, ROOM.nestY + 30, 'nestFront').setScale(HALF * 0.95).setDepth(DEPTH.nestFront).setVisible(false);
+  }
+
+  /** Darkens the room except the window, with a pool of lamplight. */
+  private drawOverlay(dim: boolean) {
+    const W = ROOM.win;
+    const a = dim ? 0.55 : 0.32;
+    const g = this.overlay.clear().fillStyle(0x141b3c, a);
+    g.fillRect(0, 0, ROOM.w, W.y);
+    g.fillRect(0, W.y + W.h, ROOM.w, ROOM.h - W.y - W.h);
+    g.fillRect(0, W.y, W.x, W.h);
+    g.fillRect(W.x + W.w, W.y, ROOM.w - W.x - W.w, W.h);
+    this.glowImg.setAlpha(dim ? 0.35 : 1).setScale(HALF * (dim ? 1.1 : 1.7));
+  }
+
+  private applyNight(s: GameState, immediate: boolean) {
+    if (!this.night) {
+      this.night = true;
+      this.overlay.setVisible(true);
+      this.nightWin.setVisible(true);
+      this.glowImg.setVisible(true);
+      this.nestFrontImg.setVisible(true);
+      this.nestSock.setVisible(false);
+      this.moveDragon(ROOM.nightX, ROOM.nightY, ROOM.nightScale, immediate);
+    }
+    if (this.lampDim !== s.evening.lampDim) {
+      this.lampDim = s.evening.lampDim;
+      this.drawOverlay(this.lampDim);
+    }
+    this.blanketImg.setVisible(s.evening.blanket).setAlpha(1);
+    const w = s.evening.window;
+    if (w && this.thing?.id !== w.id) this.showThing(w.id);
+    if (!w && this.thing) this.hideThing(false);
+    if (s.part === 'end' && !this.sleeping) this.sleep();
+  }
+
+  private moveDragon(x: number, y: number, scale: number, immediate: boolean) {
+    this.bx = x;
+    this.by = y;
+    this.bs = scale;
+    this.zone.setPosition(x, y + 20 * scale).setSize(230 * scale, 270 * scale);
+    if (this.zone.input?.hitArea) (this.zone.input.hitArea as Phaser.Geom.Rectangle).setSize(230 * scale, 270 * scale);
+    if (immediate) {
+      this.dragon.setPosition(x, y).setScale(scale);
+      return;
+    }
+    this.moving = true;
+    this.tweens.add({ targets: this.dragon, x, y, scale, duration: 900, ease: 'Sine.inOut', onComplete: () => (this.moving = false) });
+  }
+
+  private thingPos(art: string) {
+    const W = ROOM.win;
+    const spots: Record<string, [number, number]> = {
+      moth: [W.x + 80, W.y + 70],
+      blink: [W.x + 250, W.y + 90],
+      cat: [W.x + 250, W.y + 222],
+      surveyor: [W.x + 90, W.y + 210],
+    };
+    return spots[art] ?? [W.x + W.w / 2, W.y + W.h / 2];
+  }
+
+  private showThing(id: string) {
+    this.hideThing(false);
+    const def = content.evening.windowThings.find((t) => t.id === id);
+    if (!def) return;
+    const [x, y] = this.thingPos(def.art);
+    const im = this.add.image(x, y + 20, `thing-${def.art}`).setScale(HALF * 0.9).setAlpha(0).setDepth(DEPTH.thing);
+    im.setInteractive({ useHandCursor: true }).on('pointerdown', () => this.cb.onWindowTap(id));
+    this.tweens.add({ targets: im, alpha: 1, y, duration: 500, ease: 'Sine.out' });
+    if (def.art === 'moth') this.tweens.add({ targets: im, x: x + 40, angle: 15, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    if (def.art === 'blink') this.tweens.add({ targets: im, y: y - 12, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut', delay: 500 });
+    if (def.art === 'surveyor') this.tweens.add({ targets: im, x: x + 30, duration: 2500, yoyo: true, repeat: -1, ease: 'Sine.inOut', delay: 500 });
+    this.thing = { id, img: im };
+  }
+
+  private hideThing(tapped: boolean) {
+    if (!this.thing) return;
+    const im = this.thing.img;
+    this.thing = null;
+    im.disableInteractive();
+    this.tweens.killTweensOf(im);
+    this.tweens.add({ targets: im, alpha: 0, scale: tapped ? HALF * 1.1 : HALF * 0.7, duration: 350, onComplete: () => im.destroy() });
+  }
+
+  private closeCurtains() {
+    const W = ROOM.win;
+    const [l, r] = this.curtains;
+    l.setVisible(true);
+    r.setVisible(true);
+    this.tweens.add({ targets: l, x: W.x + W.w / 4, duration: 350, ease: 'Quad.out', yoyo: true, hold: 1800, onComplete: () => l.setVisible(false) });
+    this.tweens.add({ targets: r, x: W.x + (W.w * 3) / 4, duration: 350, ease: 'Quad.out', yoyo: true, hold: 1800, onComplete: () => r.setVisible(false) });
+  }
+
+  private sleep() {
+    this.sleeping = true;
+    this.tweens.killTweensOf(this.eyesC);
+    this.eyesC.setScale(1, 0.08);
+    this.showMouth('mouthSmile');
+    this.shiver = 0;
+    this.setTailSpeed(2400, 0.04);
+    this.time.addEvent({ delay: 1400, loop: true, callback: () => this.floatUp('zzz', this.bx + 40, this.by - 70) });
   }
 
   // ---------- coordinates & capture ----------
@@ -399,14 +613,18 @@ export class BedroomScene extends Phaser.Scene {
 
   /** The dragon's on-screen box, for drag-and-drop and placing the thought bubble. */
   dragonClientRect() {
-    const a = this.worldToClient(ROOM.dragonX - 125, ROOM.dragonY - 150);
-    const b = this.worldToClient(ROOM.dragonX + 125, ROOM.dragonY + 140);
+    const a = this.worldToClient(this.bx - 125 * this.bs, this.by - 150 * this.bs);
+    const b = this.worldToClient(this.bx + 125 * this.bs, this.by + 140 * this.bs);
     return { left: a.x, top: a.y, right: b.x, bottom: b.y, width: b.x - a.x, height: b.y - a.y };
   }
 
   snapshot(): Promise<string> {
+    const w = 520;
+    const h = 400;
+    const x = Phaser.Math.Clamp(this.bx - w / 2, 0, ROOM.w - w);
+    const y = Phaser.Math.Clamp(this.by - h / 2 - 20, 0, ROOM.h - h);
     return new Promise((resolve) => {
-      this.game.renderer.snapshotArea(ROOM.dragonX - 260, ROOM.dragonY - 200, 520, 400, (im) => {
+      this.game.renderer.snapshotArea(x, y, w, h, (im) => {
         resolve(im instanceof HTMLImageElement ? im.src : '');
       });
     });

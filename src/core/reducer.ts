@@ -1,4 +1,5 @@
 import { content as defaultContent, NUTRIENTS, type Content, type Nutrient, type ThoughtCondition } from './content';
+import { stepAfternoon, stepEvening, tickEvening } from './day';
 import type { Action, GameEvent, GameState, NoiseKind, SpiceOutcome, StepResult } from './state';
 
 /** Tuning constants for the morning care prototype. */
@@ -40,7 +41,12 @@ function rand(s: GameState): number {
 export function isReady(s: GameState): boolean {
   const r = TUNING.ready;
   const d = s.dragon;
-  return s.phase === 'care' && d.hunger <= r.maxHunger && d.spark >= r.sparkMin && d.spark <= r.sparkMax && d.calm >= r.minCalm;
+  return s.part === 'morning' && s.phase === 'care' && d.hunger <= r.maxHunger && d.spark >= r.sparkMin && d.spark <= r.sparkMax && d.calm >= r.minCalm;
+}
+
+/** Calming actions (hum, petting) work in the morning and in the evening. */
+function canCalm(s: GameState): boolean {
+  return (s.part === 'morning' && s.phase === 'care') || (s.part === 'evening' && !s.evening.over && !s.evening.awaiting);
 }
 
 export function plateMissing(s: GameState, c: Content = defaultContent): Nutrient[] {
@@ -75,7 +81,14 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       break;
     }
     case 'tick': {
-      if (s.phase !== 'care' || action.dt <= 0) break;
+      if (action.dt <= 0) break;
+      if (s.part === 'evening') {
+        const dt = Math.min(action.dt, 1);
+        s.t += dt; // keeps hum cooldowns running
+        tickEvening(s, dt, events, c);
+        break;
+      }
+      if (s.part !== 'morning' || s.phase !== 'care') break;
       const dt = Math.min(action.dt, 1);
       s.t += dt;
       d.hunger = clamp(d.hunger + TUNING.hungerPerSec * dt);
@@ -122,13 +135,13 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       break;
     }
     case 'pet': {
-      if (s.phase !== 'care' || action.amount <= 0) break;
+      if (!canCalm(s) || action.amount <= 0) break;
       d.calm = clamp(d.calm + Math.min(action.amount, 5));
       events.push({ type: 'pet' });
       break;
     }
     case 'hum': {
-      if (s.phase !== 'care') break;
+      if (!canCalm(s)) break;
       if (s.t < s.cooldowns.hum) {
         events.push({ type: 'cooldown', action: 'hum', secondsLeft: Math.ceil(s.cooldowns.hum - s.t) });
         break;
@@ -208,6 +221,8 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       events.push({ type: 'finished' });
       break;
     }
+    default:
+      if (!stepAfternoon(s, action, events, c)) stepEvening(s, action, events, c);
   }
 
   const wasReady = isReady(prev);

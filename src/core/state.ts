@@ -1,8 +1,14 @@
-import type { GrowthStage, Nutrient, Plate, PulseTarget } from './content';
+import type { CheckKey, GrowthStage, Nutrient, Plate, PulseTarget } from './content';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 
+/** Morning care sub-phase. */
 export type Phase = 'egg' | 'naming' | 'care' | 'done';
+/** Which part of the day the player is in. */
+export type Part = 'morning' | 'afternoon' | 'evening' | 'end';
+export type Rating = 'trust' | 'unsure' | 'distrust';
+export type TrapChoice = 'share' | 'ask' | 'close';
+export type SearchFeedback = 'ok' | 'too-many' | 'none' | 'empty';
 export type NoiseKind = 'vacuum' | 'doorbell' | 'dog';
 export type SpiceOutcome = 'perfect' | 'too-much' | 'off-ratio' | 'too-little';
 
@@ -27,8 +33,41 @@ export interface FixItState {
   progress: number; // 0..100
 }
 
+export interface ResearchState {
+  searches: number;
+  query: string[];
+  results: string[];
+  feedback: SearchFeedback | null;
+  foundAnswerOnSearch: number | null;
+  opened: string[];
+  checks: Record<string, CheckKey[]>;
+  ratings: Record<string, Rating>;
+  trapChoices: Record<string, TrapChoice>;
+  tipSaved: boolean;
+}
+
+export interface EveningState {
+  t: number;
+  lampDim: boolean;
+  blanket: boolean;
+  visitorIdx: number;
+  visitor: { id: string; knockAt: number } | null;
+  awaiting: string | null; // visitor waiting for the player's reply
+  windowIdx: number;
+  window: { id: string; until: number } | null;
+  spotted: number;
+  missed: number;
+  quiet: number;
+  noisy: number;
+  over: boolean;
+}
+
 export interface GameState {
   version: number;
+  part: Part;
+  world: { collectorAttention: number; circle: string[]; blanketUnlocked: boolean };
+  research: ResearchState;
+  evening: EveningState;
   t: number; // seconds of care time elapsed
   seed: number; // RNG state (mulberry32)
   phase: Phase;
@@ -68,7 +107,20 @@ export type Action =
   | { type: 'answerThought'; choiceId: string }
   | { type: 'dismissThought' }
   | { type: 'scrub'; amount: number }
-  | { type: 'finishMorning' };
+  | { type: 'finishMorning' }
+  | { type: 'startAfternoon' }
+  | { type: 'search'; chips: string[] }
+  | { type: 'openPage'; pageId: string }
+  | { type: 'check'; pageId: string; check: CheckKey }
+  | { type: 'rate'; pageId: string; rating: Rating }
+  | { type: 'trapChoice'; pageId: string; choice: TrapChoice }
+  | { type: 'saveTip' }
+  | { type: 'startEvening' }
+  | { type: 'lamp' }
+  | { type: 'blanket' }
+  | { type: 'windowTap'; thingId: string }
+  | { type: 'visitorChoice'; choiceId: string }
+  | { type: 'finishDay' };
 
 export type GameEvent =
   | { type: 'egg-crack'; taps: number }
@@ -93,7 +145,26 @@ export type GameEvent =
   | { type: 'fixed' }
   | { type: 'ready' }
   | { type: 'unready' }
-  | { type: 'finished' };
+  | { type: 'finished' }
+  | { type: 'afternoon-start' }
+  | { type: 'search-results'; ids: string[]; feedback: SearchFeedback }
+  | { type: 'page-opened'; pageId: string }
+  | { type: 'check-revealed'; pageId: string; check: CheckKey }
+  | { type: 'rated'; pageId: string; rating: Rating; correct: boolean }
+  | { type: 'trap'; pageId: string; choice: TrapChoice }
+  | { type: 'tip-saved' }
+  | { type: 'attention'; delta: number; level: number }
+  | { type: 'evening-start' }
+  | { type: 'footsteps'; visitorId: string; seconds: number }
+  | { type: 'knock'; visitorId: string; quiet: boolean }
+  | { type: 'visitor-left'; visitorId: string; choiceId: string | null; joined: boolean }
+  | { type: 'window-thing'; thingId: string }
+  | { type: 'window-gone'; thingId: string; missed: boolean }
+  | { type: 'spotted'; thingId: string; suspicious: boolean }
+  | { type: 'lamp'; dim: boolean }
+  | { type: 'blanket'; on: boolean }
+  | { type: 'evening-over' }
+  | { type: 'day-finished' };
 
 export interface StepResult {
   state: GameState;
@@ -103,6 +174,35 @@ export interface StepResult {
 export function initialState(seed = 12345): GameState {
   return {
     version: SAVE_VERSION,
+    part: 'morning',
+    world: { collectorAttention: 0, circle: ['june'], blanketUnlocked: false },
+    research: {
+      searches: 0,
+      query: [],
+      results: [],
+      feedback: null,
+      foundAnswerOnSearch: null,
+      opened: [],
+      checks: {},
+      ratings: {},
+      trapChoices: {},
+      tipSaved: false,
+    },
+    evening: {
+      t: 0,
+      lampDim: false,
+      blanket: false,
+      visitorIdx: 0,
+      visitor: null,
+      awaiting: null,
+      windowIdx: 0,
+      window: null,
+      spotted: 0,
+      missed: 0,
+      quiet: 0,
+      noisy: 0,
+      over: false,
+    },
     t: 0,
     seed: seed >>> 0,
     phase: 'egg',

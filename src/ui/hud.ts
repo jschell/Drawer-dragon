@@ -1,10 +1,12 @@
 import { dataUri, foodArt, sockArt } from '../art/svg';
 import { sfx } from '../audio/sfx';
 import { content, type Nutrient, type ThoughtDef } from '../core/content';
+import { attentionWord } from '../core/day';
 import { isReady, step, TUNING } from '../core/reducer';
 import { clearSave, loadPref, savePref, writeSave } from '../core/save';
 import { initialState, type Action, type GameEvent, type GameState } from '../core/state';
 import type { BedroomScene } from '../scenes/BedroomScene';
+import { ResearchScreen } from './research';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
@@ -24,10 +26,12 @@ export class Hud {
   private readAloud = loadPref('readAloud', false);
   private spiceScoops: Record<string, number> = {};
   private fixitInit = 0;
+  private research: ResearchScreen;
 
   constructor(initial: GameState) {
     this.state = initial;
     sfx.enabled = loadPref('sound', true);
+    this.research = new ResearchScreen(this);
   }
 
   attach(scene: BedroomScene) {
@@ -35,9 +39,13 @@ export class Hud {
     scene.setGameState(this.state);
     this.bindStatic();
     this.render();
+    // ?speed=4 runs the clock 4× faster: handy for playtesting and browser tests.
+    const speed = Math.min(20, Math.max(1, Number(new URLSearchParams(location.search).get('speed')) || 1));
     setInterval(() => {
-      if (!this.paused && !document.hidden && this.state.phase === 'care') this.dispatch({ type: 'tick', dt: 1 });
-    }, 1000);
+      const s = this.state;
+      const live = (s.part === 'morning' && s.phase === 'care') || (s.part === 'evening' && !s.evening.over);
+      if (!this.paused && !document.hidden && live) this.dispatch({ type: 'tick', dt: 1 });
+    }, 1000 / speed);
     window.addEventListener('resize', () => this.placeBubble());
   }
 
@@ -166,6 +174,63 @@ export class Hud {
         sfx.play('trill');
         setTimeout(() => this.toast(`${n} is fed, warm and calm. Ready for the day! 🎒`), 900);
         break;
+      case 'search-results':
+        if (e.feedback === 'ok' && e.ids.includes(content.archive.answerPageId) && this.state.research.searches <= 3) sfx.play('sparkle');
+        break;
+      case 'trap':
+        if (e.choice === 'share') sfx.play('startle');
+        else sfx.play('sparkle');
+        break;
+      case 'evening-start':
+        this.research.hide();
+        this.paused = false;
+        this.toast(`Evening. ${n} is curled up in the nest. Family will stop by: keep ${n} calm, and keep an eye on the window!`);
+        break;
+      case 'footsteps': {
+        sfx.play('steps');
+        break;
+      }
+      case 'knock': {
+        sfx.play('knock');
+        const v = content.evening.visitors.find((x) => x.id === e.visitorId)!;
+        this.toast(`<b>Knock knock!</b> ${esc(v.name)}: ${esc(v.line)}`);
+        if (e.quiet) setTimeout(() => this.toast(esc(v.quietLine)), 2600);
+        else {
+          sfx.play('chirp');
+          setTimeout(() => this.showVisitor(v.id), 1500);
+        }
+        break;
+      }
+      case 'visitor-left':
+        if (e.joined) sfx.play('trill');
+        break;
+      case 'window-thing':
+        if (this.state.evening.windowIdx === 0) this.toast('Something is moving outside the window... Tap it if it looks suspicious!');
+        break;
+      case 'window-gone': {
+        const w = content.evening.windowThings.find((x) => x.id === e.thingId)!;
+        if (e.missed && w.missLine) this.toast(`${esc(w.missLine)} <span class="sub-dark">(Collector Attention went up.)</span>`);
+        break;
+      }
+      case 'spotted': {
+        const w = content.evening.windowThings.find((x) => x.id === e.thingId)!;
+        sfx.play(e.suspicious ? 'sparkle' : 'tap');
+        this.toast(esc(w.tapLine));
+        break;
+      }
+      case 'lamp':
+        sfx.play('tap');
+        this.toast(e.dim ? `You dim the lamp. ${n} likes the cozy dark.` : 'Lamp on. Bright light can be seen from outside...');
+        break;
+      case 'blanket':
+        if (e.on) {
+          sfx.play('purr');
+          this.toast(`You drape the blanket over the nest. ${n} snuggles under it.`);
+        }
+        break;
+      case 'evening-over':
+        setTimeout(() => this.showBedtime(), 1200);
+        break;
       default:
         break;
     }
@@ -175,13 +240,19 @@ export class Hud {
 
   render() {
     const s = this.state;
-    $('#hud').hidden = false;
-    const caring = s.phase === 'care';
-    $('#meters').hidden = !caring;
+    $('#hud').hidden = s.part === 'afternoon';
+    const caring = s.part === 'morning' && s.phase === 'care';
+    const evening = s.part === 'evening' && !s.evening.over;
+    $('#meters').hidden = !caring && !evening;
     $('#actions').hidden = !caring;
+    $('#actions-evening').hidden = !evening;
     if (!caring) $('#tray').hidden = true;
     if (caring) this.renderMeters();
+    if (evening) this.renderEvening();
+    else $('#banner').hidden = true;
     $('.act.go').classList.toggle('ready', isReady(s));
+    if (s.part === 'afternoon') this.research.show();
+    else this.research.hide();
 
     const bubble = $('#bubble');
     const th = s.thought && content.thoughts.find((t) => t.id === s.thought!.id);
@@ -195,6 +266,39 @@ export class Hud {
     } else {
       bubble.hidden = true;
     }
+  }
+
+  private renderEvening() {
+    const s = this.state;
+    const e = s.evening;
+    const quiet = content.evening.quietCalm;
+    const a = s.world.collectorAttention;
+    const meter = (k: string, emo: string, label: string, value: number, ok: boolean, word: string) => {
+      const on = Math.round(value / 20);
+      const pips = Array.from({ length: 5 }, (_, i) => `<div class="pip${i < on ? ' on' : ''}"></div>`).join('');
+      return `<div class="meter${ok ? ' ok' : ''}" data-k="${k}" aria-label="${label}: ${word}">
+        <div class="meter-top"><span class="emo" aria-hidden="true">${emo}</span>${label}<span class="word">${ok ? '✓ ' : ''}${word}</span></div>
+        <div class="pips">${pips}</div></div>`;
+    };
+    $('#meters').innerHTML =
+      meter('calm', '🌙', 'Calm', s.dragon.calm, s.dragon.calm >= quiet, s.dragon.calm >= quiet ? 'Calm' : s.dragon.calm < 50 ? 'Nervous' : 'Uneasy') +
+      meter('attention', '👁️', 'Collector', a, a < 20, attentionWord(a));
+
+    const lamp = document.querySelector('[data-eve="lamp"] .lbl')!;
+    lamp.textContent = e.lampDim ? 'Lamp on' : 'Dim lamp';
+    const bl = document.querySelector<HTMLElement>('[data-eve="blanket"]')!;
+    bl.classList.toggle('locked', !s.world.blanketUnlocked);
+    bl.classList.toggle('selected', e.blanket);
+    bl.querySelector('.lbl')!.textContent = s.world.blanketUnlocked ? (e.blanket ? 'Uncover' : 'Blanket') : '🔒 Blanket';
+    document.querySelector('[data-eve="lamp"]')!.classList.toggle('selected', e.lampDim);
+
+    const banner = $('#banner');
+    if (e.visitor) {
+      const v = content.evening.visitors.find((x) => x.id === e.visitor!.id)!;
+      const left = Math.max(0, Math.ceil(e.visitor.knockAt - e.t));
+      banner.innerHTML = `👣 Footsteps in the hall... <b>${esc(v.name)}</b> is coming! <span class="count">${left}</span>`;
+      banner.hidden = false;
+    } else banner.hidden = true;
   }
 
   private renderMeters() {
@@ -232,7 +336,7 @@ export class Hud {
     b.style.top = `${r.top + r.height * 0.08}px`;
   }
 
-  private toast(html: string) {
+  toast(html: string) {
     if (!html) return;
     const t = $('#toast');
     t.innerHTML = html;
@@ -278,7 +382,8 @@ export class Hud {
   private closePanel() {
     $('#overlay').hidden = true;
     $('#panel').innerHTML = '';
-    this.paused = this.state.phase !== 'care';
+    const st = this.state;
+    this.paused = !((st.part === 'morning' && st.phase === 'care') || (st.part === 'evening' && !st.evening.over));
     if ('speechSynthesis' in window) speechSynthesis.cancel();
   }
 
@@ -299,6 +404,9 @@ export class Hud {
         else this.closePanel();
         if (this.state.phase === 'egg') this.toast('Tap the egg to help it hatch!');
         if (this.state.phase === 'naming') this.showNaming();
+        if (this.state.part === 'morning' && this.state.phase === 'done') this.showAfternoonIntro();
+        if (this.state.part === 'evening' && this.state.evening.awaiting) this.showVisitor(this.state.evening.awaiting);
+        if (this.state.part === 'evening' && this.state.evening.over) this.showBedtime();
         this.render();
       }),
     );
@@ -309,6 +417,7 @@ export class Hud {
     const fresh = initialState((Date.now() >>> 0) ^ 0x9e3779b9);
     this.state = fresh;
     this.scene.scene.restart(this.scene.bootData);
+    this.research.hide();
     this.closePanel();
   }
 
@@ -391,6 +500,10 @@ export class Hud {
       p.querySelector('[data-x="later"]')!.addEventListener('click', () => this.closePanel());
     };
     draw();
+  }
+
+  speakText(text: string) {
+    this.speakForce(text);
   }
 
   private speakForce(text: string) {
@@ -557,7 +670,88 @@ export class Hud {
           <div>${this.state.stickers.map((s) => `<span class="sticker">⭐ ${esc(s)}</span>`).join('')}</div>
         </div>
       </div>
-      <p class="sub">This is prototype 1 of 3. Thanks for playtesting!</p>
+      <div class="row"><button class="btn big" data-x="next">Off to school ➜ the afternoon</button></div>`);
+    sfx.play('trill');
+    $('#panel [data-x="next"]').addEventListener('click', () => this.showAfternoonIntro());
+  }
+
+  private showAfternoonIntro() {
+    this.openPanel(`
+      <h2>📚 After school: Larkspur Library</h2>
+      <p>The librarian, Ms. Ortiz, points you to Computer 2.</p>
+      <p class="riddle">Find out: ${esc(content.archive.question)}</p>
+      <p class="sub">Tonight your family will knock on your door. ${this.name} gets scared of knocks. Search the dragon-care websites, and check each one before you trust it!</p>
+      <div class="row"><button class="btn big" data-x="go">Start searching</button></div>`);
+    $('#panel [data-x="go"]').addEventListener('click', () => {
+      sfx.play('tap');
+      this.closePanel();
+      this.dispatch({ type: 'startAfternoon' });
+    });
+  }
+
+  private showVisitor(id: string) {
+    const v = content.evening.visitors.find((x) => x.id === id)!;
+    if (this.state.evening.awaiting !== id) return;
+    this.openPanel(`
+      <div class="thought-icons" aria-hidden="true">${v.emoji}</div>
+      <p>${esc(v.noisyLine)}</p>
+      <p><b>What do you say?</b> <span class="sub">(Every choice is honest: you never have to lie.)</span></p>
+      <div class="col">${v.choices.map((c) => `<button class="choice" data-c="${c.id}">${esc(c.label)}</button>`).join('')}</div>`);
+    $('#panel').querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const c = v.choices.find((x) => x.id === b.dataset.c)!;
+        this.closePanel();
+        this.dispatch({ type: 'visitorChoice', choiceId: c.id });
+        this.toast(esc(c.result));
+      }),
+    );
+  }
+
+  private showBedtime() {
+    if (this.state.part !== 'evening') return;
+    this.openPanel(`
+      <h2>🌙 The house is quiet</h2>
+      <p>${this.name} yawns a tiny puff of smoke. Time for bed.</p>
+      <div class="row"><button class="btn big" data-x="night">Goodnight, ${this.name}</button></div>`);
+    $('#panel [data-x="night"]').addEventListener('click', () => {
+      this.closePanel();
+      this.dispatch({ type: 'finishDay' });
+      setTimeout(() => void this.showDaySummary(), 1600);
+    });
+  }
+
+  private async showDaySummary() {
+    const s = this.state;
+    const shot = await this.scene.snapshot();
+    const st = s.stats;
+    const r = s.research;
+    const e = s.evening;
+    const a = s.world.collectorAttention;
+    const line = (ok: boolean, t: string) => `<li>${ok ? '✅' : '⚪'} ${esc(t)}</li>`;
+    const ratedRight = Object.entries(r.ratings).filter(([id, rating]) => {
+      const p = content.archive.pages.find((x) => x.id === id)!;
+      return (p.credibility === 'trusted' && rating === 'trust') || (p.credibility === 'mixed' && rating !== 'trust') || (p.credibility === 'trap' && rating === 'distrust');
+    }).length;
+    const circle = s.world.circle.map((m) => (m === 'june' ? 'Aunt June' : m === 'kit' ? 'Kit' : m));
+    this.openPanel(`
+      <h2>Day 1 complete! 🌙</h2>
+      <div class="summary">
+        <figure class="polaroid small">${shot ? `<img src="${shot}" alt="Your dragon asleep in the nest" />` : ''}<figcaption>${this.name}, asleep</figcaption></figure>
+        <div class="day-cols">
+          <div><b>☀️ Morning</b><ul class="checklist">
+            ${line(st.balancedPlate, 'Balanced breakfast')}${line(st.perfectMix, 'Perfect spice mix')}${line(st.readyAt !== null, 'Ready for the day')}</ul></div>
+          <div><b>📚 Afternoon</b><ul class="checklist">
+            ${line(r.foundAnswerOnSearch !== null, r.foundAnswerOnSearch ? `Found the answer in ${r.foundAnswerOnSearch} search${r.foundAnswerOnSearch === 1 ? '' : 'es'}` : 'Found the answer')}
+            ${Object.keys(r.ratings).length ? line(ratedRight > 0, `Judged ${ratedRight} of ${Object.keys(r.ratings).length} websites right`) : line(false, 'Checked a website before trusting it')}
+            ${Object.keys(r.trapChoices).length ? line(!Object.values(r.trapChoices).includes('share'), 'Kept your address private') : line(false, 'Spotted a trap website')}</ul></div>
+          <div><b>🌙 Evening</b><ul class="checklist">
+            ${line(e.noisy === 0, `${e.quiet} of ${content.evening.visitors.length} visits stayed quiet`)}
+            ${line(e.missed === 0, `Spotted ${e.spotted} of ${content.evening.windowThings.filter((w) => w.suspicious).length} scouts`)}</ul></div>
+        </div>
+      </div>
+      <p>👁️ The collector is <b>${attentionWord(a).replace('!', '')}</b>${a < 20 ? '. Your secret is safe!' : a < 50 ? '. Be careful tomorrow.' : '. BLINK will be back...'} · 🤝 Keeper Circle: ${esc(circle.join(', '))}</p>
+      <div>${s.stickers.map((x) => `<span class="sticker">⭐ ${esc(x)}</span>`).join('')}</div>
+      <p class="sub">Thanks for playtesting Day 1!</p>
       <div class="row"><button class="btn big" data-x="again">Play again</button></div>`);
     sfx.play('trill');
     $('#panel [data-x="again"]').addEventListener('click', () => {
@@ -580,6 +774,20 @@ export class Hud {
         else if (act === 'hum') this.dispatch({ type: 'hum' });
         else if (act === 'sock') this.dispatch({ type: 'sock' });
         else if (act === 'finish') isReady(this.state) ? this.finish() : this.confirmFinish();
+      }),
+    );
+    document.querySelectorAll<HTMLButtonElement>('[data-eve]').forEach((b) =>
+      b.addEventListener('click', () => {
+        sfx.unlock();
+        const act = b.dataset.eve;
+        if (act === 'lamp') this.dispatch({ type: 'lamp' });
+        else if (act === 'hum') this.dispatch({ type: 'hum' });
+        else if (act === 'blanket') {
+          if (!this.state.world.blanketUnlocked) {
+            sfx.play('sniff');
+            this.toast("You don't know how to use the blanket yet. Did the library have any tips?");
+          } else this.dispatch({ type: 'blanket' });
+        }
       }),
     );
     $('#bubble').addEventListener('click', () => {
@@ -695,6 +903,10 @@ export class Hud {
 
   onPet(amount: number) {
     if (this.state.phase === 'care') this.dispatch({ type: 'pet', amount });
+  }
+
+  onWindowTap(thingId: string) {
+    if (this.state.part === 'evening' && !this.paused) this.dispatch({ type: 'windowTap', thingId });
   }
 
   onScorchedSockTap() {
