@@ -73,7 +73,7 @@ Minimum browser: Safari on iOS/iPadOS 16+. Chromebooks are **not** a target for 
 | **The dragon** (player-named, default "Sprocket") | Hatchling | Communicates in feelings, pictures, and very short riddles. Shy, curious, easily startled, loves warm socks. |
 | **Great-Aunt June Hollis** | Mentor, trusted adult | Lives next door. Retired science teacher. Kept a dragon herself as a girl, and her old notebook becomes the player's **Field Journal**. Meets the dragon on the afternoon of Day 1 and explains why Crane is a danger. |
 | **Mom & Dad** | Family (two-parent household, fixed) | Busy, kind, observant. Join the Keeper Circle together, in Chapter 2 by default or earlier if the player tells them (§5.4). |
-| **Kit** (younger sibling, age 7) | Family | Nosy and funny. Joins the Keeper Circle on Day 3. |
+| **Kit** (younger sibling, age 7) | Family | Nosy and funny. Joins the Keeper Circle on Day 3 (or earlier if the player shows Kit the dragon). Introduced to the player at the start of the Day 1 evening ("Your little sibling, Kit, is seven years old and very curious about everything"), and named with their role whenever they appear. |
 | **Silas Crane** | Antagonist | Collector of "Rare and Remarkable Things." Pompous, never scary-violent; he wants the dragon for a display case. |
 | **Crane's scouts** | Threats | A "Neighborhood Wildlife Survey" person with a clipboard (fake), and a camera drone named BLINK. BLINK is left behind when Crane leaves (Day 7) and Kit reprograms it as a friendly lookout. |
 | **Mr. Patel** | Corner store owner | Friendly. Runs sales, gives change, has opinions about dandelions. |

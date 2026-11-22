@@ -71,6 +71,11 @@ test('evening: an unprepared night still ends well, with honest choices only', a
   await page.getByRole('button', { name: 'Head home ➜' }).click(); // second tap: go without the tip
   await expect(page.locator('[data-eve="blanket"]')).toHaveClass(/locked/);
 
+  // The evening starts by introducing the household, so players know who Kit is.
+  await expect(page.locator('#panel')).toContainText('Your little sibling, Kit');
+  await page.getByRole('button', { name: "Let's go" }).click();
+  await expect(page.locator('#banner')).toContainText('Kit (your little sibling) is coming!', { timeout: 20_000 });
+
   // With no preparation, the dragon squeaks when Kit knocks.
   await expect(page.getByText('What do you say?')).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('#panel')).not.toContainText(/secret/i);

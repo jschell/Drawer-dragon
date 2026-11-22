@@ -11,5 +11,16 @@
     ],
     "closing": "Aunt June is the first member of your Keeper Circle. Now you're not looking after the dragon alone.",
     "button": "Thanks, Aunt June!"
+  },
+  "eveningIntro": {
+    "title": "Evening at home",
+    "emoji": "🏠",
+    "paragraphs": [
+      "{name} is curled up in the nest in your room.",
+      "Mom and Dad are downstairs. Your little sibling, Kit, is seven years old and very curious about everything. Kit is still wide awake.",
+      "Your family may stop by to say goodnight. When you hear footsteps, help {name} stay calm and quiet: dim the lamp, hum, or use the blanket if you found the tip.",
+      "And remember Aunt June's warning: watch the window for Crane's helpers. Tap anything suspicious to close the curtains."
+    ],
+    "button": "Let's go"
   }
 }

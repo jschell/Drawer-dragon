@@ -120,6 +120,7 @@ const ChoiceSchema = z.object({
 const VisitorSchema = z.object({
   id: z.string(),
   name: z.string(),
+  role: z.string(),
   emoji: z.string(),
   at: z.number().positive(),
   warn: z.number().positive(),
@@ -159,6 +160,12 @@ const StorySchema = z.object({
     emoji: z.string(),
     paragraphs: z.array(z.string()).min(1),
     closing: z.string(),
+    button: z.string(),
+  }),
+  eveningIntro: z.object({
+    title: z.string(),
+    emoji: z.string(),
+    paragraphs: z.array(z.string()).min(1),
     button: z.string(),
   }),
 });

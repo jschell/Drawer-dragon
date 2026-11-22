@@ -184,8 +184,7 @@ export class Hud {
         break;
       case 'evening-start':
         this.research.hide();
-        this.paused = false;
-        this.toast(`Evening. ${n} is curled up in the nest. Family will stop by: keep ${n} calm, and watch the window for Crane's helpers!`);
+        this.showEveningIntro(); // the evening clock waits until the player taps "Let's go"
         break;
       case 'footsteps': {
         sfx.play('steps');
@@ -297,7 +296,7 @@ export class Hud {
     if (e.visitor) {
       const v = content.evening.visitors.find((x) => x.id === e.visitor!.id)!;
       const left = Math.max(0, Math.ceil(e.visitor.knockAt - e.t));
-      banner.innerHTML = `👣 Footsteps in the hall... <b>${esc(v.name)}</b> is coming! <span class="count">${left}</span>`;
+      banner.innerHTML = `👣 Footsteps in the hall... <b>${esc(v.name)}</b> (${esc(v.role)}) is coming! <span class="count">${left}</span>`;
       banner.hidden = false;
     } else banner.hidden = true;
   }
@@ -406,6 +405,7 @@ export class Hud {
         if (this.state.phase === 'egg') this.toast('Tap the egg to help it hatch!');
         if (this.state.phase === 'naming') this.showNaming();
         if (this.state.part === 'morning' && this.state.phase === 'done') this.showJune();
+        if (this.state.part === 'evening' && this.state.evening.t === 0) this.showEveningIntro();
         if (this.state.part === 'evening' && this.state.evening.awaiting) this.showVisitor(this.state.evening.awaiting);
         if (this.state.part === 'evening' && this.state.evening.over) this.showBedtime();
         this.render();
@@ -689,6 +689,23 @@ export class Hud {
     $('#panel [data-x="next"]').addEventListener('click', () => {
       sfx.play('tap');
       this.showAfternoonIntro();
+    });
+  }
+
+  /** Introduces the household (who Kit is) and recaps the evening's goals. */
+  private showEveningIntro() {
+    if (this.state.part !== 'evening' || this.state.evening.t > 0) return;
+    const j = content.story.eveningIntro;
+    const fill = (t: string) => esc(t).replaceAll('{name}', this.name);
+    this.openPanel(`
+      <div class="thought-icons" aria-hidden="true">${j.emoji}</div>
+      <h2>${esc(j.title)} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
+      <div class="story">${j.paragraphs.map((p) => `<p>${fill(p)}</p>`).join('')}</div>
+      <div class="row"><button class="btn big" data-x="go">${esc(j.button)}</button></div>`);
+    $('#panel [data-x="read"]').addEventListener('click', () => this.speakText(j.paragraphs.join(' ').replaceAll('{name}', this.state.dragon.name)));
+    $('#panel [data-x="go"]').addEventListener('click', () => {
+      sfx.play('tap');
+      this.closePanel();
     });
   }
 

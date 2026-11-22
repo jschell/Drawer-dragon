@@ -12,6 +12,7 @@
     {
       "id": "kit",
       "name": "Kit",
+      "role": "your little sibling",
       "emoji": "🧒",
       "at": 24,
       "warn": 12,
@@ -27,6 +28,7 @@
     {
       "id": "mom",
       "name": "Mom",
+      "role": "your mom",
       "emoji": "👩",
       "at": 58,
       "warn": 12,
@@ -41,6 +43,7 @@
     {
       "id": "dad",
       "name": "Dad",
+      "role": "your dad",
       "emoji": "👨",
       "at": 100,
       "warn": 12,
