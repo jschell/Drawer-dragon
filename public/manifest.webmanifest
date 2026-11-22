@@ -1,7 +1,7 @@
 {
   "name": "Dragon Keeper",
   "short_name": "Dragon Keeper",
-  "description": "Raise a secret baby dragon. A cozy care game for ages 8-11.",
+  "description": "Raise a baby dragon and keep it safe. A cozy care game for ages 8-11.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

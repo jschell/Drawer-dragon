@@ -1,4 +1,5 @@
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './wording';
 
 /** Clicks a point in the 1334×750 game world, whatever the screen size. */
 async function tapWorld(page: Page, x: number, y: number) {

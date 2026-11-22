@@ -28,7 +28,7 @@ The player keeps the dragon healthy and calm, learns how to care for it from a f
 5. **Private by design.** No accounts, no analytics, no network calls, no real personal information ever entered.
 
 ### 1.2 Originality guardrail
-Inspired by the "kid secretly raises a dragon" premise. All characters, names, places, websites, and phrases are original to this project. Do not use names, characters, or terms from *The Dragon in the Sock Drawer* or any other existing work.
+Inspired by the "kid raises a dragon at home" premise. All characters, names, places, websites, and phrases are original to this project. Do not use names, characters, or terms from *The Dragon in the Sock Drawer* or any other existing work.
 
 ---
 
@@ -71,9 +71,9 @@ Minimum browser: Safari on iOS/iPadOS 16+. Chromebooks are **not** a target for 
 |---|---|---|
 | **The Keeper** (player-named) | Player character, age ~10 | The player picks an avatar and a nickname. Suggested nicknames come from a list; free text is optional and stays on the device. |
 | **The dragon** (player-named, default "Sprocket") | Hatchling | Communicates in feelings, pictures, and very short riddles. Shy, curious, easily startled, loves warm socks. |
-| **Great-Aunt June Hollis** | Mentor, trusted adult | Lives next door. Retired science teacher. Kept a dragon herself as a girl, and her old notebook becomes the player's **Field Journal**. In on the secret from the evening of Day 1. |
+| **Great-Aunt June Hollis** | Mentor, trusted adult | Lives next door. Retired science teacher. Kept a dragon herself as a girl, and her old notebook becomes the player's **Field Journal**. Meets the dragon on the afternoon of Day 1 and explains why Crane is a danger. |
 | **Mom & Dad** | Family (two-parent household, fixed) | Busy, kind, observant. Join the Keeper Circle together, in Chapter 2 by default or earlier if the player tells them (§5.4). |
-| **Kit** (younger sibling, age 7) | Family | Nosy and funny. Joins the Keeper Circle on Day 3. |
+| **Kit** (younger sibling, age 7) | Family | Nosy and funny. Joins the Keeper Circle on Day 3 (or earlier if the player shows Kit the dragon). Introduced to the player at the start of the Day 1 evening ("Your little sibling, Kit, is seven years old and very curious about everything"), and named with their role whenever they appear. |
 | **Silas Crane** | Antagonist | Collector of "Rare and Remarkable Things." Pompous, never scary-violent; he wants the dragon for a display case. |
 | **Crane's scouts** | Threats | A "Neighborhood Wildlife Survey" person with a clipboard (fake), and a camera drone named BLINK. BLINK is left behind when Crane leaves (Day 7) and Kit reprograms it as a friendly lookout. |
 | **Mr. Patel** | Corner store owner | Friendly. Runs sales, gives change, has opinions about dandelions. |
@@ -156,6 +156,8 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 
 ### 5.4 The Keeper Circle (secrecy without lying)
 - The dragon is hidden **from Crane and strangers**, never in order to deceive family.
+- **Why it matters (told on Day 1):** Aunt June explains that Crane keeps rare things in glass cases, and a dragon in a glass case can never stretch its wings, grow or fly. His helpers (the BLINK drone, fake "bird counters" with clipboards, and fake websites) are trying to find where dragons live.
+- **Wording rule: never call it a "secret."** Child-safety programs teach kids that being asked to keep secrets from family is a warning sign. In everything players see, the dragon is kept *safe* or *out of sight* from strangers, and family can always be told. Two tests enforce this: `tests/wording.test.ts` checks every content and source file, and `e2e/wording.ts` watches everything shown on screen during every browser test (text, short-lived messages, and the labels read-aloud uses). Either one fails the build if the word "secret" appears.
 - **Members** each grant a **Help** (a new ability) and a **Rule** (a new constraint that shapes play):
 
 | Member | Joins | Help | Rule |
@@ -301,7 +303,7 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
   1. The player reviews everything on the Evidence Board: the posters, the fake site's Check the Nest results, the directory cross-check, the newspaper article, the business card, the clipboard handwriting.
   2. They choose the **3 strongest pieces** and put them in order. Some pieces are weak ("He has a mean face"), and June gently explains why those don't count.
   3. They present at the **neighborhood meeting** in the library's community room.
-  4. The dragon itself stays secret: the player shows that the "rescue" is fake, without revealing why they care.
+  4. The dragon itself stays safely out of sight: the player shows that the "rescue" is fake, without revealing why they care.
 - **Evening: Protect.**
   - Neighbors take down the posters, and the real wildlife rescue posts a warning about the fake one.
   - **Comic exit:** Crane's van rattles out of town with an empty display case strapped on top. BLINK, left behind, gets stuck in the treehouse.
@@ -326,7 +328,7 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 - **Evening: The choice.**
   - At sunset on the hill, the dragon sends its final thought: both pictures at once, home and the flock.
   - The player and dragon **choose together**:
-    - **Stay on Larkspur Lane:** the dragon becomes the neighborhood's secret guardian, and the treehouse gets a dragon-sized upgrade. *Epilogue:* the first snow, with the dragon warming the family on the porch.
+    - **Stay on Larkspur Lane:** the dragon becomes the neighborhood's hidden guardian, and the treehouse gets a dragon-sized upgrade. *Epilogue:* the first snow, with the dragon warming the family on the porch.
     - **Fly with the flock:** a big flight scene over the town as the flock arrives. *Epilogue:* a postcard (a memory card) from the high lakes, then next summer, a shape in the sky heading back to Larkspur Lane.
   - **Bond** (hidden, §6.4) only adds extra epilogue moments. It never decides or limits the choice.
 
@@ -337,7 +339,7 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
   - Fix-Its handled by owning up;
   - good privacy choices on trap sites;
   - how many dragon thoughts the player solved (hints count the same as solving alone).
-- Bond tiers add **bonus epilogue moments**: the dragon's drawing of the family, a secret trick, a second postcard, or June's old dragon appearing in the flock.
+- Bond tiers add **bonus epilogue moments**: the dragon's drawing of the family, a surprise trick, a second postcard, or June's old dragon appearing in the flock.
 - Bond **never** unlocks a "good" or "bad" ending, and is never shown as a number, grade or rank.
 - An all-hints, all-mistakes playthrough still gets a warm, complete ending.
 

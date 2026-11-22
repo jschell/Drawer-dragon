@@ -1047,3 +1047,12 @@ input.name {
 .zip-row input.zip {
   width: 7.5em;
 }
+.story {
+  text-align: left;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.story p {
+  font-size: calc(var(--u) * 1.05) !important;
+  margin: 3px 0 !important;
+}

@@ -184,8 +184,7 @@ export class Hud {
         break;
       case 'evening-start':
         this.research.hide();
-        this.paused = false;
-        this.toast(`Evening. ${n} is curled up in the nest. Family will stop by: keep ${n} calm, and keep an eye on the window!`);
+        this.showEveningIntro(); // the evening clock waits until the player taps "Let's go"
         break;
       case 'footsteps': {
         sfx.play('steps');
@@ -297,7 +296,7 @@ export class Hud {
     if (e.visitor) {
       const v = content.evening.visitors.find((x) => x.id === e.visitor!.id)!;
       const left = Math.max(0, Math.ceil(e.visitor.knockAt - e.t));
-      banner.innerHTML = `👣 Footsteps in the hall... <b>${esc(v.name)}</b> is coming! <span class="count">${left}</span>`;
+      banner.innerHTML = `👣 Footsteps in the hall... <b>${esc(v.name)}</b> (${esc(v.role)}) is coming! <span class="count">${left}</span>`;
       banner.hidden = false;
     } else banner.hidden = true;
   }
@@ -405,7 +404,8 @@ export class Hud {
         else this.closePanel();
         if (this.state.phase === 'egg') this.toast('Tap the egg to help it hatch!');
         if (this.state.phase === 'naming') this.showNaming();
-        if (this.state.part === 'morning' && this.state.phase === 'done') this.showAfternoonIntro();
+        if (this.state.part === 'morning' && this.state.phase === 'done') this.showJune();
+        if (this.state.part === 'evening' && this.state.evening.t === 0) this.showEveningIntro();
         if (this.state.part === 'evening' && this.state.evening.awaiting) this.showVisitor(this.state.evening.awaiting);
         if (this.state.part === 'evening' && this.state.evening.over) this.showBedtime();
         this.render();
@@ -673,7 +673,40 @@ export class Hud {
       </div>
       <div class="row"><button class="btn big" data-x="next">Off to school ➜ the afternoon</button></div>`);
     sfx.play('trill');
-    $('#panel [data-x="next"]').addEventListener('click', () => this.showAfternoonIntro());
+    $('#panel [data-x="next"]').addEventListener('click', () => this.showJune());
+  }
+
+  /** Aunt June explains who the collector is and why the dragon needs protecting. */
+  private showJune() {
+    const j = content.story.juneIntro;
+    this.openPanel(`
+      <div class="thought-icons" aria-hidden="true">${j.emoji}</div>
+      <h2>${esc(j.title)} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
+      <div class="story">${j.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
+      <p class="hint">🤝 ${esc(j.closing)}</p>
+      <div class="row"><button class="btn big" data-x="next">${esc(j.button)}</button></div>`);
+    $('#panel [data-x="read"]').addEventListener('click', () => this.speakText([...j.paragraphs, j.closing].join(' ')));
+    $('#panel [data-x="next"]').addEventListener('click', () => {
+      sfx.play('tap');
+      this.showAfternoonIntro();
+    });
+  }
+
+  /** Introduces the household (who Kit is) and recaps the evening's goals. */
+  private showEveningIntro() {
+    if (this.state.part !== 'evening' || this.state.evening.t > 0) return;
+    const j = content.story.eveningIntro;
+    const fill = (t: string) => esc(t).replaceAll('{name}', this.name);
+    this.openPanel(`
+      <div class="thought-icons" aria-hidden="true">${j.emoji}</div>
+      <h2>${esc(j.title)} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
+      <div class="story">${j.paragraphs.map((p) => `<p>${fill(p)}</p>`).join('')}</div>
+      <div class="row"><button class="btn big" data-x="go">${esc(j.button)}</button></div>`);
+    $('#panel [data-x="read"]').addEventListener('click', () => this.speakText(j.paragraphs.join(' ').replaceAll('{name}', this.state.dragon.name)));
+    $('#panel [data-x="go"]').addEventListener('click', () => {
+      sfx.play('tap');
+      this.closePanel();
+    });
   }
 
   private showAfternoonIntro() {
@@ -681,7 +714,7 @@ export class Hud {
       <h2>📚 After school: Larkspur Library</h2>
       <p>The librarian, Ms. Ortiz, points you to Computer 2.</p>
       <p class="riddle">Find out: ${esc(content.archive.question)}</p>
-      <p class="sub">Tonight your family will knock on your door. ${this.name} gets scared of knocks. Search the dragon-care websites, and check each one before you trust it!</p>
+      <p class="sub">Tonight your family will knock on your door, and ${this.name} gets scared of knocks. Search the dragon-care websites, and check each one before you trust it: remember Aunt June's warning about Crane's fake websites!</p>
       <div class="row"><button class="btn big" data-x="go">Start searching</button></div>`);
     $('#panel [data-x="go"]').addEventListener('click', () => {
       sfx.play('tap');
@@ -750,7 +783,7 @@ export class Hud {
             ${line(e.missed === 0, `Spotted ${e.spotted} of ${content.evening.windowThings.filter((w) => w.suspicious).length} scouts`)}</ul></div>
         </div>
       </div>
-      <p>👁️ The collector is <b>${attentionWord(a).replace('!', '')}</b>${a < 20 ? '. Your secret is safe!' : a < 50 ? '. Be careful tomorrow.' : '. BLINK will be back...'} · 🤝 Keeper Circle: ${esc(circle.join(', '))}</p>
+      <p>👁️ The collector is <b>${attentionWord(a).replace('!', '')}</b>${a < 20 ? '. Your dragon is safe!' : a < 50 ? '. Be careful tomorrow.' : '. BLINK will be back...'} · 🤝 Keeper Circle: ${esc(circle.join(', '))}</p>
       <div>${s.stickers.map((x) => `<span class="sticker">⭐ ${esc(x)}</span>`).join('')}</div>
       <p class="sub">Thanks for playtesting Day 1!</p>
       <div class="row">
