@@ -24,8 +24,8 @@ One full in-game day, about 10–12 minutes. Every part saves automatically.
 - **Save the tip** from the trustworthy page to unlock the **blanket** for tonight. You can only save it after deciding to trust the page.
 
 **🌙 Evening: protect** (prototype 3)
-- Kit, Mom and Dad stop by. **Footsteps** give a countdown before each knock: dim the lamp, hum and use the blanket so the dragon stays quiet.
-- If it squeaks, every reply on offer is **honest**. Showing Kit the dragon makes Kit join the **Keeper Circle**.
+- Kit, Mom and Dad stop by. **Footsteps** give a countdown before each knock, and knocks startle a young dragon: dim the lamp, hum and use the blanket so it stays calm.
+- If it squeaks and someone asks, the first choice is always to **show them the dragon**: Kit, Mom or Dad then joins the **Keeper Circle** and helps from then on. Every other reply is honest too. A player can always tell family; the game never penalises it.
 - **Watch the window:** tap the collector's camera drone **BLINK** and the fake "wildlife surveyor" to close the curtains. A moth or the neighbor's cat are harmless. Missed scouts (and a bright lamp) raise **Collector Attention**.
 - The day ends with a summary, a photo of the sleeping dragon, and stickers. There is no fail state anywhere.
 

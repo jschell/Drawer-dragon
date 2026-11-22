@@ -57,8 +57,9 @@ export interface EveningState {
   window: { id: string; until: number } | null;
   spotted: number;
   missed: number;
-  quiet: number;
-  noisy: number;
+  calmKnocks: number; // knocks the dragon stayed calm through
+  scaredKnocks: number; // knocks that startled it
+  helpers: number; // visits from family who already know and came to help
   over: boolean;
 }
 
@@ -156,7 +157,8 @@ export type GameEvent =
   | { type: 'attention'; delta: number; level: number }
   | { type: 'evening-start' }
   | { type: 'footsteps'; visitorId: string; seconds: number }
-  | { type: 'knock'; visitorId: string; quiet: boolean }
+  | { type: 'knock'; visitorId: string; calm: boolean }
+  | { type: 'helper-visit'; visitorId: string }
   | { type: 'visitor-left'; visitorId: string; choiceId: string | null; joined: boolean }
   | { type: 'window-thing'; thingId: string }
   | { type: 'window-gone'; thingId: string; missed: boolean }
@@ -199,8 +201,9 @@ export function initialState(seed = 12345): GameState {
       window: null,
       spotted: 0,
       missed: 0,
-      quiet: 0,
-      noisy: 0,
+      calmKnocks: 0,
+      scaredKnocks: 0,
+      helpers: 0,
       over: false,
     },
     t: 0,

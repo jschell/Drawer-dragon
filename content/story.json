@@ -18,7 +18,8 @@
     "paragraphs": [
       "{name} is curled up in the nest in your room.",
       "Mom and Dad are downstairs. Your little sibling, Kit, is seven years old and very curious about everything. Kit is still wide awake.",
-      "Your family may stop by to say goodnight. When you hear footsteps, help {name} stay calm and quiet: dim the lamp, hum, or use the blanket if you found the tip.",
+      "Your family may stop by to say goodnight. A sudden knock can startle a young dragon, like a nesting bird. When you hear footsteps, help {name} stay calm: dim the lamp, hum, or use the blanket if you found the tip.",
+      "If anyone in your family asks about the dragon, you can always show them. Family can help keep {name} safe.",
       "And remember Aunt June's warning: watch the window for Crane's helpers. Tap anything suspicious to close the curtains."
     ],
     "button": "Let's go"

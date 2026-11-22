@@ -83,16 +83,23 @@ test('evening: an unprepared night still ends well, with honest choices only', a
   await expect(page.locator('#panel')).not.toContainText(/secret/i);
   await page.getByRole('button', { name: 'Show Kit the dragon' }).click();
 
-  // Later visitors may also hear it; answer any of them honestly until bedtime.
+  // Later visitors may also hear it. The first choice is always to show them the
+  // dragon (spec §5.4), so this run tells Mom & Dad too.
   const goodnight = page.getByRole('button', { name: /^Goodnight, / });
+  let sawParentChoice = false;
   for (let i = 0; i < 60 && !(await goodnight.isVisible()); i++) {
     const reply = page.locator('#panel .choice').first();
-    if (await reply.isVisible()) await reply.click();
+    if (await reply.isVisible()) {
+      const label = (await reply.textContent()) ?? '';
+      if (/^Show (Mom|Dad) the dragon$/.test(label.trim())) sawParentChoice = true;
+      await reply.click();
+    }
     await page.waitForTimeout(250);
   }
+  expect(sawParentChoice, 'a parent visit must offer "Show Mom/Dad the dragon"').toBe(true);
   await goodnight.click();
   await expect(page.getByRole('heading', { name: /Day 1 complete/ })).toBeVisible({ timeout: 10_000 });
-  await expect(page.locator('#panel')).toContainText('Keeper Circle: Aunt June, Kit');
+  await expect(page.locator('#panel')).toContainText('Keeper Circle: Aunt June, Kit, Mom & Dad');
   await expect(page.locator('.sticker')).toContainText(['I Trusted My Family']);
 
 });
