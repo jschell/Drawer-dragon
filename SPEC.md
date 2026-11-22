@@ -1,9 +1,12 @@
-# Dragon Keeper — Game Spec (v0.2)
+# Dragon Keeper — Game Spec (v0.3)
 
 > Working title. A cozy creature-care, light-stealth, and detective game for ages 8–11 (grades 3–5), played in the browser on iPad, iPhone, and laptops.
 
 **Status:** Draft spec for the Chapter 1 vertical slice (Days 1–3).
 **Changes since v0.1 brief:** device targets set; secrecy reframed so lying is not a mechanic; original names throughout; meters cut from six to five, with at most three on screen at once.
+**Changes in v0.3:** two-parent household fixed; generated art; generated voice optional with text first; length set at 3 chapters × 3 days; parents can join early; classroom mode deferred (see §12).
+
+**Scope:** 3 chapters × 3 days each (9 days, roughly 1.5–2 hours total). Chapter 1 is the vertical slice.
 
 ---
 
@@ -67,7 +70,7 @@ Minimum browser: Safari on iOS/iPadOS 16+. Chromebooks are **not** a target for 
 | **The Keeper** (player-named) | Player character, age ~10 | The player picks an avatar and a nickname. Suggested nicknames come from a list; free text is optional and stays on the device. |
 | **The dragon** (player-named, default "Sprocket") | Hatchling | Communicates in feelings, pictures, and very short riddles. Shy, curious, easily startled, loves warm socks. |
 | **Great-Aunt June Hollis** | Mentor, trusted adult | Lives next door. Retired science teacher. Kept a dragon herself as a girl, and her old notebook becomes the player's **Field Journal**. In on the secret from the evening of Day 1. |
-| **Mom / Dad** (player picks a one- or two-parent household) | Family | Busy, kind, observant. Join the Keeper Circle in Chapter 2. |
+| **Mom & Dad** | Family (two-parent household, fixed) | Busy, kind, observant. Join the Keeper Circle together, in Chapter 2 by default or earlier if the player tells them (§5.4). |
 | **Kit** (younger sibling, age 7) | Family | Nosy and funny. Joins the Keeper Circle on Day 3. |
 | **Silas Crane** | Antagonist | Collector of "Rare and Remarkable Things." Pompous, never scary-violent; he wants the dragon for a display case. |
 | **Crane's scouts** | Threats | A "Neighborhood Wildlife Survey" person with a clipboard (fake), and a camera drone named BLINK. |
@@ -155,12 +158,17 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 |---|---|---|---|
 | Aunt June | Day 1 evening | Field Journal, charcoal, advice line ("Ask June" hint button) | "The dragon's needs come first, then the fun." |
 | Kit | Day 3 | Lookout during evenings (warns of visitors) | "Kit gets to name one of the dragon's tricks." |
-| Mom/Dad | Chapter 2 | Bigger grocery budget, the garage | "No fire indoors," so the nest moves to the treehouse. |
+| Mom & Dad | Chapter 2 opening (default), or any time from Day 2 if the player tells them | Bigger grocery budget, the garage | "No fire indoors." In Chapter 1 this means smoke rings by the open window only; from Chapter 2 the nest moves to the treehouse. |
 
 - **Discovery is never a failure.** When a family member is about to notice, the player can:
   - **Tell them now** (they join early, and the player gets an "I trusted my family" journal sticker), or
   - **Wait for the right moment** with Aunt June's help (the planned story beat).
   - Neither choice is ever "wrong," and neither is a lie.
+- **Telling Mom & Dad early.** From Day 2 morning, a "Tell Mom & Dad" option appears in the Journal and in any scene where a parent is present.
+  - It plays a short, warm scene: surprise, a few worried questions, then they say yes, with the rule.
+  - It sets the flag `parentsJoined` and the chapter-pinned story still plays. Scenes written around "Mom & Dad don't know yet" get an alternate version, e.g. the Day 2 "set the table" beat becomes "Dad helps you prep the dragon's evening snack."
+  - **Chapter 2 opens with two variants:** the planned "telling the parents" scene if they don't know yet, or a "family meeting about the treehouse" if they already do.
+  - Parents joining early must never make the game *harder*. Their Help applies immediately, and their Rule is a constraint the content is tuned around.
 - **The player is never asked to make up a false story.** Dialogue options in tense moments are honest: change the subject truthfully, ask for help, or tell them.
 
 ### 5.5 Evening protection & Fix-Its (Light stealth & responsibility)
@@ -187,7 +195,8 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
   - 🌧️ + 🥶 + "Cold rain inside my belly" means Spark is low.
   - 👀 + 🪟 + "A red eye that does not blink" means BLINK is outside.
 - **Three-step hints:** (1) highlight a word, (2) Field Journal link, (3) Aunt June spells it out. Hints are free; using them earns no penalty.
-- **Read-aloud** is available on every text panel, using the device's built-in speech (Web Speech API), with a recorded-voice upgrade later.
+- **Text first.** All dialogue and thoughts are on-screen text that the player reads; that's the default experience.
+- **Generated voice (optional):** a read-aloud button on every text panel uses generated speech (the device's built-in voices via the Web Speech API in v1). It's off by default and can be turned on in Settings. It's a support for struggling readers, not a replacement for reading.
 
 ### 5.8 Corner store (Money & budgeting)
 - Weekly allowance plus optional chores (help a neighbor, water plants).
@@ -429,7 +438,10 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 - **Text panels:** at most 2 lines per bubble on iPhone, each with a read-aloud button.
 
 ### 9.2 Art direction
-- Warm, cozy picture-book style with soft outlines, drawn as SVG/vector art in the repo so it stays crisp at any size and small to download.
+- **Generated art.** All art is generated as code-drawn SVG/vector shapes in the repo, not hand-drawn. It stays crisp at any size and small to download.
+  - The dragon, characters, rooms and props are built from reusable parts (shapes, palettes, poses) so the art is consistent across scenes.
+  - No external image-generation services at runtime; everything ships in the bundle.
+- Style: warm, cozy picture-book look with soft outlines and a fixed shared palette.
 - Dragon expressiveness is the top priority: idle animations, reactions to every action, at least 12 distinct moods.
 - Crane is comic, not frightening: a tall hat, a long coat, a fussy mustache. BLINK is round and goofy.
 
@@ -438,7 +450,7 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 - Separate volume sliders. Muted by default on the first visit until the player taps "Sound on."
 
 ### 9.4 Accessibility
-- Read-aloud for all text. Large text and dyslexia-friendly font options.
+- Optional read-aloud (generated voice, off by default) for all text. Large text and dyslexia-friendly font options.
 - Meters use icon + shape + color. Meets WCAG 2.1 AA contrast. Reduced-motion mode.
 - Timers can be lengthened or turned off.
 - Every puzzle can be done with taps alone; no drag *required* (tap-to-select, tap-to-place works as an alternative).
@@ -466,6 +478,7 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
   - It runs a *greedy* policy, a *random* policy (1,000 seeds), and a *worst-choices* policy.
   - It asserts each day is always completable, no state is stuck, and meters stay within bounds.
   - It asserts every NPC is where its schedule says.
+  - It runs **both branches**: parents told early (on each possible day) and parents told in the planned Chapter 2 scene.
 - **End-to-end tests (Playwright, WebKit + Chromium)** on the iPhone SE, iPad (gen 9), and Desktop 1280×720 presets: load, play the Day 1 tutorial, save and reload, plus a check that the page makes no network requests after load.
 - **Real device check** on an iPhone SE 2 and an iPad 9th gen before each milestone.
 - **Kid playtests:** 5–8 kids aged 8–11 per milestone, observed. Note where they smile, where they stall, and which hints they use.
@@ -490,10 +503,17 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 
 ---
 
-## 12. Open questions
-1. One-parent vs two-parent household: player choice (as specced), or fixed?
-2. Art: hand-drawn SVG by an artist, or code-generated vector art first and an artist later?
-3. Recorded voice acting for the dragon's thoughts and Aunt June, or device speech only for v1?
-4. Classroom mode: teacher-facing chapter select and a skills summary page (stored locally)?
-5. Chapter count and arc length: 3 chapters × 3 days, or longer?
-6. Should "Tell them now" be able to bring a parent into the Circle in Chapter 1, skipping ahead in the story?
+## 12. Decisions & deferred items
+
+| # | Question | Decision |
+|---|---|---|
+| 1 | Household | **Two-parent household, always.** |
+| 2 | Art | **Generated art** (code-drawn SVG/vector, §9.2). |
+| 3 | Voice | **Generated voice, optional and off by default.** Reading on-screen text is the main experience (§5.7). |
+| 4 | Classroom mode | **Deferred.** Not in v1 scope. |
+| 5 | Length | **3 chapters × 3 days.** Revisit after the Chapter 1 playtests. |
+| 6 | Telling parents early | **Allowed** from Day 2 (§5.4); both branches are tested (§10.3). |
+
+### Still open
+- Chapter 2 and 3 outlines (to write after the M2 playtest).
+- Which generated voice to use, and whether to ship a bundled voice later if device voices are uneven.
