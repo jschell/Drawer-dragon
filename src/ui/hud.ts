@@ -1,13 +1,15 @@
-import { dataUri, foodArt, sockArt } from '../art/svg';
+import { dataUri, foodArt, slipperArt, sockArt } from '../art/svg';
 import { sfx } from '../audio/sfx';
-import { content, type Nutrient, type ThoughtDef } from '../core/content';
-import { attentionWord } from '../core/day';
+import { archiveFor, content, dayDef, eveningFor, type Nutrient, type ThoughtDef } from '../core/content';
+import { attentionWord, visitorDef } from '../core/day';
 import { isReady, step, TUNING } from '../core/reducer';
 import { clearSave, loadPref, savePref, writeSave } from '../core/save';
-import { initialState, type Action, type GameEvent, type GameState } from '../core/state';
+import { initialState, type Action, type GameEvent, type GameState, type StoneId } from '../core/state';
 import type { BedroomScene } from '../scenes/BedroomScene';
 import { showFindOutMore } from './findOutMore';
 import { ResearchScreen } from './research';
+import { money, StoreScreen } from './store';
+import { LAST_DAY } from '../core/days';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
 
@@ -28,11 +30,13 @@ export class Hud {
   private spiceScoops: Record<string, number> = {};
   private fixitInit = 0;
   private research: ResearchScreen;
+  private storeScreen: StoreScreen;
 
   constructor(initial: GameState) {
     this.state = initial;
     sfx.enabled = loadPref('sound', true);
     this.research = new ResearchScreen(this);
+    this.storeScreen = new StoreScreen(this);
   }
 
   attach(scene: BedroomScene) {
@@ -63,6 +67,19 @@ export class Hud {
     this.render();
     writeSave(this.state);
     return r.events;
+  }
+
+  /** Tonight's schedule and today's research set. */
+  private get ev() {
+    return eveningFor(content, this.state.day);
+  }
+
+  private get archive() {
+    return archiveFor(content, this.state.day);
+  }
+
+  private get today() {
+    return dayDef(content, this.state.day);
   }
 
   private get name() {
@@ -114,7 +131,7 @@ export class Hud {
         const lines = {
           perfect: `Perfect mix! ${n}'s belly glows warm and bright.`,
           'too-much': "Whoa, that's a double batch! Too much fire... hic!",
-          'too-little': 'A little warmer, but that mix was too small.',
+          'too-little': this.today.morning.recipeScale === 1 ? 'A little warmer, but that mix was too small.' : `A little warmer, but ${n} has grown! Check the recipe card for today's batch size.`,
           'off-ratio': "Hmm, a lumpy mix. Check the recipe card's parts.",
         };
         setTimeout(() => {
@@ -176,7 +193,7 @@ export class Hud {
         setTimeout(() => this.toast(`${n} is fed, warm and calm. Ready for the day! 🎒`), 900);
         break;
       case 'search-results':
-        if (e.feedback === 'ok' && e.ids.includes(content.archive.answerPageId) && this.state.research.searches <= 3) sfx.play('sparkle');
+        if (e.feedback === 'ok' && e.ids.includes(this.archive.answerPageId) && this.state.research.searches <= 3) sfx.play('sparkle');
         break;
       case 'trap':
         if (e.choice === 'share') sfx.play('startle');
@@ -184,6 +201,7 @@ export class Hud {
         break;
       case 'evening-start':
         this.research.hide();
+        this.storeScreen.hide();
         this.showEveningIntro(); // the evening clock waits until the player taps "Let's go"
         break;
       case 'footsteps': {
@@ -192,7 +210,7 @@ export class Hud {
       }
       case 'knock': {
         sfx.play('knock');
-        const v = content.evening.visitors.find((x) => x.id === e.visitorId)!;
+        const v = visitorDef(this.ev, e.visitorId, content)!;
         this.toast(`<b>Knock knock!</b> ${esc(v.name)}: ${esc(v.line)}`);
         if (e.calm) setTimeout(() => this.toast(esc(v.calmLine)), 2600);
         else {
@@ -203,7 +221,7 @@ export class Hud {
       }
       case 'helper-visit': {
         sfx.play('purr');
-        const v = content.evening.visitors.find((x) => x.id === e.visitorId)!;
+        const v = visitorDef(this.ev, e.visitorId, content)!;
         this.toast(esc(v.knownLine));
         break;
       }
@@ -214,12 +232,12 @@ export class Hud {
         if (this.state.evening.windowIdx === 0) this.toast('Something is moving outside the window... Tap it if it looks suspicious!');
         break;
       case 'window-gone': {
-        const w = content.evening.windowThings.find((x) => x.id === e.thingId)!;
+        const w = this.ev.windowThings.find((x) => x.id === e.thingId)!;
         if (e.missed && w.missLine) this.toast(`${esc(w.missLine)} <span class="sub-dark">(Collector Attention went up.)</span>`);
         break;
       }
       case 'spotted': {
-        const w = content.evening.windowThings.find((x) => x.id === e.thingId)!;
+        const w = this.ev.windowThings.find((x) => x.id === e.thingId)!;
         sfx.play(e.suspicious ? 'sparkle' : 'tap');
         this.toast(esc(w.tapLine));
         break;
@@ -234,6 +252,29 @@ export class Hud {
           this.toast(`You drape the blanket over the nest. ${n} snuggles under it.`);
         }
         break;
+      case 'own-up-needed':
+        setTimeout(() => this.showOwnUp(), 1100);
+        break;
+      case 'owned-up':
+        sfx.play('trill');
+        break;
+      case 'allowance':
+        sfx.play('sparkle');
+        break;
+      case 'paid':
+        sfx.play('trill');
+        break;
+      case 'stepping-stones':
+        sfx.play('startle');
+        setTimeout(() => this.showStones(), 500);
+        break;
+      case 'stones-done': {
+        sfx.play('sparkle');
+        const ss = content.story.steppingStones;
+        this.toast(`${this.fill(ss.firstFeedback[e.order[0]])} ${this.fill(ss.after)}`);
+        if (this.state.evening.awaiting === 'kit') setTimeout(() => this.showVisitor('kit'), 3200);
+        break;
+      }
       case 'evening-over':
         setTimeout(() => this.showBedtime(), 1200);
         break;
@@ -257,8 +298,11 @@ export class Hud {
     if (evening) this.renderEvening();
     else $('#banner').hidden = true;
     $('.act.go').classList.toggle('ready', isReady(s));
-    if (s.part === 'afternoon') this.research.show();
+    const store = s.part === 'afternoon' && this.today.afternoon.kind === 'store';
+    if (s.part === 'afternoon' && !store) this.research.show();
     else this.research.hide();
+    if (store) this.storeScreen.show();
+    else this.storeScreen.hide();
 
     const bubble = $('#bubble');
     const th = s.thought && content.thoughts.find((t) => t.id === s.thought!.id);
@@ -277,7 +321,7 @@ export class Hud {
   private renderEvening() {
     const s = this.state;
     const e = s.evening;
-    const quiet = content.evening.calmEnough;
+    const quiet = this.ev.calmEnough;
     const a = s.world.collectorAttention;
     const meter = (k: string, emo: string, label: string, value: number, ok: boolean, word: string) => {
       const on = Math.round(value / 20);
@@ -290,6 +334,7 @@ export class Hud {
       meter('calm', '🌙', 'Calm', s.dragon.calm, s.dragon.calm >= quiet, s.dragon.calm >= quiet ? 'Calm' : s.dragon.calm < 50 ? 'Nervous' : 'Uneasy') +
       meter('attention', '👁️', 'Collector', a, a < 20, attentionWord(a));
 
+    document.querySelector('[data-eve="hum"] .lbl')!.textContent = s.world.lullabyUnlocked ? 'Lullaby' : 'Hum';
     const lamp = document.querySelector('[data-eve="lamp"] .lbl')!;
     lamp.textContent = e.lampDim ? 'Lamp on' : 'Dim lamp';
     const bl = document.querySelector<HTMLElement>('[data-eve="blanket"]')!;
@@ -300,7 +345,7 @@ export class Hud {
 
     const banner = $('#banner');
     if (e.visitor) {
-      const v = content.evening.visitors.find((x) => x.id === e.visitor!.id)!;
+      const v = visitorDef(this.ev, e.visitor!.id, content)!;
       const left = Math.max(0, Math.ceil(e.visitor.knockAt - e.t));
       banner.innerHTML = `👣 Footsteps in the hall... <b>${esc(v.name)}</b> (${esc(v.role)}) is coming! <span class="count">${left}</span>`;
       banner.hidden = false;
@@ -397,7 +442,7 @@ export class Hud {
     this.openPanel(`
       <img class="title-dragon" src="./icon.svg" alt="" />
       <h1>Dragon Keeper</h1>
-      <p class="sub">Prototype 1: Morning Care</p>
+      <p class="sub">Chapter 1: Hatchling (Days 1–3)</p>
       <p>You found a warm, speckled stone by the creek...<br/>and now it's wiggling!</p>
       <div class="row">
         ${hasSave ? '<button class="btn big" data-go="continue">Continue</button><button class="btn ghost" data-go="new">New game</button>' : '<button class="btn big" data-go="new">Tap to wake the egg</button>'}
@@ -410,7 +455,10 @@ export class Hud {
         else this.closePanel();
         if (this.state.phase === 'egg') this.toast('Tap the egg to help it hatch!');
         if (this.state.phase === 'naming') this.showNaming();
-        if (this.state.part === 'morning' && this.state.phase === 'done') this.showJune();
+        if (this.state.part === 'morning' && this.state.phase === 'done') this.startAfternoonFlow();
+        if (this.state.ownUpPending) this.showOwnUp();
+        if (this.state.part === 'evening' && this.state.evening.stones.active) this.showStones();
+        if (this.state.part === 'end') void this.showDaySummary();
         if (this.state.part === 'evening' && this.state.evening.t === 0) this.showEveningIntro();
         if (this.state.part === 'evening' && this.state.evening.awaiting) this.showVisitor(this.state.evening.awaiting);
         if (this.state.part === 'evening' && this.state.evening.over) this.showBedtime();
@@ -459,7 +507,7 @@ export class Hud {
       this.closePanel();
       this.dispatch({ type: 'name', name: chosen });
       this.paused = false;
-      this.toast(`Hello, ${this.name}! It's hungry, chilly and a bit scared. Help it get ready for the day.`);
+      this.toast(this.fill(this.today.morning.intro));
     });
   }
 
@@ -522,26 +570,39 @@ export class Hud {
 
   private showSpice() {
     const recipe = content.spiceRecipes[0];
+    const scale = this.today.morning.recipeScale;
+    const halves = !Number.isInteger(scale);
+    const frac = (n: number) => (Number.isInteger(n) ? `${n}` : `${Math.floor(n) || ''}½`);
     this.spiceScoops = {};
     const total = () => Object.values(this.spiceScoops).reduce((a, b) => a + b, 0);
     const draw = () => {
-      const scoops = content.spices.flatMap((sp) => Array.from({ length: this.spiceScoops[sp.id] ?? 0 }, () => sp.color));
+      const scoops = content.spices.flatMap((sp) => {
+        const n = this.spiceScoops[sp.id] ?? 0;
+        const whole = Array.from({ length: Math.floor(n) }, () => `<div class="scoop" style="background:${sp.color}"></div>`);
+        return n % 1 ? [...whole, `<div class="scoop half-scoop" style="background:${sp.color}"></div>`] : whole;
+      });
       const tally = content.spices
         .filter((sp) => this.spiceScoops[sp.id])
-        .map((sp) => `${sp.name} ${this.spiceScoops[sp.id]}`)
+        .map((sp) => `${sp.name} ${frac(this.spiceScoops[sp.id])}`)
         .join(' · ');
+      const today = scale === 1 ? '' : `<br/><b>Today: growth spurt! Make a ${frac(scale)} batch.</b>`;
       $('#panel').innerHTML = `
         <h2>🫙 Spice tin</h2>
         <div class="spice-wrap">
           <div>
-            <div class="recipe-card"><b>${esc(recipe.name)}</b><br/>${esc(recipe.card)}<br/><span class="sub">From Aunt June's notebook</span></div>
+            <div class="recipe-card"><b>${esc(recipe.name)}</b><br/>${esc(recipe.card)}${today}<br/><span class="sub">From Aunt June's notebook</span></div>
             <div class="jars" style="margin-top:12px">${content.spices
-              .map((sp) => `<button class="jar" data-sp="${sp.id}"><div class="powder" style="background:${sp.color}"></div>${esc(sp.name)}</button>`)
+              .map(
+                (sp) =>
+                  `<div class="jar-row"><button class="jar" data-sp="${sp.id}"><div class="powder" style="background:${sp.color}"></div>${esc(sp.name)}</button>${
+                    halves ? `<button class="half" data-half="${sp.id}" aria-label="Half a scoop of ${esc(sp.name)}">+½</button>` : ''
+                  }</div>`,
+              )
               .join('')}</div>
           </div>
           <div class="tin">
-            <div class="tin-body">${scoops.map((c) => `<div class="scoop" style="background:${c}"></div>`).join('')}</div>
-            <div class="tin-count">${total()} scoop${total() === 1 ? '' : 's'}</div>
+            <div class="tin-body">${scoops.join('')}</div>
+            <div class="tin-count">${frac(total())} scoop${total() === 1 ? '' : 's'}</div>
             <div class="tally">${tally}</div>
           </div>
         </div>
@@ -551,14 +612,14 @@ export class Hud {
           <button class="btn ghost" data-x="close">Close</button>
         </div>`;
       const p = $('#panel');
-      p.querySelectorAll<HTMLButtonElement>('[data-sp]').forEach((b) =>
-        b.addEventListener('click', () => {
-          if (total() >= 9) return this.toast('The tin is full!');
-          this.spiceScoops[b.dataset.sp!] = (this.spiceScoops[b.dataset.sp!] ?? 0) + 1;
-          sfx.play('pour');
-          draw();
-        }),
-      );
+      const add = (id: string, n: number) => {
+        if (total() + n > 9) return this.toast('The tin is full!');
+        this.spiceScoops[id] = (this.spiceScoops[id] ?? 0) + n;
+        sfx.play('pour');
+        draw();
+      };
+      p.querySelectorAll<HTMLButtonElement>('[data-sp]').forEach((b) => b.addEventListener('click', () => add(b.dataset.sp!, 1)));
+      p.querySelectorAll<HTMLButtonElement>('[data-half]').forEach((b) => b.addEventListener('click', () => add(b.dataset.half!, 0.5)));
       p.querySelector('[data-x="empty"]')!.addEventListener('click', () => {
         this.spiceScoops = {};
         draw();
@@ -576,10 +637,11 @@ export class Hud {
 
   private showFixIt() {
     if (!this.state.fixIt) return;
+    const slipper = this.state.fixIt.id === 'chewed-slipper';
     this.openPanel(`
-      <h2>Fix-It: scorched sock</h2>
-      <p>Rub the soot off with your finger!</p>
-      <div class="fixit-area"><img src="${dataUri(sockArt(false), 2)}" alt="A striped sock covered in soot" /></div>
+      <h2>${slipper ? "Fix-It: Kit's chewed slipper" : 'Fix-It: scorched sock'}</h2>
+      <p>${slipper ? 'Rub over the holes to stitch them closed!' : 'Rub the soot off with your finger!'}</p>
+      <div class="fixit-area ${slipper ? 'stitch' : ''}"><img src="${dataUri(slipper ? slipperArt(false) : sockArt(false), 2)}" alt="${slipper ? 'A fuzzy blue slipper with tooth holes' : 'A striped sock covered in soot'}" /></div>
       <div class="progress"><div></div></div>
       <div class="row"><button class="btn ghost" data-x="later">Later</button></div>`);
     const area = $('#panel .fixit-area');
@@ -660,17 +722,18 @@ export class Hud {
     const shot = await this.scene.snapshot();
     const st = this.state.stats;
     const mins = st.readyAt === null ? null : Math.max(1, Math.round(st.readyAt / 60));
+    const fixedWhat = this.state.day === 3 ? "Fixed Kit's slipper" : 'Cleaned up a scorched sock';
     const items = [
       [st.balancedPlate, 'A balanced breakfast (meat, greens, minerals)'],
-      [st.perfectMix, 'A perfect spice mix'],
+      [st.perfectMix, this.today.morning.recipeScale === 1 ? 'A perfect spice mix' : 'A perfect 1½ batch spice mix'],
       [st.thoughtsSolved.length > 0, `Understood ${st.thoughtsSolved.length} of ${content.thoughts.length} dragon thoughts`],
-      ...(st.fixItsDone > 0 ? ([[true, 'Cleaned up a scorched sock']] as [boolean, string][]) : []),
+      ...(st.fixItsDone > 0 ? ([[true, fixedWhat]] as [boolean, string][]) : []),
       [st.readyAt !== null, mins === null ? 'Ready for the day' : `Ready for the day in about ${mins} minute${mins === 1 ? '' : 's'}`],
     ] as [boolean, string][];
     this.openPanel(`
       <h2>Morning done! 🎒</h2>
       <div class="summary">
-        <figure class="polaroid">${shot ? `<img src="${shot}" alt="A picture of your dragon" />` : ''}<figcaption>${this.name}, Day 1</figcaption></figure>
+        <figure class="polaroid">${shot ? `<img src="${shot}" alt="A picture of your dragon" />` : ''}<figcaption>${this.name}, Day ${this.state.day}</figcaption></figure>
         <div>
           <p><b>What you figured out:</b></p>
           <ul class="checklist">${items.map(([ok, t]) => `<li>${ok ? '✅' : '⚪'} ${esc(t)}</li>`).join('')}</ul>
@@ -679,7 +742,15 @@ export class Hud {
       </div>
       <div class="row"><button class="btn big" data-x="next">Off to school ➜ the afternoon</button></div>`);
     sfx.play('trill');
-    $('#panel [data-x="next"]').addEventListener('click', () => this.showJune());
+    $('#panel [data-x="next"]').addEventListener('click', () => this.startAfternoonFlow());
+  }
+
+  /** Day 1 visits Aunt June first; Day 2 goes to the store; Days 1 and 3 use the library. */
+  private startAfternoonFlow() {
+    const a = this.today.afternoon;
+    if (a.kind === 'store') this.showStoreIntro();
+    else if (a.june) this.showJune();
+    else this.showAfternoonIntro();
   }
 
   /** Aunt June explains who the collector is and why the dragon needs protecting. */
@@ -698,17 +769,21 @@ export class Hud {
     });
   }
 
+  private fill(t: string) {
+    return esc(t).replaceAll('{name}', this.name);
+  }
+
   /** Introduces the household (who Kit is) and recaps the evening's goals. */
   private showEveningIntro() {
     if (this.state.part !== 'evening' || this.state.evening.t > 0) return;
     const j = content.story.eveningIntro;
-    const fill = (t: string) => esc(t).replaceAll('{name}', this.name);
+    const paragraphs = this.today.evening.intro ?? j.paragraphs;
     this.openPanel(`
       <div class="thought-icons" aria-hidden="true">${j.emoji}</div>
-      <h2>${esc(j.title)} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
-      <div class="story">${j.paragraphs.map((p) => `<p>${fill(p)}</p>`).join('')}</div>
+      <h2>${this.state.day === 1 ? esc(j.title) : `Evening, Day ${this.state.day}`} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
+      <div class="story">${paragraphs.map((p) => `<p>${this.fill(p)}</p>`).join('')}</div>
       <div class="row"><button class="btn big" data-x="go">${esc(j.button)}</button></div>`);
-    $('#panel [data-x="read"]').addEventListener('click', () => this.speakText(j.paragraphs.join(' ').replaceAll('{name}', this.state.dragon.name)));
+    $('#panel [data-x="read"]').addEventListener('click', () => this.speakText(paragraphs.join(' ').replaceAll('{name}', this.state.dragon.name)));
     $('#panel [data-x="go"]').addEventListener('click', () => {
       sfx.play('tap');
       this.closePanel();
@@ -716,11 +791,12 @@ export class Hud {
   }
 
   private showAfternoonIntro() {
+    const a = this.today.afternoon;
     this.openPanel(`
       <h2>📚 After school: Larkspur Library</h2>
       <p>The librarian, Ms. Ortiz, points you to Computer 2.</p>
-      <p class="riddle">Find out: ${esc(content.archive.question)}</p>
-      <p class="sub">Tonight your family will knock on your door, and ${this.name} gets scared of knocks. Search the dragon-care websites, and check each one before you trust it: remember Aunt June's warning about Crane's fake websites!</p>
+      <p class="riddle">Find out: ${esc(this.archive.question)}</p>
+      <p class="sub">${a.kind === 'research' ? this.fill(a.intro) : ''}</p>
       <div class="row"><button class="btn big" data-x="go">Start searching</button></div>`);
     $('#panel [data-x="go"]').addEventListener('click', () => {
       sfx.play('tap');
@@ -729,12 +805,26 @@ export class Hud {
     });
   }
 
+  private showStoreIntro() {
+    this.openPanel(`
+      <div class="thought-icons" aria-hidden="true">🏪</div>
+      <h2>After school: the corner store</h2>
+      <p>${esc(content.store.intro)}</p>
+      <div class="row"><button class="btn big" data-x="go">Go shopping</button></div>`);
+    $('#panel [data-x="go"]').addEventListener('click', () => {
+      sfx.play('tap');
+      this.closePanel();
+      this.dispatch({ type: 'startAfternoon' });
+    });
+  }
+
   private showVisitor(id: string) {
-    const v = content.evening.visitors.find((x) => x.id === id)!;
+    const v = visitorDef(this.ev, id, content)!;
     if (this.state.evening.awaiting !== id) return;
+    const line = this.state.evening.kitDiscovers && id === 'kit' ? content.story.kitDiscovers : v.noisyLine;
     this.openPanel(`
       <div class="thought-icons" aria-hidden="true">${v.emoji}</div>
-      <p>${esc(v.noisyLine)}</p>
+      <p>${esc(line)}</p>
       <p><b>What do you say?</b> <span class="sub">(Every choice is honest: you never have to lie.)</span></p>
       <div class="col">${v.choices.map((c) => `<button class="choice" data-c="${c.id}">${esc(c.label)}</button>`).join('')}</div>`);
     $('#panel').querySelectorAll<HTMLButtonElement>('[data-c]').forEach((b) =>
@@ -747,8 +837,88 @@ export class Hud {
     );
   }
 
+  /** Day 3: Kit's slipper is fixed. Owning up is the only path, and both options are honest. */
+  private showOwnUp() {
+    if (!this.state.ownUpPending) return;
+    const kitKnows = this.state.world.circle.includes('kit');
+    this.openPanel(`
+      <img class="title-dragon" src="${dataUri(slipperArt(false), 2)}" alt="" />
+      <h2>Good as new... almost!</h2>
+      <p>This is Kit's favorite slipper. ${this.name} chewed it, so it's up to you to make it right.</p>
+      <div class="col">
+        <button class="choice" data-o="sorry">Give it back and say sorry</button>
+        <button class="choice" data-o="sorry-chores">Give it back, say sorry, and offer to do Kit's chores tomorrow</button>
+      </div>`);
+    $('#panel').querySelectorAll<HTMLButtonElement>('[data-o]').forEach((b) =>
+      b.addEventListener('click', () => {
+        const choice = b.dataset.o as 'sorry' | 'sorry-chores';
+        this.closePanel();
+        this.dispatch({ type: 'ownUp', choice });
+        const kitLine = kitKnows ? '"Dragon teeth!" Kit giggles.' : '"Your PET chewed it?" Kit squints, then shrugs.';
+        this.toast(
+          choice === 'sorry'
+            ? `Kit takes the slipper. ${kitLine} "Thanks for telling me."`
+            : `Kit takes the slipper. ${kitLine} "Chores? Deal!" Making amends feels good.`,
+        );
+      }),
+    );
+  }
+
+  /** Spec §5.6: three problems at once, tackled one stone at a time. */
+  private showStones() {
+    if (!this.state.evening.stones.active) return;
+    const ss = content.story.steppingStones;
+    const order: StoneId[] = [];
+    let reason = '';
+    const draw = () => {
+      const left = ss.problems.filter((p) => !order.includes(p.id));
+      this.openPanel(`
+        <h2>${esc(ss.title)}</h2>
+        <p>${this.fill(ss.intro)}</p>
+        <p><b>${order.length < 3 ? `Which first? Tap the problems in the order you'll do them.` : 'Why did you pick your first stone?'}</b></p>
+        <div class="stones">${[0, 1, 2]
+          .map((i) => {
+            const p = ss.problems.find((x) => x.id === order[i]);
+            return `<div class="stone ${p ? 'filled' : ''}"><span class="num">${i + 1}</span>${p ? `${p.emoji} ${this.fill(p.label)}` : ''}</div>`;
+          })
+          .join('')}</div>
+        ${
+          order.length < 3
+            ? `<div class="row">${left.map((p) => `<button class="choice" data-p="${p.id}">${p.emoji} ${this.fill(p.label)}</button>`).join('')}</div>
+               ${order.length ? '<div class="row"><button class="btn ghost" data-x="undo">Start over</button></div>' : ''}`
+            : `<div class="row">${ss.reasons.map((r) => `<button class="choice ${reason === r.id ? 'picked' : ''}" data-r="${r.id}">${esc(r.label)}</button>`).join('')}</div>
+               <div class="row"><button class="btn" data-x="go" ${reason ? '' : 'disabled'}>One stone at a time ➜</button></div>`
+        }`);
+      const p = $('#panel');
+      p.querySelectorAll<HTMLButtonElement>('[data-p]').forEach((b) =>
+        b.addEventListener('click', () => {
+          sfx.play('tap');
+          order.push(b.dataset.p as StoneId);
+          draw();
+        }),
+      );
+      p.querySelector('[data-x="undo"]')?.addEventListener('click', () => {
+        order.length = 0;
+        draw();
+      });
+      p.querySelectorAll<HTMLButtonElement>('[data-r]').forEach((b) =>
+        b.addEventListener('click', () => {
+          sfx.play('tap');
+          reason = b.dataset.r!;
+          draw();
+        }),
+      );
+      p.querySelector('[data-x="go"]')?.addEventListener('click', () => {
+        this.closePanel();
+        this.dispatch({ type: 'stepOrder', order: [...order], reason });
+      });
+    };
+    draw();
+  }
+
   private showBedtime() {
-    if (this.state.part !== 'evening') return;
+    // This runs on a delay, so check the evening really is over (not a later day's evening).
+    if (this.state.part !== 'evening' || !this.state.evening.over) return;
     this.openPanel(`
       <h2>🌙 The house is quiet</h2>
       <p>${this.name} yawns a tiny puff of smoke. Time for bed.</p>
@@ -760,38 +930,106 @@ export class Hud {
     });
   }
 
+  private circleNames() {
+    return this.state.world.circle.map((m) => ({ june: 'Aunt June', kit: 'Kit', parents: 'Mom & Dad' })[m] ?? m);
+  }
+
+  private afternoonLines(line: (ok: boolean, t: string) => string) {
+    const s = this.state;
+    if (this.today.afternoon.kind === 'store') {
+      const st = s.store;
+      return `<div><b>🏪 Afternoon</b><ul class="checklist">
+        ${line(st.paid, st.paid ? `Bought food for ${money(st.total)}` : 'Bought food for the week')}
+        ${line(s.stickers.includes('Smart Shopper') && st.paid, 'Found the best prices per serving')}
+        ${line(st.changeChecked === 'wrong', 'Checked the change')}</ul></div>`;
+    }
+    const r = s.research;
+    const ratedRight = Object.entries(r.ratings).filter(([id, rating]) => {
+      const p = this.archive.pages.find((x) => x.id === id)!;
+      return (p.credibility === 'trusted' && rating === 'trust') || (p.credibility === 'mixed' && rating !== 'trust') || (p.credibility === 'trap' && rating === 'distrust');
+    }).length;
+    return `<div><b>📚 Afternoon</b><ul class="checklist">
+      ${line(r.foundAnswerOnSearch !== null, r.foundAnswerOnSearch ? `Found the answer in ${r.foundAnswerOnSearch} search${r.foundAnswerOnSearch === 1 ? '' : 'es'}` : 'Found the answer')}
+      ${Object.keys(r.ratings).length ? line(ratedRight > 0, `Judged ${ratedRight} of ${Object.keys(r.ratings).length} websites right`) : line(false, 'Checked a website before trusting it')}
+      ${Object.keys(r.trapChoices).length ? line(!Object.values(r.trapChoices).includes('share'), 'Kept your address private') : line(false, 'Spotted a trap website')}</ul></div>`;
+  }
+
   private async showDaySummary() {
     const s = this.state;
     const shot = await this.scene.snapshot();
     const st = s.stats;
-    const r = s.research;
     const e = s.evening;
     const a = s.world.collectorAttention;
     const line = (ok: boolean, t: string) => `<li>${ok ? '✅' : '⚪'} ${esc(t)}</li>`;
-    const ratedRight = Object.entries(r.ratings).filter(([id, rating]) => {
-      const p = content.archive.pages.find((x) => x.id === id)!;
-      return (p.credibility === 'trusted' && rating === 'trust') || (p.credibility === 'mixed' && rating !== 'trust') || (p.credibility === 'trap' && rating === 'distrust');
-    }).length;
-    const circle = s.world.circle.map((m) => ({ june: 'Aunt June', kit: 'Kit', parents: 'Mom & Dad' })[m] ?? m);
+    const last = s.day >= Math.min(LAST_DAY, content.days.days.length);
     this.openPanel(`
-      <h2>Day 1 complete! 🌙</h2>
+      <h2>Day ${s.day} complete! 🌙</h2>
       <div class="summary">
         <figure class="polaroid small">${shot ? `<img src="${shot}" alt="Your dragon asleep in the nest" />` : ''}<figcaption>${this.name}, asleep</figcaption></figure>
         <div class="day-cols">
           <div><b>☀️ Morning</b><ul class="checklist">
             ${line(st.balancedPlate, 'Balanced breakfast')}${line(st.perfectMix, 'Perfect spice mix')}${line(st.readyAt !== null, 'Ready for the day')}</ul></div>
-          <div><b>📚 Afternoon</b><ul class="checklist">
-            ${line(r.foundAnswerOnSearch !== null, r.foundAnswerOnSearch ? `Found the answer in ${r.foundAnswerOnSearch} search${r.foundAnswerOnSearch === 1 ? '' : 'es'}` : 'Found the answer')}
-            ${Object.keys(r.ratings).length ? line(ratedRight > 0, `Judged ${ratedRight} of ${Object.keys(r.ratings).length} websites right`) : line(false, 'Checked a website before trusting it')}
-            ${Object.keys(r.trapChoices).length ? line(!Object.values(r.trapChoices).includes('share'), 'Kept your address private') : line(false, 'Spotted a trap website')}</ul></div>
+          ${this.afternoonLines(line)}
           <div><b>🌙 Evening</b><ul class="checklist">
-            ${line(e.scaredKnocks === 0, `Stayed calm at ${e.calmKnocks + e.helpers} of ${content.evening.visitors.length} visits`)}
-            ${line(e.missed === 0, `Spotted ${e.spotted} of ${content.evening.windowThings.filter((w) => w.suspicious).length} scouts`)}</ul></div>
+            ${line(e.scaredKnocks === 0, `Stayed calm at ${e.calmKnocks + e.helpers} of ${this.ev.visitors.length} visits`)}
+            ${line(e.missed === 0, `Spotted ${e.spotted} of ${this.ev.windowThings.filter((w) => w.suspicious).length} scouts`)}</ul></div>
         </div>
       </div>
-      <p>👁️ The collector is <b>${attentionWord(a).replace('!', '')}</b>${a < 20 ? '. Your dragon is safe!' : a < 50 ? '. Be careful tomorrow.' : '. BLINK will be back...'} · 🤝 Keeper Circle: ${esc(circle.join(', '))}</p>
+      <p>👁️ The collector is <b>${attentionWord(a).replace('!', '')}</b>${a < 20 ? '. Your dragon is safe!' : a < 50 ? '. Be careful tomorrow.' : '. BLINK will be back...'} · 🤝 Keeper Circle: ${esc(this.circleNames().join(', '))}</p>
       <div>${s.stickers.map((x) => `<span class="sticker">⭐ ${esc(x)}</span>`).join('')}</div>
-      <p class="sub">Thanks for playtesting Day 1!</p>
+      <div class="row">
+        ${last ? '<button class="btn big" data-x="end">What happens next? ➜</button>' : `<button class="btn big" data-x="next">Good morning, Day ${s.day + 1} ➜</button>`}
+        <button class="btn big ghost" data-x="more">📖 Find out more</button>
+      </div>`);
+    sfx.play('trill');
+    $('#panel [data-x="more"]').addEventListener('click', () => {
+      sfx.play('tap');
+      showFindOutMore($('#panel'), () => void this.showDaySummary());
+    });
+    $('#panel [data-x="next"]')?.addEventListener('click', () => this.goToNextDay());
+    $('#panel [data-x="end"]')?.addEventListener('click', () => this.showCliffhanger());
+  }
+
+  private goToNextDay() {
+    sfx.play('tap');
+    this.closePanel();
+    this.dispatch({ type: 'nextDay' });
+    this.scene.scene.restart(this.scene.bootData); // back to daytime, dragon on the rug
+    this.paused = false;
+    setTimeout(() => this.toast(this.fill(this.today.morning.intro)), 700);
+  }
+
+  private showCliffhanger() {
+    const c = content.days.cliffhanger;
+    const told = this.state.world.circle.includes('parents');
+    const paragraphs = [...c.paragraphs, told ? c.toldParents : c.notToldParents];
+    this.openPanel(`
+      <div class="thought-icons" aria-hidden="true">📦💥🐉</div>
+      <h2>${esc(c.title)} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
+      <div class="story">${paragraphs.map((p) => `<p>${this.fill(p)}</p>`).join('')}</div>
+      <div class="row"><button class="btn big" data-x="go">Chapter 1 complete ➜</button></div>`);
+    $('#panel [data-x="read"]').addEventListener('click', () => this.speakText(paragraphs.join(' ').replaceAll('{name}', this.state.dragon.name)));
+    $('#panel [data-x="go"]').addEventListener('click', () => this.showChapterSummary());
+  }
+
+  private showChapterSummary() {
+    const s = this.state;
+    const tick = (ok: boolean) => (ok ? '✅' : '⚪');
+    const rows = s.history
+      .map((h) => {
+        const def = dayDef(content, h.day);
+        const afternoon = h.afternoon === 'store' ? `${tick(h.smartShopper)} Smart shopping` : `${tick(h.foundAnswer)} Found a trusted tip`;
+        return `<tr><td><b>Day ${h.day}</b><br/><span class="sub">${esc(def.title)}</span></td>
+          <td>${tick(h.ready)} Ready for the day</td><td>${afternoon}</td>
+          <td>${tick(h.scaredKnocks === 0)} Calm night · ${h.spotted} scouts spotted</td></tr>`;
+      })
+      .join('');
+    this.openPanel(`
+      <h2>Chapter 1: Hatchling, complete! 🐉</h2>
+      <table class="chapter">${rows}</table>
+      <p>🤝 Keeper Circle: <b>${esc(this.circleNames().join(', '))}</b> · 👁️ Collector: <b>${attentionWord(s.world.collectorAttention).replace('!', '')}</b></p>
+      <div>${s.stickers.map((x) => `<span class="sticker">⭐ ${esc(x)}</span>`).join('')}</div>
+      <p class="sub">Chapter 2 (the treehouse, first flight and fire control) is coming. Thanks for playtesting!</p>
       <div class="row">
         <button class="btn big" data-x="again">Play again</button>
         <button class="btn big ghost" data-x="more">📖 Find out more</button>
@@ -799,7 +1037,7 @@ export class Hud {
     sfx.play('trill');
     $('#panel [data-x="more"]').addEventListener('click', () => {
       sfx.play('tap');
-      showFindOutMore($('#panel'), () => void this.showDaySummary());
+      showFindOutMore($('#panel'), () => this.showChapterSummary());
     });
     $('#panel [data-x="again"]').addEventListener('click', () => {
       this.newGame();

@@ -1,6 +1,6 @@
 import type { CheckKey, GrowthStage, Nutrient, Plate, PulseTarget } from './content';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 
 /** Morning care sub-phase. */
 export type Phase = 'egg' | 'naming' | 'care' | 'done';
@@ -28,8 +28,43 @@ export interface ThoughtState {
   wrongGuesses: number;
 }
 
+export type StoneId = 'hungry' | 'kit' | 'blink';
+
+export interface StoreState {
+  cart: Record<string, number>; // item id -> packs
+  paid: boolean;
+  total: number; // cents
+  tendered: number;
+  changeGiven: number | null; // what the shopkeeper handed back (deliberately wrong once)
+  changeChecked: 'right' | 'wrong' | null; // what the player said
+  bought: Record<string, number>; // food id -> servings
+}
+
+export interface SteppingStonesState {
+  active: boolean;
+  done: boolean;
+  order: StoneId[];
+  reason: string | null;
+}
+
+/** One finished day, for the end-of-chapter summary. */
+export interface DayRecord {
+  day: number;
+  ready: boolean;
+  balancedPlate: boolean;
+  perfectMix: boolean;
+  afternoon: 'research' | 'store';
+  foundAnswer: boolean;
+  smartShopper: boolean;
+  calmKnocks: number;
+  scaredKnocks: number;
+  helpers: number;
+  spotted: number;
+  missed: number;
+}
+
 export interface FixItState {
-  id: 'scorched-sock';
+  id: 'scorched-sock' | 'chewed-slipper';
   progress: number; // 0..100
 }
 
@@ -60,13 +95,20 @@ export interface EveningState {
   calmKnocks: number; // knocks the dragon stayed calm through
   scaredKnocks: number; // knocks that startled it
   helpers: number; // visits from family who already know and came to help
+  stones: SteppingStonesState;
+  kitDiscovers: boolean; // Day 3: Kit spots the dragon during the Stepping Stones moment
   over: boolean;
 }
 
 export interface GameState {
   version: number;
   part: Part;
-  world: { collectorAttention: number; circle: string[]; blanketUnlocked: boolean };
+  day: number;
+  coins: number; // cents in the wallet
+  world: { collectorAttention: number; circle: string[]; blanketUnlocked: boolean; lullabyUnlocked: boolean };
+  store: StoreState;
+  ownUpPending: boolean; // the chewed slipper is fixed; time to give it back to Kit
+  history: DayRecord[];
   research: ResearchState;
   evening: EveningState;
   t: number; // seconds of care time elapsed
@@ -121,7 +163,14 @@ export type Action =
   | { type: 'blanket' }
   | { type: 'windowTap'; thingId: string }
   | { type: 'visitorChoice'; choiceId: string }
-  | { type: 'finishDay' };
+  | { type: 'finishDay' }
+  | { type: 'nextDay' }
+  | { type: 'addToCart'; itemId: string }
+  | { type: 'removeFromCart'; itemId: string }
+  | { type: 'pay'; tender: number[] }
+  | { type: 'checkChange'; answer: 'right' | 'wrong' }
+  | { type: 'ownUp'; choice: 'sorry' | 'sorry-chores' }
+  | { type: 'stepOrder'; order: StoneId[]; reason: string };
 
 export type GameEvent =
   | { type: 'egg-crack'; taps: number }
@@ -143,7 +192,7 @@ export type GameEvent =
   | { type: 'thought-solved'; id: string; pulse: PulseTarget }
   | { type: 'thought-wrong'; id: string }
   | { type: 'hint'; id: string; level: number }
-  | { type: 'fixed' }
+  | { type: 'fixed'; id: 'scorched-sock' | 'chewed-slipper' }
   | { type: 'ready' }
   | { type: 'unready' }
   | { type: 'finished' }
@@ -166,18 +215,36 @@ export type GameEvent =
   | { type: 'lamp'; dim: boolean }
   | { type: 'blanket'; on: boolean }
   | { type: 'evening-over' }
-  | { type: 'day-finished' };
+  | { type: 'day-finished' }
+  | { type: 'day-start'; day: number }
+  | { type: 'allowance'; cents: number }
+  | { type: 'cart'; itemId: string; packs: number }
+  | { type: 'paid'; total: number; changeDue: number; changeGiven: number }
+  | { type: 'change-checked'; correct: boolean; changeDue: number }
+  | { type: 'own-up-needed' }
+  | { type: 'owned-up'; choice: 'sorry' | 'sorry-chores' }
+  | { type: 'stepping-stones' }
+  | { type: 'stones-done'; order: StoneId[]; reason: string; best: boolean }
 
 export interface StepResult {
   state: GameState;
   events: GameEvent[];
 }
 
+export function emptyStore(): StoreState {
+  return { cart: {}, paid: false, total: 0, tendered: 0, changeGiven: null, changeChecked: null, bought: {} };
+}
+
 export function initialState(seed = 12345): GameState {
   return {
     version: SAVE_VERSION,
     part: 'morning',
-    world: { collectorAttention: 0, circle: ['june'], blanketUnlocked: false },
+    day: 1,
+    coins: 0,
+    world: { collectorAttention: 0, circle: ['june'], blanketUnlocked: false, lullabyUnlocked: false },
+    store: emptyStore(),
+    ownUpPending: false,
+    history: [],
     research: {
       searches: 0,
       query: [],
@@ -204,6 +271,8 @@ export function initialState(seed = 12345): GameState {
       calmKnocks: 0,
       scaredKnocks: 0,
       helpers: 0,
+      stones: { active: false, done: false, order: [], reason: null },
+      kitDiscovers: false,
       over: false,
     },
     t: 0,

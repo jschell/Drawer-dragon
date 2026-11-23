@@ -346,3 +346,18 @@ export const windowThingArt: Record<string, Art> = {
 };
 
 export const zzz = art(60, 50, `<text x="6" y="40" font-family="Trebuchet MS, Verdana, sans-serif" font-size="34" font-weight="bold" fill="#B9C6FF" stroke="#2F2470" stroke-width="2">z</text>`);
+
+/** Kit's fuzzy slipper. `chewed` adds tooth holes (Day 3's Fix-It). */
+export function slipperArt(chewed = false): Art {
+  const holes = chewed
+    ? `<ellipse cx="52" cy="58" rx="9" ry="7" fill="#5A3A2E"/><ellipse cx="88" cy="70" rx="8" ry="6" fill="#5A3A2E"/><ellipse cx="118" cy="62" rx="7" ry="6" fill="#5A3A2E"/><path d="M30,48 l6,-6 l4,8 l6,-7" fill="none" stroke="#5A3A2E" stroke-width="3"/>`
+    : '';
+  return art(
+    160,
+    120,
+    `<path d="M14,70 Q14,40 50,38 L120,40 Q150,44 150,72 Q150,98 118,100 L44,100 Q14,98 14,70 Z" fill="#8FC3F0" stroke="#3E6E9E" stroke-width="5" stroke-linejoin="round"/>
+     <path d="M26,66 Q60,46 104,52 Q130,56 140,70" fill="none" stroke="#C7E3FA" stroke-width="10" stroke-linecap="round"/>
+     <circle cx="44" cy="44" r="10" fill="#FFD8E4" stroke="#C97A95" stroke-width="3"/><circle cx="62" cy="40" r="10" fill="#FFD8E4" stroke="#C97A95" stroke-width="3"/>
+     ${holes}`,
+  );
+}

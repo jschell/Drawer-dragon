@@ -1,0 +1,17 @@
+{
+  "shopkeeper": "Mr. Patel",
+  "allowance": 600,
+  "wallet": [500, 25, 25, 25, 25],
+  "list": [
+    { "food": "beef", "servings": 6, "label": "6 servings of ground beef" },
+    { "food": "greens", "servings": 3, "label": "3 servings of dandelion greens" }
+  ],
+  "items": [
+    { "id": "beef-small", "food": "beef", "name": "Ground beef, small pack", "servings": 2, "price": 160, "art": "beef" },
+    { "id": "beef-big", "food": "beef", "name": "Ground beef, family pack", "servings": 6, "price": 390, "art": "beef", "tag": "Family size" },
+    { "id": "greens-bunch", "food": "greens", "name": "Dandelion greens, one bunch", "servings": 1, "price": 50, "art": "greens" },
+    { "id": "greens-bag", "food": "greens", "name": "Dandelion greens, big bag", "servings": 3, "price": 180, "art": "greens", "tag": "SUPER DEAL!" }
+  ],
+  "changeMistake": 10,
+  "intro": "Mr. Patel waves from behind the counter. \"Shopping for that hungry pet of yours?\" You have your $6.00 allowance. Buy food for the next three days, and compare prices carefully: the cheapest price per serving isn't always the one with the biggest sign!"
+}

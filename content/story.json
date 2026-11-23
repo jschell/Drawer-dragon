@@ -23,5 +23,47 @@
       "And remember Aunt June's warning: watch the window for Crane's helpers. Tap anything suspicious to close the curtains."
     ],
     "button": "Let's go"
-  }
+  },
+  "steppingStones": {
+    "title": "Whoa, everything at once!",
+    "intro": "{name}'s tummy is rumbling, Kit is knocking at the door, AND a red light is blinking at the window. Take a deep breath. One stone at a time.",
+    "problems": [
+      {
+        "id": "hungry",
+        "emoji": "🍖",
+        "label": "{name} is hungry"
+      },
+      {
+        "id": "kit",
+        "emoji": "🧒",
+        "label": "Kit is at the door"
+      },
+      {
+        "id": "blink",
+        "emoji": "🔴",
+        "label": "BLINK is at the window"
+      }
+    ],
+    "reasons": [
+      {
+        "id": "urgent",
+        "label": "It's the most urgent"
+      },
+      {
+        "id": "quick",
+        "label": "It's quick to do"
+      },
+      {
+        "id": "easier",
+        "label": "It makes the others easier"
+      }
+    ],
+    "firstFeedback": {
+      "blink": "Closing the curtains first was quick, and it stopped BLINK from seeing anything. Smart thinking!",
+      "hungry": "Feeding {name} first calmed it down, which made everything else easier. Good thinking!",
+      "kit": "Answering Kit first was kind. BLINK got a quick peek before the curtains closed, but nothing too bad. Next time, the curtains are a quick first step!"
+    },
+    "after": "One stone at a time, everything got sorted. {name} munches a snack behind closed curtains."
+  },
+  "kitDiscovers": "Kit opens the door... and stares. A little green tail is poking out of the nest! \"Is that... a DRAGON?\""
 }

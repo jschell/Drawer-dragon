@@ -1,5 +1,7 @@
 import { content as defaultContent, NUTRIENTS, type Content, type Nutrient, type ThoughtCondition } from './content';
+import { dayDef, eveningFor } from './content';
 import { stepAfternoon, stepEvening, tickEvening } from './day';
+import { stepDays } from './days';
 import type { Action, GameEvent, GameState, NoiseKind, SpiceOutcome, StepResult } from './state';
 
 /** Tuning constants for the morning care prototype. */
@@ -97,7 +99,7 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       if (d.calm > target) d.calm = Math.max(target, d.calm - TUNING.calmDriftPerSec * dt);
       else if (d.calm < target) d.calm = Math.min(target, d.calm + TUNING.calmDriftPerSec * dt);
 
-      if (s.noisesLeft > 0 && s.t >= s.nextNoiseAt && !s.fixIt) {
+      if (s.noisesLeft > 0 && s.t >= s.nextNoiseAt && s.fixIt?.id !== 'scorched-sock') {
         const kinds: NoiseKind[] = ['vacuum', 'doorbell', 'dog'];
         noise(s, kinds[Math.floor(rand(s) * kinds.length)], events);
         s.noisesLeft -= 1;
@@ -146,7 +148,9 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
         events.push({ type: 'cooldown', action: 'hum', secondsLeft: Math.ceil(s.cooldowns.hum - s.t) });
         break;
       }
-      d.calm = clamp(d.calm + TUNING.humCalm);
+      // The lullaby from Day 3's research works better at night.
+      const lullaby = s.part === 'evening' && s.world.lullabyUnlocked;
+      d.calm = clamp(d.calm + (lullaby ? eveningFor(c, s.day).lullabyHumCalm : TUNING.humCalm));
       s.cooldowns.hum = s.t + TUNING.humCooldown;
       events.push({ type: 'hum' });
       break;
@@ -208,9 +212,15 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       if (!s.fixIt || action.amount <= 0) break;
       s.fixIt.progress = Math.min(100, s.fixIt.progress + action.amount);
       if (s.fixIt.progress >= 100) {
+        const id = s.fixIt.id;
         s.fixIt = null;
         s.stats.fixItsDone += 1;
-        events.push({ type: 'fixed' });
+        events.push({ type: 'fixed', id });
+        if (id === 'chewed-slipper') {
+          // It's Kit's slipper: the honest thing is to give it back and say sorry.
+          s.ownUpPending = true;
+          events.push({ type: 'own-up-needed' });
+        }
       }
       break;
     }
@@ -222,7 +232,7 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       break;
     }
     default:
-      if (!stepAfternoon(s, action, events, c)) stepEvening(s, action, events, c);
+      if (!stepAfternoon(s, action, events, c) && !stepEvening(s, action, events, c)) stepDays(s, action, events, c);
   }
 
   const wasReady = isReady(prev);
@@ -251,16 +261,18 @@ function mixSpice(s: GameState, scoops: Record<string, number>, events: GameEven
   let gain = 0;
   for (const [id, n] of used) gain += (c.spices.find((x) => x.id === id)?.sparkPerScoop ?? 0) * n;
 
-  const scale = recipe.scaleByStage[d.stage] ?? 1;
+  // Today's batch size: 1× for a hatchling, 1½× after Day 3's growth spurt.
+  const scale = dayDef(c, s.day).morning.recipeScale;
   const partIds = Object.keys(recipe.parts);
   const onlyRecipe = used.every(([id]) => partIds.includes(id));
-  // The mix matches the ratio when every part is scaled by the same whole number k.
+  // The mix matches the ratio when every part is scaled by the same amount k (halves allowed).
   const ks = partIds.map((id) => (scoops[id] ?? 0) / recipe.parts[id]);
   const k = ks[0];
-  const ratioOk = onlyRecipe && k > 0 && Number.isInteger(k) && ks.every((x) => x === k);
+  const same = (x: number, y: number) => Math.abs(x - y) < 1e-9;
+  const ratioOk = onlyRecipe && k > 0 && ks.every((x) => same(x, k));
 
   let outcome: SpiceOutcome;
-  if (ratioOk && k === scale) {
+  if (ratioOk && same(k, scale)) {
     outcome = 'perfect';
     d.spark = clamp(d.spark + recipe.perfectSpark);
     d.calm = clamp(d.calm + 5);
@@ -308,7 +320,7 @@ function updateThoughts(s: GameState, events: GameEvent[], c: Content) {
     }
     return;
   }
-  if (s.t < s.nextThoughtAt || s.fixIt) return;
+  if (s.t < s.nextThoughtAt || s.fixIt?.id === 'scorched-sock') return;
   const candidates = c.thoughts.filter((x) => conds[x.condition](s) && !s.quietThoughts.includes(x.id));
   if (candidates.length === 0) return;
   // Prefer thoughts the player hasn't solved yet, then keep content order.
