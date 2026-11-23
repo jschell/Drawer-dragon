@@ -372,6 +372,27 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 
 ---
 
+### 6.5 Chapters 2–3 design principles (agreed after the Chapter 1 playtest)
+- **The ending is about the dragon's needs, decided together.** On Day 9 the dragon's final thought shows both pictures, home and the flock. Kit, Mom & Dad and Aunt June each say something supportive, and the player chooses. The game never says one choice is better.
+  - **Fly with the flock** is a "see you every summer" ending, never a permanent goodbye (gentler for 8-year-olds): a postcard from the high lakes, then a familiar shape landing in the backyard next summer.
+  - **Stay on Larkspur Lane** is never a cage: the family builds a proper roost, the dragon flies at dawn from the hill, and it becomes the neighborhood's hidden guardian.
+  - This echoes Aunt June's Day 1 line (a dragon in a glass case can never fly): the final choice is the opposite of Crane's.
+- **Evidence targets the fake website, not a person.** At the neighborhood meeting the player shows the "rescue" site is fake, and the real wildlife rescue (trusted adults) takes it from there. Weak "evidence" like "he has a mean face" is explained and doesn't count. Crane leaves on his own, a comic exit and not a humiliation, and BLINK is reprogrammed into a friendly lookout.
+- **Fire safety:** only the dragon makes fire, outdoors on Aunt June's stone slab, with June there. The player never handles fire.
+- **Fair play for every new mechanic (§5.9):** flight practice scores real attempts and doesn't reward crashing; clue spotting costs nothing for a wrong tap but only real clues count; the map and rations puzzles show working instead of penalties; missing evidence is supplied by Aunt June so no one is stuck.
+- **Carried-over rules:** no "secret", honest choices only, "show them the dragon" first, Sharp Reader and message cards.
+
+### 6.6 Chapters 2–3 as built (first version)
+The first playable version follows §6.2–6.5, with these simplifications to revisit after playtesting:
+- **Day 4 nest:** the materials are wool, straw, newspaper, foil and wet leaves (wet leaves show that damp pulls heat away). The two best are the warmest dry ones, so testing with the thermometer always gives the answer.
+- **Day 5:** no corner-store visit and no Stepping Stones moment; the afternoon is the fake-rescue research plus the library directory. Flight practice has three tries on a wing meter; the bar-graph question is "best try minus first try".
+- **Day 6:** the spice recipe is 2× the usual mix (no smoked paprika yet).
+- **Day 7:** the board asks for the 3 strongest pieces (no ordering step). Aunt June adds any strong evidence the player missed. Collector Attention drops to zero for good when Crane leaves.
+- **Day 8:** the map puzzle asks direction, distance (10 miles a square) and travel rations (4 days × 2 servings) as multiple choice, with the working shown after a wrong answer. Aunt June's dragon is called **Cinder** (not one of the players' name suggestions).
+- **Day 9:** no memory-card montage yet; the farewell visits are short thank-you scenes.
+- **Bond** is a count of 8 signs of good care (most mornings ready, most plates balanced, most nights calm, 9+ thoughts understood, owning up, keeping the address private, a Fix-It done, reading to the dragon). 3+ adds the dragon's frost drawing of the Keeper Circle; 6+ adds Cinder's visit to Aunt June.
+- **Old saves:** Chapter 1 saves (version 4) are upgraded automatically.
+
 ## 7. Learning map (alignment to verify with an educator)
 
 | Pillar | Where in the game | Grade 3–5 standards (indicative) |

@@ -297,6 +297,48 @@ export const lampGlow = art(
   `<radialGradient id="lg"><stop offset="0" stop-color="#FFE7A8" stop-opacity="0.55"/><stop offset="1" stop-color="#FFE7A8" stop-opacity="0"/></radialGradient>`,
 );
 
+/** Chapter 2–3: the treehouse in the big oak. The window sits where the bedroom's does. */
+export const treehouse = art(
+  1334,
+  750,
+  `<rect width="1334" height="750" fill="#B7834E"/>
+   ${Array.from({ length: 12 }, (_, i) => `<rect x="0" y="${i * 42}" width="1334" height="40" fill="${i % 2 ? '#C08D57' : '#B9844F'}"/><path d="M0,${i * 42 + 40} L1334,${i * 42 + 40}" stroke="#8A5E35" stroke-width="3"/>`).join('')}
+   ${[[240, 0], [700, 1], [1080, 2], [420, 3], [930, 4], [160, 5], [610, 6], [1180, 7], [360, 8], [820, 9], [1010, 10], [520, 11]].map(([x, r]) => `<path d="M${x},${r * 42} L${x},${r * 42 + 40}" stroke="#8A5E35" stroke-width="3"/><circle cx="${x - 16}" cy="${r * 42 + 20}" r="3" fill="#7A5230"/>`).join('')}
+   <rect y="500" width="1334" height="250" fill="#9C6B3D"/>
+   ${[560, 630, 700].map((y) => `<path d="M0,${y} L1334,${y}" stroke="#7A5230" stroke-width="4"/>`).join('')}
+   <!-- window onto the oak branches -->
+   <rect x="96" y="70" width="350" height="300" rx="10" fill="url(#tsky)" stroke="#6E4A2A" stroke-width="12"/>
+   <path d="M96,330 Q200,300 300,320 L446,300 L446,370 L96,370 Z" fill="#6E9F5A"/>
+   <path d="M96,150 Q180,170 230,140 Q260,120 300,128" stroke="#6E4A2A" stroke-width="14" fill="none" stroke-linecap="round"/>
+   <circle cx="150" cy="130" r="30" fill="#5E9C4E"/><circle cx="196" cy="118" r="26" fill="#6FB25C"/><circle cx="300" cy="120" r="24" fill="#5E9C4E"/>
+   <path d="M271,70 L271,370 M96,220 L446,220" stroke="#6E4A2A" stroke-width="10"/>
+   <rect x="76" y="370" width="390" height="18" rx="4" fill="#8A5E35"/>
+   <!-- rope ladder hatch, map and shelf -->
+   <rect x="640" y="660" width="200" height="60" rx="6" fill="#6E4A2A" stroke="#4E321C" stroke-width="5"/>
+   <path d="M690,660 L690,720 M790,660 L790,720" stroke="#E8D3A2" stroke-width="6"/>
+   <rect x="610" y="96" width="200" height="140" rx="6" fill="#F3E3BF" stroke="#8A5E35" stroke-width="6"/>
+   <path d="M640,200 Q680,140 720,170 T790,120" stroke="#C25F5F" stroke-width="4" stroke-dasharray="10 8" fill="none"/>
+   <text x="710" y="226" text-anchor="middle" font-family="Trebuchet MS, Verdana, sans-serif" font-size="20" font-weight="bold" fill="#8A5E35">N ↑</text>
+   <rect x="900" y="210" width="300" height="14" rx="4" fill="#7A5230"/>
+   <rect x="920" y="160" width="26" height="50" fill="#6C9BD2"/><rect x="950" y="170" width="22" height="40" fill="#F2B84B"/>
+   <circle cx="1120" cy="186" r="22" fill="#E8D3A2" stroke="#8A5E35" stroke-width="4"/>
+   <path d="M1000,380 Q1100,330 1200,380 L1200,470 L1000,470 Z" fill="#E2A4B2" stroke="#B06E80" stroke-width="5"/>
+   <text x="1100" y="440" text-anchor="middle" font-family="Trebuchet MS, Verdana, sans-serif" font-size="22" font-weight="bold" fill="#8A4E60">KEEPERS</text>
+   <!-- straw nest with the wool blanket -->
+   <ellipse cx="270" cy="575" rx="150" ry="46" fill="#D9B45A" stroke="#9C7A2E" stroke-width="5"/>
+   ${Array.from({ length: 14 }, (_, i) => `<path d="M${140 + i * 19},${560 + (i % 3) * 8} l18,-10" stroke="#B8902E" stroke-width="4" stroke-linecap="round"/>`).join('')}
+   <path d="M160,548 Q270,512 380,548 L370,566 Q270,540 170,566 Z" fill="#8EC5E8" stroke="#4F8CB8" stroke-width="4"/>`,
+  `<linearGradient id="tsky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFD9A8"/><stop offset="1" stop-color="#BFE3F7"/></linearGradient>`,
+);
+
+/** The front of the treehouse nest: a straw rim instead of the shoebox. */
+export const strawFront = art(
+  220,
+  60,
+  `<path d="M6,14 Q110,-6 214,14 L204,54 Q110,66 16,54 Z" fill="#D9B45A" stroke="#9C7A2E" stroke-width="5" stroke-linejoin="round"/>
+   ${Array.from({ length: 9 }, (_, i) => `<path d="M${22 + i * 22},${30 + (i % 2) * 8} l16,-8" stroke="#B8902E" stroke-width="4" stroke-linecap="round"/>`).join('')}`,
+);
+
 export const blanketArt = art(
   240,
   120,

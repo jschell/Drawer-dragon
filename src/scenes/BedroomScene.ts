@@ -13,6 +13,8 @@ import {
   nestFront,
   nightWindow,
   note,
+  strawFront,
+  treehouse,
   ROOM,
   sockArt,
   slipperArt,
@@ -30,6 +32,8 @@ export const TEX_SCALE = 2;
 export function textureList(): Record<string, Art> {
   const list: Record<string, Art> = {
     bedroom,
+    treehouse,
+    strawFront,
     egg,
     bowl,
     heart,
@@ -58,6 +62,7 @@ export interface SceneCallbacks {
   onPet(amount: number): void;
   onScorchedSockTap(): void;
   onReady(): void;
+  getState?(): GameState;
   onCreated(scene: BedroomScene): void;
   onWindowTap(thingId: string): void;
 }
@@ -110,11 +115,17 @@ export class BedroomScene extends Phaser.Scene {
   }
 
   bootData!: { callbacks: SceneCallbacks; images: Record<string, HTMLImageElement> };
+  /** The game state when the scene (re)starts: picks the room and the dragon's size. */
+  private state0: GameState | null = null;
+  /** A fledgling (Chapters 2–3) is drawn a little bigger than a hatchling. */
+  private grow = 1;
 
   init(data: { callbacks: SceneCallbacks; images: Record<string, HTMLImageElement> }) {
     this.bootData = data;
     this.cb = data.callbacks;
     this.images = data.images;
+    this.state0 = data.callbacks.getState?.() ?? null;
+    this.grow = this.state0?.dragon.stage === 'fledgling' ? 1.18 : 1;
     this.state = null;
     this.parts = {};
     this.mood = 'content';
@@ -122,7 +133,7 @@ export class BedroomScene extends Phaser.Scene {
     this.shiver = 0;
     this.bx = ROOM.dragonX;
     this.by = ROOM.dragonY;
-    this.bs = 1;
+    this.bs = this.grow;
     this.night = false;
     this.sleeping = false;
     this.thing = null;
@@ -137,7 +148,9 @@ export class BedroomScene extends Phaser.Scene {
     }
     const img = (x: number, y: number, key: string) => this.add.image(x, y, key).setScale(HALF);
 
-    img(ROOM.w / 2, ROOM.h / 2, 'bedroom');
+    // From Day 4 the dragon lives in the treehouse (same window, so night visuals line up).
+    const tree = (this.state0?.day ?? 1) >= 4;
+    img(ROOM.w / 2, ROOM.h / 2, tree ? 'treehouse' : 'bedroom');
     this.nestSock = img(ROOM.nestX, ROOM.nestY - 14, 'sock').setScale(HALF * 0.8).setAngle(-8).setVisible(false);
     img(ROOM.bowlX, ROOM.bowlY, 'bowl');
     this.floorSock = img(ROOM.sockX, ROOM.sockY, 'sockScorched').setVisible(false).setInteractive({ useHandCursor: true });
@@ -179,7 +192,7 @@ export class BedroomScene extends Phaser.Scene {
     const worried = this.part('mouthWorried', 150, 160).setVisible(false);
     this.headC = this.add.container(0, 160 - 150, [head, this.eyesC, smile, open, worried]);
 
-    this.dragon = this.add.container(this.bx, this.by, [wingL, wingR, tail, body, glow, this.headC]);
+    this.dragon = this.add.container(this.bx, this.by, [wingL, wingR, tail, body, glow, this.headC]).setScale(this.grow);
     this.dragon.setVisible(false).setDepth(DEPTH.dragon);
 
     this.tweens.add({ targets: [body, glow], scaleY: HALF * 1.025, duration: 1500, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
@@ -195,7 +208,7 @@ export class BedroomScene extends Phaser.Scene {
   }
 
   private setupPetting() {
-    const zone = this.add.zone(this.bx, this.by + 20, 230, 270).setInteractive({ useHandCursor: true }).setDepth(DEPTH.input);
+    const zone = this.add.zone(this.bx, this.by + 20 * this.bs, 230 * this.bs, 270 * this.bs).setInteractive({ useHandCursor: true }).setDepth(DEPTH.input);
     this.zone = zone;
     zone.on('pointerdown', (p: Phaser.Input.Pointer) => {
       if (this.state?.phase === 'egg') return this.cb.onEggTap();
@@ -503,7 +516,7 @@ export class BedroomScene extends Phaser.Scene {
       .setDepth(DEPTH.glow)
       .setVisible(false);
     this.blanketImg = this.add.image(ROOM.nightX, ROOM.nightY + 52, 'blanket').setScale(HALF * 0.86).setDepth(DEPTH.blanket).setVisible(false);
-    this.nestFrontImg = this.add.image(ROOM.nestX, ROOM.nestY + 30, 'nestFront').setScale(HALF * 0.95).setDepth(DEPTH.nestFront).setVisible(false);
+    this.nestFrontImg = this.add.image(ROOM.nestX, ROOM.nestY + 30, (this.state0?.day ?? 1) >= 4 ? 'strawFront' : 'nestFront').setScale(HALF * 0.95).setDepth(DEPTH.nestFront).setVisible(false);
   }
 
   /** Darkens the room except the window, with a pool of lamplight. */
@@ -526,7 +539,7 @@ export class BedroomScene extends Phaser.Scene {
       this.glowImg.setVisible(true);
       this.nestFrontImg.setVisible(true);
       this.nestSock.setVisible(false);
-      this.moveDragon(ROOM.nightX, ROOM.nightY, ROOM.nightScale, immediate);
+      this.moveDragon(ROOM.nightX, ROOM.nightY - (this.grow - 1) * 60, ROOM.nightScale * this.grow, immediate);
     }
     if (this.lampDim !== s.evening.lampDim) {
       this.lampDim = s.evening.lampDim;

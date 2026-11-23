@@ -2,6 +2,7 @@ import { content as defaultContent, NUTRIENTS, type Content, type Nutrient, type
 import { dayDef, eveningFor } from './content';
 import { stepAfternoon, stepEvening, tickEvening } from './day';
 import { stepDays } from './days';
+import { stepChapters } from './chapters';
 import type { Action, GameEvent, GameState, NoiseKind, SpiceOutcome, StepResult } from './state';
 
 /** Tuning constants for the morning care prototype. */
@@ -239,7 +240,7 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       break;
     }
     default:
-      if (!stepAfternoon(s, action, events, c) && !stepEvening(s, action, events, c)) stepDays(s, action, events, c);
+      if (!stepAfternoon(s, action, events, c) && !stepEvening(s, action, events, c) && !stepChapters(s, action, events, c)) stepDays(s, action, events, c);
   }
 
   const wasReady = isReady(prev);

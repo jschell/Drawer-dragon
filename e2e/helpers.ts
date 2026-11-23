@@ -1,7 +1,16 @@
 import type { Page } from '@playwright/test';
 
 /** The right answers to the Sharp Reader questions (content/reading.json). */
-const READING_ANSWERS = ['Glass cases', 'Knocks on the door', 'Your little sibling', 'The price per serving', "Crane's helpers", 'One stone at a time'];
+const READING_ANSWERS = [
+  'Glass cases',
+  'Knocks on the door',
+  'Your little sibling',
+  'The price per serving',
+  "Crane's helpers",
+  'One stone at a time',
+  'Came back to visit',
+  'A bright window shows from the street',
+];
 
 /** Taps OK on any message cards waiting to be read. */
 export async function okCards(page: Page) {

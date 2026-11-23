@@ -3,12 +3,13 @@
  * Fix-It, and the Stepping Stones moment. Called from `step` in reducer.ts, with
  * the same contract: mutate the cloned state, push events, never throw.
  */
-import { dayDef, type Content, type StoreItemDef } from './content';
+import { dayDef, lastDay, type Content, type StoreItemDef } from './content';
+import { onBoardStart } from './chapters';
 import { emptyStore, initialState, type Action, type GameEvent, type GameState, type StoneId } from './state';
 
 const clamp = (v: number) => Math.max(0, Math.min(100, v));
 
-export const LAST_DAY = 3;
+export const LAST_DAY = 9;
 
 function addSticker(s: GameState, id: string) {
   if (!s.stickers.includes(id)) s.stickers.push(id);
@@ -36,7 +37,7 @@ function nextDay(s: GameState, events: GameEvent[], c: Content) {
   s.dragon = {
     ...fresh.dragon,
     name,
-    stage: 'hatchling',
+    stage: def.morning.stage,
     ...def.morning.start,
   };
   if (def.morning.chewedSlipper) s.fixIt = { id: 'chewed-slipper', progress: 0 };
@@ -208,7 +209,7 @@ function stepReading(s: GameState, a: Action, events: GameEvent[], c: Content): 
 
 export function stepDays(s: GameState, a: Action, events: GameEvent[], c: Content): boolean {
   if (a.type === 'nextDay') {
-    if (s.part === 'end' && s.day < Math.min(LAST_DAY, c.days.days.length)) nextDay(s, events, c);
+    if (s.part === 'end' && s.day < lastDay(c)) nextDay(s, events, c);
     return true;
   }
   return stepStore(s, a, events, c) || stepOwnUp(s, a, events) || stepStones(s, a, events) || stepReading(s, a, events, c);
@@ -216,6 +217,7 @@ export function stepDays(s: GameState, a: Action, events: GameEvent[], c: Conten
 
 /** Called when the afternoon starts, so store days begin with the week's allowance. */
 export function onAfternoonStart(s: GameState, events: GameEvent[], c: Content) {
+  if (dayDef(c, s.day).afternoon.kind === 'board') onBoardStart(s, events, c);
   if (dayDef(c, s.day).afternoon.kind === 'store') {
     s.store = emptyStore();
     s.coins += c.store.allowance;

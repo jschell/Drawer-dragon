@@ -4,6 +4,7 @@
  */
 import { archiveFor, dayDef, eveningFor, type Content, type EveningDef, type PageDef, type VisitorDef } from './content';
 import { cheapestCart, onAfternoonStart } from './days';
+import { addEvidence, afternoonTaskDone, morningActivityDone, specialDone, tickSpecial } from './chapters';
 import type { Action, GameEvent, GameState, Rating } from './state';
 
 const clamp = (v: number) => Math.max(0, Math.min(100, v));
@@ -42,7 +43,7 @@ export function stepAfternoon(s: GameState, a: Action, events: GameEvent[], c: C
   const page = (id: string) => archive.pages.find((p) => p.id === id);
   switch (a.type) {
     case 'startAfternoon':
-      if (s.part !== 'morning' || s.phase !== 'done') return true;
+      if (s.part !== 'morning' || s.phase !== 'done' || !morningActivityDone(s, c)) return true;
       s.part = 'afternoon';
       events.push({ type: 'afternoon-start' });
       onAfternoonStart(s, events, c);
@@ -82,6 +83,8 @@ export function stepAfternoon(s: GameState, a: Action, events: GameEvent[], c: C
       if (s.part !== 'afternoon' || !p) return true;
       r.ratings[a.pageId] = a.rating;
       r.firstRatings[a.pageId] ??= a.rating;
+      // Chapter 2: judging a page right turns it into a fact for the Evidence Board.
+      if (p.evidence && ratingIsCorrect(p, a.rating)) addEvidence(s, p.evidence, events);
       events.push({ type: 'rated', pageId: a.pageId, rating: a.rating, correct: ratingIsCorrect(p, a.rating) });
       return true;
     }
@@ -98,8 +101,9 @@ export function stepAfternoon(s: GameState, a: Action, events: GameEvent[], c: C
       // You can only save the tip after checking it's trustworthy: that's the lesson.
       if (s.part !== 'afternoon' || r.tipSaved || r.ratings[id] !== 'trust') return true;
       r.tipSaved = true;
-      if (page(id)?.tip?.unlocks === 'lullaby') s.world.lullabyUnlocked = true;
-      else s.world.blanketUnlocked = true;
+      const unlocks = page(id)?.tip?.unlocks;
+      if (unlocks === 'lullaby') s.world.lullabyUnlocked = true;
+      else if (unlocks === 'blanket') s.world.blanketUnlocked = true;
       events.push({ type: 'tip-saved' });
       return true;
     }
@@ -137,7 +141,7 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
   const d = s.dragon;
   switch (a.type) {
     case 'startEvening':
-      if (s.part !== 'afternoon') return true;
+      if (s.part !== 'afternoon' || !afternoonTaskDone(s, c)) return true;
       if (dayDef(c, s.day).afternoon.kind === 'research') awardAfternoon(s, c);
       else if (s.store.paid && storeSmart(s, c)) addSticker(s, 'Smart Shopper');
       s.part = 'evening';
@@ -193,7 +197,7 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
       return true;
     }
     case 'finishDay':
-      if (s.part !== 'evening' || !e.over) return true;
+      if (s.part !== 'evening' || !e.over || !specialDone(s, c)) return true;
       if (e.scaredKnocks === 0) addSticker(s, 'Calm Night');
       if (e.spotted >= 2 && e.falseAlarms === 0) addSticker(s, 'Scout Spotter');
       s.history = s.history.filter((h) => h.day !== s.day);
@@ -203,13 +207,14 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
         balancedPlate: s.stats.balancedPlate,
         perfectMix: s.stats.perfectMix,
         afternoon: dayDef(c, s.day).afternoon.kind,
-        foundAnswer: s.research.tipSaved,
+        foundAnswer: dayDef(c, s.day).afternoon.kind === 'research' ? s.research.tipSaved : s.task.done,
         smartShopper: s.store.paid && storeSmart(s, c),
         calmKnocks: e.calmKnocks,
         scaredKnocks: e.scaredKnocks,
         helpers: e.helpers,
         spotted: e.spotted,
         missed: e.missed,
+        thoughts: s.stats.thoughtsSolved.length,
       });
       s.part = 'end';
       events.push({ type: 'day-finished' });
@@ -224,7 +229,8 @@ export function tickEvening(s: GameState, dt: number, events: GameEvent[], c: Co
   const e = s.evening;
   const ev = eveningFor(c, s.day);
   const d = s.dragon;
-  if (e.over || e.awaiting || e.stones.active) return;
+  if (e.over || e.awaiting || e.stones.active || e.special.active) return;
+  if (tickSpecial(s, events, c)) return;
   e.t += dt;
 
   if (ev.steppingStonesAt && !e.stones.done && e.t >= ev.steppingStonesAt) {
@@ -288,7 +294,7 @@ export function tickEvening(s: GameState, dt: number, events: GameEvent[], c: Co
     events.push({ type: 'window-gone', thingId: w.id, missed: w.suspicious });
   }
 
-  if (e.t >= ev.endAt && e.visitorIdx >= ev.visitors.length && e.windowIdx >= ev.windowThings.length && !e.visitor && !e.window) {
+  if (e.t >= ev.endAt && specialDone(s, c) && e.visitorIdx >= ev.visitors.length && e.windowIdx >= ev.windowThings.length && !e.visitor && !e.window) {
     e.over = true;
     events.push({ type: 'evening-over' });
   }

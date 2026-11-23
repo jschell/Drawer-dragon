@@ -312,6 +312,231 @@
           }
         }
       ]
+    },
+    "fledgling": {
+      "question": "How do fledglings learn to fly safely?",
+      "answerPageId": "commons-fly",
+      "chips": [
+        "dragon",
+        "fledgling",
+        "fly",
+        "rescue",
+        "lizard",
+        "reward",
+        "safe",
+        "help"
+      ],
+      "maxChips": 3,
+      "tooMany": 4,
+      "pages": [
+        {
+          "id": "fake-rescue",
+          "rank": 1,
+          "site": "larkspurwildliferescue.keep",
+          "title": "Larkspur Wildlife Rescue: Lost Lizard? Call Us!",
+          "credibility": "trap",
+          "keywords": [
+            "rescue",
+            "lizard",
+            "reward",
+            "help",
+            "dragon",
+            "fly",
+            "fledgling"
+          ],
+          "snippet": "Found an unusual flying lizard? Our experts will collect it from your home. Reward offered!",
+          "body": [
+            "Larkspur Wildlife Rescue helps lost and unusual animals.",
+            "Seen a strange flying lizard? Tell us your street and we'll collect it. A reward is waiting!"
+          ],
+          "trap": {
+            "prompt": "Report a flying lizard: tell us your street for a free pickup and a reward!"
+          },
+          "evidence": "fake-site",
+          "checks": {
+            "who": "No staff names, no address. The site was made last week.",
+            "when": "Made last week, right when the posters went up.",
+            "why": "It wants people to tell it where unusual animals live.",
+            "proof": "The library directory lists the real wildlife rescue with a different name and address."
+          }
+        },
+        {
+          "id": "commons-fly",
+          "rank": 2,
+          "site": "keeperscommons.keep",
+          "title": "First Flights for Fledglings",
+          "credibility": "trusted",
+          "keywords": [
+            "fledgling",
+            "fly",
+            "dragon",
+            "safe",
+            "help"
+          ],
+          "snippet": "Short glides at dawn, low over soft grass, are the safest way to start.",
+          "body": [
+            "Fledglings learn by gliding first. Practice low, over soft grass, at quiet times like dawn.",
+            "Count each glide and write it down: keepers who track practice see their fledglings improve faster."
+          ],
+          "tip": {
+            "text": "Practice short, low glides at dawn over soft grass, and keep track of each try.",
+            "unlocks": "none"
+          },
+          "checks": {
+            "who": "The Keeper's Commons volunteers, with names and contacts.",
+            "when": "Updated this month.",
+            "why": "To help keepers. Nothing for sale.",
+            "proof": "Aunt June practiced the same way with her dragon."
+          }
+        },
+        {
+          "id": "library-directory",
+          "rank": 3,
+          "site": "larkspurlibrary.keep",
+          "title": "Community Directory: Animal Care",
+          "credibility": "trusted",
+          "keywords": [
+            "rescue",
+            "help",
+            "lizard",
+            "safe"
+          ],
+          "snippet": "Larkspur Animal Care Center, 14 Elm Street. The town's only licensed wildlife rescue.",
+          "body": [
+            "Larkspur Animal Care Center, 14 Elm Street. Open weekdays. The town's only licensed wildlife rescue.",
+            "There is no organization called \"Larkspur Wildlife Rescue\" in the directory."
+          ],
+          "evidence": "directory",
+          "checks": {
+            "who": "Larkspur Public Library, updated by the librarians.",
+            "when": "Updated every month.",
+            "why": "To help people find real local services.",
+            "proof": "The Animal Care Center's address matches the town's map."
+          }
+        },
+        {
+          "id": "fanpage-fly",
+          "rank": 4,
+          "site": "dragonfacts4u.keep",
+          "title": "DRAGONS CAN FLY ON DAY ONE!!!",
+          "credibility": "mixed",
+          "keywords": [
+            "dragon",
+            "fly",
+            "fledgling"
+          ],
+          "snippet": "Fact #20: Baby dragons can fly to the moon on their first day!",
+          "body": [
+            "Fact #19: Dragons glide before they really fly. (True!)",
+            "Fact #20: Baby dragons can fly to the moon on their first day!"
+          ],
+          "checks": {
+            "who": "\"A dragon fan\". No name.",
+            "when": "No date.",
+            "why": "For fun, with ads.",
+            "proof": "Fact #19 matches Keeper's Commons, but Fact #20 is silly."
+          }
+        }
+      ]
+    },
+    "newspaper": {
+      "question": "What do the old newspapers say about Silas Crane?",
+      "answerPageId": "gazette-crane",
+      "chips": [
+        "crane",
+        "collector",
+        "animals",
+        "display",
+        "news",
+        "award",
+        "rare"
+      ],
+      "maxChips": 3,
+      "tooMany": 4,
+      "pages": [
+        {
+          "id": "crane-about",
+          "rank": 1,
+          "site": "rare-and-remarkable.keep",
+          "title": "About Silas Crane, Award-Winning Collector",
+          "credibility": "trap",
+          "keywords": [
+            "crane",
+            "collector",
+            "award",
+            "rare",
+            "animals"
+          ],
+          "snippet": "Silas Crane: the finest collector of rare and remarkable things. Join our newsletter!",
+          "body": [
+            "Silas Crane has won many awards (he says) for his collection of rare and remarkable things.",
+            "Join the newsletter! Just send your name and street."
+          ],
+          "trap": {
+            "prompt": "Join Silas Crane's newsletter: just your name and street!"
+          },
+          "checks": {
+            "who": "Silas Crane, writing about himself.",
+            "when": "Updated yesterday.",
+            "why": "To make Crane look good and collect addresses.",
+            "proof": "None of his 'awards' can be found anywhere else."
+          }
+        },
+        {
+          "id": "gazette-crane",
+          "rank": 2,
+          "site": "larkspurlibrary.keep",
+          "title": "Larkspur Gazette, 2009: Collector's Display Closed After Complaints",
+          "credibility": "trusted",
+          "keywords": [
+            "crane",
+            "collector",
+            "animals",
+            "display",
+            "news",
+            "rare"
+          ],
+          "snippet": "Silas Crane's private display of rare animals was closed after visitors complained about tiny glass cases.",
+          "body": [
+            "From the Larkspur Gazette archive, 2009:",
+            "Silas Crane's private display of rare animals was closed after visitors complained that the animals were kept in tiny glass cases. The animals went to proper sanctuaries."
+          ],
+          "tip": {
+            "text": "Crane's display was closed in 2009 for keeping animals in tiny glass cases. That's a fact anyone can check in the newspaper archive.",
+            "unlocks": "none"
+          },
+          "evidence": "newspaper",
+          "checks": {
+            "who": "The Larkspur Gazette, the town's newspaper, kept by the library.",
+            "when": "Printed in 2009.",
+            "why": "To report the news.",
+            "proof": "Aunt June remembers when the display closed."
+          }
+        },
+        {
+          "id": "gossip-crane",
+          "rank": 3,
+          "site": "dragonfacts4u.keep",
+          "title": "IS SILAS CRANE A WIZARD?!",
+          "credibility": "mixed",
+          "keywords": [
+            "crane",
+            "rare",
+            "news"
+          ],
+          "snippet": "Some people say Crane is 200 years old!!",
+          "body": [
+            "Silas Crane collects rare things. (True!)",
+            "Some people say he is 200 years old and turns into a crow at night!!"
+          ],
+          "checks": {
+            "who": "\"A dragon fan\".",
+            "when": "No date.",
+            "why": "For fun.",
+            "proof": "The first part is true, but the rest is just a rumor."
+          }
+        }
+      ]
     }
   }
 }
