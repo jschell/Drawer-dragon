@@ -643,8 +643,13 @@ export class BedroomScene extends Phaser.Scene {
     const h = 400;
     const x = Phaser.Math.Clamp(this.bx - w / 2, 0, ROOM.w - w);
     const y = Phaser.Math.Clamp(this.by - h / 2 - 20, 0, ROOM.h - h);
+    // The picture is taken on the next drawn frame. If the game isn't drawing (a busy
+    // device, or the tab is in the background), give up after a moment so the summary
+    // still opens, just without the photo.
     return new Promise((resolve) => {
+      const giveUp = window.setTimeout(() => resolve(''), 1500);
       this.game.renderer.snapshotArea(x, y, w, h, (im) => {
+        window.clearTimeout(giveUp);
         resolve(im instanceof HTMLImageElement ? im.src : '');
       });
     });

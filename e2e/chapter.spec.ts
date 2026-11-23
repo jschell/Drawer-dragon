@@ -30,6 +30,7 @@ async function startGame(page: Page) {
 }
 
 test('Day 2: shop at the corner store, compare prices and check the change', async ({ page }) => {
+  test.setTimeout(120_000); // plays through several days, like the evening test
   await startGame(page);
   // Fast-forward Day 1 without telling anyone, then start Day 2 through the summary screen.
   await act(page, (go) => {
@@ -76,6 +77,7 @@ test('Day 2: shop at the corner store, compare prices and check the change', asy
 });
 
 test('Day 3: Stepping Stones, Kit can be shown the dragon, and the chapter ends', async ({ page }) => {
+  test.setTimeout(120_000); // plays through several days, like the evening test
   await startGame(page);
   for (let day = 1; day <= 2; day++) {
     await act(page, (go) => {
