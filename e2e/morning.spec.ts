@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { okCards } from './helpers';
 import { expect, test } from './wording';
 
 /** Clicks a point in the 1334×750 game world, whatever the screen size. */
@@ -21,6 +22,7 @@ async function hatchAndName(page: Page, name = 'Pip') {
   }
   await page.getByRole('button', { name }).click();
   await page.getByRole('button', { name: "That's the name!" }).click();
+  await okCards(page);
 }
 
 test('a full morning: hatch, name, feed, mix spice, calm, finish', async ({ page }) => {

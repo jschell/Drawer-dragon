@@ -81,6 +81,7 @@ export function stepAfternoon(s: GameState, a: Action, events: GameEvent[], c: C
       const p = page(a.pageId);
       if (s.part !== 'afternoon' || !p) return true;
       r.ratings[a.pageId] = a.rating;
+      r.firstRatings[a.pageId] ??= a.rating;
       events.push({ type: 'rated', pageId: a.pageId, rating: a.rating, correct: ratingIsCorrect(p, a.rating) });
       return true;
     }
@@ -118,7 +119,7 @@ export function storeSmart(s: GameState, c: Content): boolean {
 function awardAfternoon(s: GameState, c: Content) {
   const r = s.research;
   if (r.foundAnswerOnSearch !== null && r.foundAnswerOnSearch <= 3) addSticker(s, 'Search Star');
-  const rated = Object.entries(r.ratings);
+  const rated = Object.entries(r.firstRatings);
   const archive = archiveFor(c, s.day);
   if (rated.length >= 3 && rated.every(([id, rating]) => ratingIsCorrect(archive.pages.find((p) => p.id === id)!, rating))) addSticker(s, 'Source Sleuth');
   const traps = Object.values(r.trapChoices);
@@ -151,7 +152,11 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
     case 'blanket':
       if (s.part !== 'evening' || e.over || !s.world.blanketUnlocked) return true;
       e.blanket = !e.blanket;
-      if (e.blanket) d.calm = clamp(d.calm + 8);
+      // The cozy bonus comes once a night, so toggling the blanket isn't rewarded.
+      if (e.blanket && !e.blanketBonusUsed) {
+        d.calm = clamp(d.calm + 8);
+        e.blanketBonusUsed = true;
+      }
       events.push({ type: 'blanket', on: e.blanket });
       return true;
     case 'windowTap': {
@@ -162,6 +167,8 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
       if (thing.suspicious) {
         e.spotted += 1;
         addAttention(s, ev.attention.spotted, events);
+      } else {
+        e.falseAlarms += 1;
       }
       events.push({ type: 'spotted', thingId: thing.id, suspicious: thing.suspicious });
       return true;
@@ -188,7 +195,7 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
     case 'finishDay':
       if (s.part !== 'evening' || !e.over) return true;
       if (e.scaredKnocks === 0) addSticker(s, 'Calm Night');
-      if (e.spotted >= 2) addSticker(s, 'Scout Spotter');
+      if (e.spotted >= 2 && e.falseAlarms === 0) addSticker(s, 'Scout Spotter');
       s.history = s.history.filter((h) => h.day !== s.day);
       s.history.push({
         day: s.day,

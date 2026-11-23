@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { answerReading, okCards } from './helpers';
 import { expect, test } from './wording';
 
 async function tapWorld(page: Page, x: number, y: number) {
@@ -18,6 +19,7 @@ async function hatch(page: Page) {
   }
   await page.getByRole('button', { name: 'Pip' }).click();
   await page.getByRole('button', { name: "That's the name!" }).click();
+  await okCards(page);
 }
 
 type Rect = { left: number; top: number; right: number; bottom: number };
@@ -67,7 +69,9 @@ test('checking a website keeps your place on the page', async ({ page }) => {
   await page.getByRole('button', { name: 'Go anyway' }).click();
   await page.getByRole('button', { name: /the afternoon/ }).click();
   await page.getByRole('button', { name: 'Thanks, Aunt June!' }).click();
+  await answerReading(page);
   await page.getByRole('button', { name: 'Start searching' }).click();
+  await answerReading(page);
   await page.locator('[data-chip="hatchling"]').click();
   await page.locator('[data-chip="calm"]').click();
   await page.getByRole('button', { name: '🔎 Search' }).click();

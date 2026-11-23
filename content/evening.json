@@ -44,8 +44,8 @@
         {
           "id": "quiet",
           "label": "\"Can I have some quiet time, please?\"",
-          "result": "\"Fine!\" Kit wanders off, still curious.",
-          "calm": -3
+          "result": "\"Okay! Knock knock later!\" Kit waves and heads off.",
+          "calm": 0
         }
       ]
     },

@@ -126,9 +126,23 @@ describe('calm', () => {
   });
 
   it('noises startle the dragon, at most three per morning', () => {
-    const { events } = run(caring(), ticks(400));
-    const startles = events.filter((e) => e.type === 'startle');
-    expect(startles.length).toBe(3);
+    let s = caring();
+    let startles = 0;
+    for (let i = 0; i < 400; i++) {
+      const r = step(s, { type: 'tick', dt: 1 });
+      s = r.state;
+      startles += r.events.filter((e) => e.type === 'startle').length;
+      if (s.fixIt) s = step(s, { type: 'scrub', amount: 100 }).state; // clean up straight away
+    }
+    expect(startles).toBe(3);
+  });
+
+  it("Day 1's first noise makes the dragon hiccup a scorched sock (no mischief needed)", () => {
+    const { state, events } = run(caring(), ticks(60));
+    expect(events.some((e) => e.type === 'startle-scorch')).toBe(true);
+    expect(state.fixIt).toEqual({ id: 'scorched-sock', progress: 0 });
+    // Further noises wait until the mess is cleaned up.
+    expect(events.filter((e) => e.type === 'startle')).toHaveLength(1);
   });
 });
 

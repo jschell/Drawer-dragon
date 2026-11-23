@@ -102,6 +102,12 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       if (s.noisesLeft > 0 && s.t >= s.nextNoiseAt && s.fixIt?.id !== 'scorched-sock') {
         const kinds: NoiseKind[] = ['vacuum', 'doorbell', 'dog'];
         noise(s, kinds[Math.floor(rand(s) * kinds.length)], events);
+        // Day 1's first loud noise startles the hatchling into a smoky hiccup, so the
+        // scorched-sock Fix-It (responsibility) happens without the player causing mischief.
+        if (s.day === 1 && s.noisesLeft === 3 && !s.fixIt) {
+          s.fixIt = { id: 'scorched-sock', progress: 0 };
+          events.push({ type: 'startle-scorch' }, { type: 'scorched' });
+        }
         s.noisesLeft -= 1;
         s.nextNoiseAt = s.t + TUNING.noiseGap[0] + rand(s) * (TUNING.noiseGap[1] - TUNING.noiseGap[0]);
       }
@@ -189,6 +195,7 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       if (!def || !choice) break;
       if (choice.correct) {
         if (!s.stats.thoughtsSolved.includes(def.id)) s.stats.thoughtsSolved.push(def.id);
+        if (th.wrongGuesses === 0 && !s.stats.thoughtsReadWell.includes(def.id)) s.stats.thoughtsReadWell.push(def.id);
         s.quietThoughts.push(def.id);
         s.thought = null;
         s.nextThoughtAt = s.t + TUNING.thoughtGap;
@@ -249,6 +256,27 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
 function noise(s: GameState, kind: NoiseKind, events: GameEvent[]) {
   s.dragon.calm = clamp(s.dragon.calm - TUNING.noiseCalm[kind]);
   events.push({ type: 'startle', kind });
+}
+
+/**
+ * Classifies a spice mix without changing anything, so the spice tin can check a mix
+ * before it is fed. Only a perfect mix is fed from the tin (no rewards for mischief).
+ */
+export function classifyMix(scoops: Record<string, number>, scale: number, c: Content): SpiceOutcome | 'empty' | 'wrong-spice' {
+  const recipe = c.spiceRecipes[0];
+  const used = Object.entries(scoops).filter(([, n]) => n > 0);
+  const total = used.reduce((a, [, n]) => a + n, 0);
+  if (total === 0) return 'empty';
+  const partIds = Object.keys(recipe.parts);
+  if (!used.every(([id]) => partIds.includes(id))) return 'wrong-spice';
+  const ks = partIds.map((id) => (scoops[id] ?? 0) / recipe.parts[id]);
+  const k = ks[0];
+  const same = (x: number, y: number) => Math.abs(x - y) < 1e-9;
+  const ratioOk = k > 0 && ks.every((x) => same(x, k));
+  if (ratioOk && same(k, scale)) return 'perfect';
+  if (ratioOk && k > scale) return 'too-much';
+  if (total < recipe.baseScoops * scale) return 'too-little';
+  return 'off-ratio';
 }
 
 function mixSpice(s: GameState, scoops: Record<string, number>, events: GameEvent[], c: Content) {
@@ -336,7 +364,7 @@ function awardStickers(s: GameState) {
   };
   if (s.stats.balancedPlate) add('Balanced Plate');
   if (s.stats.perfectMix) add('Master Mixer');
-  if (s.stats.thoughtsSolved.length >= 2) add('Thought Reader');
+  if (s.stats.thoughtsReadWell.length >= 2) add('Thought Reader');
   if (s.stats.fixItsDone > 0) add('Good as New');
   if (s.stats.readyAt !== null) add('Cozy Keeper');
 }

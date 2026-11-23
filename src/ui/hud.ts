@@ -2,7 +2,7 @@ import { dataUri, foodArt, slipperArt, sockArt } from '../art/svg';
 import { sfx } from '../audio/sfx';
 import { archiveFor, content, dayDef, eveningFor, type Nutrient, type ThoughtDef } from '../core/content';
 import { attentionWord, visitorDef } from '../core/day';
-import { isReady, step, TUNING } from '../core/reducer';
+import { classifyMix, isReady, step, TUNING } from '../core/reducer';
 import { clearSave, loadPref, savePref, writeSave } from '../core/save';
 import { initialState, type Action, type GameEvent, type GameState, type StoneId } from '../core/state';
 import type { BedroomScene } from '../scenes/BedroomScene';
@@ -29,6 +29,11 @@ export class Hud {
   private readAloud = loadPref('readAloud', false);
   private spiceScoops: Record<string, number> = {};
   private fixitInit = 0;
+  private cardQueue: { html: string; then?: () => void }[] = [];
+  private cardThen: (() => void) | undefined;
+  private cardOpen = false;
+  private startleScorch = false;
+  private log: string[] = [];
   private research: ResearchScreen;
   private storeScreen: StoreScreen;
 
@@ -49,7 +54,7 @@ export class Hud {
     setInterval(() => {
       const s = this.state;
       const live = (s.part === 'morning' && s.phase === 'care') || (s.part === 'evening' && !s.evening.over);
-      if (!this.paused && !document.hidden && live) this.dispatch({ type: 'tick', dt: 1 });
+      if (!this.paused && !this.cardOpen && !document.hidden && live) this.dispatch({ type: 'tick', dt: 1 });
     }, 1000 / speed);
     window.addEventListener('resize', () => this.placeBubble());
   }
@@ -115,12 +120,12 @@ export class Hud {
       case 'refuse-wants-other': {
         sfx.play('sniff');
         const food = content.foods.find((f) => f.id === e.foodId)?.name.toLowerCase() ?? 'food';
-        this.toast(`${n} sniffs the ${esc(food)}... and turns away. It wants something ${e.wants.map((w) => WANTS[w]).join(' or ')}.`);
+        this.card(`${n} sniffs the ${esc(food)}... and turns away. It wants something <b>${e.wants.map((w) => WANTS[w]).join(' or ')}</b>.`);
         break;
       }
       case 'refuse-full':
         sfx.play('sniff');
-        this.toast(`${n} is full! Its tummy is round as a ball.`);
+        this.card(`${n} is full! Its tummy is round as a ball.`);
         break;
       case 'balanced':
         sfx.play('trill');
@@ -142,8 +147,18 @@ export class Hud {
         this.toast((e.sneeze ? 'Pepper! ACHOO! ' : '') + lines[e.outcome]);
         break;
       }
+      case 'startle-scorch':
+        this.startleScorch = true;
+        break;
       case 'scorched':
-        setTimeout(() => this.toast('Oops! A hiccup scorched a sock. Tap the sock to clean it up.'), 1500);
+        setTimeout(() => {
+          this.card(
+            this.startleScorch
+              ? `The noise gave ${n} such a fright that it hiccupped a puff of smoke, and a sock got scorched! It's your job to clean it up: tap the sock on the floor.`
+              : 'A hiccup of smoke scorched a sock! It\'s your job to clean it up: tap the sock on the floor.',
+          );
+          this.startleScorch = false;
+        }, 1500);
         break;
       case 'pet':
         if (performance.now() - this.lastPetToast > 6000) {
@@ -181,7 +196,7 @@ export class Hud {
       case 'thought-solved': {
         sfx.play('sparkle');
         const def = content.thoughts.find((t) => t.id === e.id);
-        this.toast(`You understood! "${esc(def?.meaning ?? '')}"`);
+        this.card(`You understood! "${esc(def?.meaning ?? '')}"`);
         this.pulse(e.pulse);
         break;
       }
@@ -233,13 +248,13 @@ export class Hud {
         break;
       case 'window-gone': {
         const w = this.ev.windowThings.find((x) => x.id === e.thingId)!;
-        if (e.missed && w.missLine) this.toast(`${esc(w.missLine)} <span class="sub-dark">(Collector Attention went up.)</span>`);
+        if (e.missed && w.missLine) this.card(`${esc(w.missLine)} <span class="sub">(Collector Attention went up.)</span>`);
         break;
       }
       case 'spotted': {
         const w = this.ev.windowThings.find((x) => x.id === e.thingId)!;
         sfx.play(e.suspicious ? 'sparkle' : 'tap');
-        this.toast(esc(w.tapLine));
+        this.card(e.suspicious ? esc(w.tapLine) : `${esc(w.tapLine)} <span class="sub">No need to close the curtains for that. Look carefully before you tap!</span>`);
         break;
       }
       case 'lamp':
@@ -271,8 +286,8 @@ export class Hud {
       case 'stones-done': {
         sfx.play('sparkle');
         const ss = content.story.steppingStones;
-        this.toast(`${this.fill(ss.firstFeedback[e.order[0]])} ${this.fill(ss.after)}`);
-        if (this.state.evening.awaiting === 'kit') setTimeout(() => this.showVisitor('kit'), 3200);
+        const kitNext = this.state.evening.awaiting === 'kit';
+        this.card(`${this.fill(ss.firstFeedback[e.order[0]])} ${this.fill(ss.after)}`, kitNext ? () => this.showVisitor('kit') : undefined);
         break;
       }
       case 'evening-over':
@@ -387,14 +402,79 @@ export class Hud {
     b.style.top = `${r.top + r.height * 0.08}px`;
   }
 
+  /** A short, passing comment. It stays longer when there is more to read. */
   toast(html: string) {
     if (!html) return;
     const t = $('#toast');
     t.innerHTML = html;
     t.classList.add('show');
+    const text = t.textContent ?? '';
+    this.remember(text);
+    // About 0.4 s per word for young readers, between 3.5 and 10 seconds.
+    const ms = Math.min(10000, Math.max(3500, 1500 + text.split(/\s+/).length * 400));
     clearTimeout(this.toastTimer);
-    this.toastTimer = window.setTimeout(() => t.classList.remove('show'), 3800);
-    this.speak(t.textContent ?? '');
+    this.toastTimer = window.setTimeout(() => t.classList.remove('show'), ms);
+    this.speak(text);
+  }
+
+  /**
+   * Feedback worth reading (why the dragon refused food, what a thought meant, how a
+   * visitor answered): it stays on screen until the player taps OK, and the game waits.
+   */
+  card(html: string, then?: () => void) {
+    if (!html) return;
+    this.cardQueue.push({ html, then });
+    if (!this.cardOpen) this.nextCard();
+  }
+
+  private nextCard() {
+    // What follows the card just read (e.g. Kit's discovery) waits until the player taps OK.
+    const done = this.cardThen;
+    this.cardThen = undefined;
+    const next = this.cardQueue.shift();
+    const el = $('#msgcard');
+    if (next === undefined) {
+      el.hidden = true;
+      this.cardOpen = false;
+      done?.();
+      return;
+    }
+    const { html } = next;
+    this.cardThen = next.then;
+    if (done) {
+      // Run the follow-up first; the rest of the queue waits behind its panel.
+      this.cardQueue.unshift(next);
+      this.cardThen = undefined;
+      el.hidden = true;
+      this.cardOpen = false;
+      done();
+      if (!this.cardOpen) this.nextCard();
+      return;
+    }
+    this.cardOpen = true;
+    el.querySelector('.msg-body')!.innerHTML = html;
+    el.hidden = !$('#overlay').hidden; // wait while a panel is open
+    const text = el.querySelector('.msg-body')!.textContent ?? '';
+    this.remember(text);
+    this.speak(text);
+    (el.querySelector('[data-x="ok"]') as HTMLButtonElement).focus({ preventScroll: true });
+  }
+
+  private remember(text: string) {
+    const t = text.trim();
+    if (!t || this.log[0] === t) return;
+    this.log.unshift(t);
+    this.log.length = Math.min(this.log.length, 10);
+  }
+
+  private showLog() {
+    const items = this.log.length ? this.log.map((m) => `<li>${esc(m)}</li>`).join('') : '<li>Nothing yet.</li>';
+    this.openPanel(`
+      <h2>📜 What did they say?</h2>
+      <p class="sub">The most recent messages, newest first.</p>
+      <ol class="msglog">${items}</ol>
+      <div class="row"><button class="btn" data-x="close">Back to the game</button></div>`);
+    $('#panel [data-x="close"]').addEventListener('click', () => this.closePanel());
   }
 
   private pulse(target: string) {
@@ -424,6 +504,7 @@ export class Hud {
     $('#panel').innerHTML = html;
     $('#overlay').classList.toggle('clear', !!opts.clear);
     $('#overlay').hidden = false;
+    $('#msgcard').hidden = true; // a waiting card never covers a panel; it comes back after
     this.paused = true;
     $('#tray').hidden = true;
     this.setHeld(null);
@@ -436,6 +517,15 @@ export class Hud {
     const st = this.state;
     this.paused = !((st.part === 'morning' && st.phase === 'care') || (st.part === 'evening' && !st.evening.over));
     if ('speechSynthesis' in window) speechSynthesis.cancel();
+    if (this.cardOpen) $('#msgcard').hidden = false;
+  }
+
+  /** Forget cards left over from an earlier day or game. */
+  private clearCards() {
+    this.cardQueue = [];
+    this.cardThen = undefined;
+    this.cardOpen = false;
+    $('#msgcard').hidden = true;
   }
 
   showTitle(hasSave: boolean) {
@@ -474,6 +564,7 @@ export class Hud {
     this.scene.scene.restart(this.scene.bootData);
     this.research.hide();
     this.closePanel();
+    this.clearCards();
   }
 
   private showNaming() {
@@ -507,7 +598,7 @@ export class Hud {
       this.closePanel();
       this.dispatch({ type: 'name', name: chosen });
       this.paused = false;
-      this.toast(this.fill(this.today.morning.intro));
+      this.card(this.fill(this.today.morning.intro));
     });
   }
 
@@ -574,7 +665,17 @@ export class Hud {
     const halves = !Number.isInteger(scale);
     const frac = (n: number) => (Number.isInteger(n) ? `${n}` : `${Math.floor(n) || ''}½`);
     this.spiceScoops = {};
+    let feedback = ''; // shown inside the tin when a mix isn't right yet
+    let hintLevel = 0;
     const total = () => Object.values(this.spiceScoops).reduce((a, b) => a + b, 0);
+    const batch = scale === 1 ? '1×' : `${frac(scale)}`;
+    const hints = [
+      'Look at the <b>parts</b>: for every 2 scoops of cinnamon, add 1 scoop of ginger.',
+      scale === 1
+        ? 'A 1× batch is 3 scoops in all. 2 parts + 1 part = 3 parts, so each part is 1 scoop.'
+        : `A ${batch} batch is ${frac(3 * scale)} scoops in all. Each part is ${frac(scale)} scoops, so use the ½ buttons too!`,
+      `Aunt June: "${frac(2 * scale)} scoops of cinnamon and ${frac(scale)} of ginger, dear."`,
+    ];
     const draw = () => {
       const scoops = content.spices.flatMap((sp) => {
         const n = this.spiceScoops[sp.id] ?? 0;
@@ -606,9 +707,12 @@ export class Hud {
             <div class="tally">${tally}</div>
           </div>
         </div>
+        ${feedback ? `<p class="hint spice-feedback">${feedback}</p>` : ''}
+        ${hintLevel ? hints.slice(0, hintLevel).map((h) => `<p class="hint">💡 ${h}</p>`).join('') : ''}
         <div class="row">
           <button class="btn ghost" data-x="empty" ${total() ? '' : 'disabled'}>Empty tin</button>
           <button class="btn" data-x="feed" ${total() ? '' : 'disabled'}>Feed the mix</button>
+          ${feedback && hintLevel < hints.length ? '<button class="btn ghost" data-x="hint">💡 Ask Aunt June</button>' : ''}
           <button class="btn ghost" data-x="close">Close</button>
         </div>`;
       const p = $('#panel');
@@ -622,13 +726,37 @@ export class Hud {
       p.querySelectorAll<HTMLButtonElement>('[data-half]').forEach((b) => b.addEventListener('click', () => add(b.dataset.half!, 0.5)));
       p.querySelector('[data-x="empty"]')!.addEventListener('click', () => {
         this.spiceScoops = {};
+        feedback = '';
         draw();
+      });
+      p.querySelector('[data-x="hint"]')?.addEventListener('click', () => {
+        sfx.play('tap');
+        hintLevel += 1;
+        draw();
+        p.querySelector('.hint:last-of-type')?.scrollIntoView({ block: 'nearest' });
       });
       p.querySelector('[data-x="close"]')!.addEventListener('click', () => this.closePanel());
       p.querySelector('[data-x="feed"]')!.addEventListener('click', () => {
+        // Check the mix first: only the right mix goes to the dragon, so there's
+        // nothing to gain from feeding a wrong (or silly) one. The tin stays as it is.
         const scoops = { ...this.spiceScoops };
-        this.closePanel();
-        this.dispatch({ type: 'spice', scoops });
+        const outcome = classifyMix(scoops, scale, content);
+        if (outcome === 'perfect') {
+          this.closePanel();
+          this.dispatch({ type: 'spice', scoops });
+          return;
+        }
+        sfx.play('sniff');
+        const why: Record<string, string> = {
+          'wrong-spice': `${this.name} sniffs the tin and backs away. Pepper and chili aren't in the recipe: they would make a hatchling sneeze and hiccup. Use only what the card says.`,
+          'too-much': `That's the right <b>parts</b>, but too much! ${this.name} only needs a ${batch} batch today.`,
+          'too-little': `The tin looks a bit empty. Check the recipe card for today's batch size.`,
+          'off-ratio': `${this.name} sniffs... it smells lumpy. Check the <b>parts</b>: 2 cinnamon for every 1 ginger.`,
+          empty: '',
+        };
+        feedback = why[outcome] ?? '';
+        draw();
+        p.querySelector('.spice-feedback')?.scrollIntoView({ block: 'nearest' });
       });
     };
     this.openPanel('');
@@ -745,6 +873,68 @@ export class Hud {
     $('#panel [data-x="next"]').addEventListener('click', () => this.startAfternoonFlow());
   }
 
+  // ---------- reading rewards ----------
+
+  /** "Read to Pip": reading a story panel aloud to the dragon calms it (once per panel). */
+  private readPipButton(panelId: string) {
+    const done = this.state.reading.readTo.includes(`${this.state.day}:${panelId}`);
+    return `<button class="btn ghost small" data-x="readpip" ${done ? 'disabled' : ''}>${done ? `✓ ${this.name} loved listening` : `📖 I read it to ${this.name}`}</button>`;
+  }
+
+  private bindReadPip(panelId: string) {
+    $('#panel [data-x="readpip"]')?.addEventListener('click', (ev) => {
+      const evs = this.dispatch({ type: 'readToDragon', panelId });
+      const r = evs.find((e) => e.type === 'read-to-dragon');
+      if (!r) return;
+      sfx.play('purr');
+      const b = ev.currentTarget as HTMLButtonElement;
+      b.disabled = true;
+      b.textContent = `✓ ${this.state.dragon.name} loved listening`;
+    });
+  }
+
+  /**
+   * Sharp Reader: after some story panels the dragon asks one question about what it said.
+   * A right first answer earns a star; a wrong one just shows where the answer is.
+   */
+  private askReading(panelId: string, paragraphs: string[], then: () => void) {
+    const q = content.reading.questions.find((x) => x.panel === panelId && !this.state.reading.answered.includes(x.id));
+    if (!q) return then();
+    let firstTry = true;
+    const wrong = new Set<string>();
+    const draw = (lookAgain: boolean) => {
+      const para = paragraphs.find((x) => x.toLowerCase().includes(q.answerText.toLowerCase())) ?? '';
+      const i = para.toLowerCase().indexOf(q.answerText.toLowerCase());
+      const marked = i < 0 ? this.fill(para) : `${this.fill(para.slice(0, i))}<mark>${this.fill(para.slice(i, i + q.answerText.length))}</mark>${this.fill(para.slice(i + q.answerText.length))}`;
+      this.openPanel(`
+        <p class="sub">⭐ Sharp Reader · ${this.name} has a question</p>
+        <h2>${this.fill(q.question)}</h2>
+        ${lookAgain ? `<p class="hint look-again">Not quite! Look again:<br/>${marked}</p>` : ''}
+        <div class="row">${q.choices
+          .map((c) => `<button class="choice ${wrong.has(c.id) ? 'wrong' : ''}" data-q="${c.id}" ${wrong.has(c.id) ? 'disabled' : ''}>${esc(c.label)}</button>`)
+          .join('')}</div>
+        <p class="sub">Stars: ${'⭐'.repeat(this.state.reading.stars) || 'none yet'}</p>`);
+      $('#panel').querySelectorAll<HTMLButtonElement>('[data-q]').forEach((b) =>
+        b.addEventListener('click', () => {
+          const evs = this.dispatch({ type: 'readingAnswer', questionId: q.id, choiceId: b.dataset.q!, firstTry });
+          const res = evs.find((e) => e.type === 'reading-answer');
+          if (res?.type === 'reading-answer' && res.correct) {
+            sfx.play(res.star ? 'sparkle' : 'tap');
+            this.closePanel();
+            if (res.star) this.toast(`⭐ Sharp reading! ${this.name} is impressed.`);
+            then();
+          } else {
+            sfx.play('sniff');
+            firstTry = false;
+            wrong.add(b.dataset.q!);
+            draw(true);
+          }
+        }),
+      );
+    };
+    draw(false);
+  }
+
   /** Day 1 visits Aunt June first; Day 2 goes to the store; Days 1 and 3 use the library. */
   private startAfternoonFlow() {
     const a = this.today.afternoon;
@@ -761,11 +951,12 @@ export class Hud {
       <h2>${esc(j.title)} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
       <div class="story">${j.paragraphs.map((p) => `<p>${esc(p)}</p>`).join('')}</div>
       <p class="hint">🤝 ${esc(j.closing)}</p>
-      <div class="row"><button class="btn big" data-x="next">${esc(j.button)}</button></div>`);
+      <div class="row">${this.readPipButton('june')}<button class="btn big" data-x="next">${esc(j.button)}</button></div>`);
     $('#panel [data-x="read"]').addEventListener('click', () => this.speakText([...j.paragraphs, j.closing].join(' ')));
+    this.bindReadPip('june');
     $('#panel [data-x="next"]').addEventListener('click', () => {
       sfx.play('tap');
-      this.showAfternoonIntro();
+      this.askReading('june', j.paragraphs, () => this.showAfternoonIntro());
     });
   }
 
@@ -782,11 +973,12 @@ export class Hud {
       <div class="thought-icons" aria-hidden="true">${j.emoji}</div>
       <h2>${this.state.day === 1 ? esc(j.title) : `Evening, Day ${this.state.day}`} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
       <div class="story">${paragraphs.map((p) => `<p>${this.fill(p)}</p>`).join('')}</div>
-      <div class="row"><button class="btn big" data-x="go">${esc(j.button)}</button></div>`);
+      <div class="row">${this.readPipButton(`evening-${this.state.day}`)}<button class="btn big" data-x="go">${esc(j.button)}</button></div>`);
     $('#panel [data-x="read"]').addEventListener('click', () => this.speakText(paragraphs.join(' ').replaceAll('{name}', this.state.dragon.name)));
+    this.bindReadPip(`evening-${this.state.day}`);
     $('#panel [data-x="go"]').addEventListener('click', () => {
       sfx.play('tap');
-      this.closePanel();
+      this.askReading(`evening-${this.state.day}`, paragraphs, () => this.closePanel());
     });
   }
 
@@ -797,11 +989,14 @@ export class Hud {
       <p>The librarian, Ms. Ortiz, points you to Computer 2.</p>
       <p class="riddle">Find out: ${esc(this.archive.question)}</p>
       <p class="sub">${a.kind === 'research' ? this.fill(a.intro) : ''}</p>
-      <div class="row"><button class="btn big" data-x="go">Start searching</button></div>`);
+      <div class="row">${this.readPipButton(`library-${this.state.day}`)}<button class="btn big" data-x="go">Start searching</button></div>`);
+    this.bindReadPip(`library-${this.state.day}`);
     $('#panel [data-x="go"]').addEventListener('click', () => {
       sfx.play('tap');
-      this.closePanel();
-      this.dispatch({ type: 'startAfternoon' });
+      this.askReading(`library-${this.state.day}`, a.kind === 'research' ? [a.intro] : [], () => {
+        this.closePanel();
+        this.dispatch({ type: 'startAfternoon' });
+      });
     });
   }
 
@@ -810,11 +1005,14 @@ export class Hud {
       <div class="thought-icons" aria-hidden="true">🏪</div>
       <h2>After school: the corner store</h2>
       <p>${esc(content.store.intro)}</p>
-      <div class="row"><button class="btn big" data-x="go">Go shopping</button></div>`);
+      <div class="row">${this.readPipButton('store')}<button class="btn big" data-x="go">Go shopping</button></div>`);
+    this.bindReadPip('store');
     $('#panel [data-x="go"]').addEventListener('click', () => {
       sfx.play('tap');
-      this.closePanel();
-      this.dispatch({ type: 'startAfternoon' });
+      this.askReading('store', [content.store.intro], () => {
+        this.closePanel();
+        this.dispatch({ type: 'startAfternoon' });
+      });
     });
   }
 
@@ -832,7 +1030,7 @@ export class Hud {
         const c = v.choices.find((x) => x.id === b.dataset.c)!;
         this.closePanel();
         this.dispatch({ type: 'visitorChoice', choiceId: c.id });
-        this.toast(esc(c.result));
+        this.card(esc(c.result));
       }),
     );
   }
@@ -855,7 +1053,7 @@ export class Hud {
         this.closePanel();
         this.dispatch({ type: 'ownUp', choice });
         const kitLine = kitKnows ? '"Dragon teeth!" Kit giggles.' : '"Your PET chewed it?" Kit squints, then shrugs.';
-        this.toast(
+        this.card(
           choice === 'sorry'
             ? `Kit takes the slipper. ${kitLine} "Thanks for telling me."`
             : `Kit takes the slipper. ${kitLine} "Chores? Deal!" Making amends feels good.`,
@@ -993,10 +1191,11 @@ export class Hud {
   private goToNextDay() {
     sfx.play('tap');
     this.closePanel();
+    this.clearCards();
     this.dispatch({ type: 'nextDay' });
     this.scene.scene.restart(this.scene.bootData); // back to daytime, dragon on the rug
     this.paused = false;
-    setTimeout(() => this.toast(this.fill(this.today.morning.intro)), 700);
+    setTimeout(() => this.card(this.fill(this.today.morning.intro)), 700);
   }
 
   private showCliffhanger() {
@@ -1007,8 +1206,9 @@ export class Hud {
       <div class="thought-icons" aria-hidden="true">📦💥🐉</div>
       <h2>${esc(c.title)} <button class="speak" data-x="read" aria-label="Read aloud">🔈</button></h2>
       <div class="story">${paragraphs.map((p) => `<p>${this.fill(p)}</p>`).join('')}</div>
-      <div class="row"><button class="btn big" data-x="go">Chapter 1 complete ➜</button></div>`);
+      <div class="row">${this.readPipButton('cliffhanger')}<button class="btn big" data-x="go">Chapter 1 complete ➜</button></div>`);
     $('#panel [data-x="read"]').addEventListener('click', () => this.speakText(paragraphs.join(' ').replaceAll('{name}', this.state.dragon.name)));
+    this.bindReadPip('cliffhanger');
     $('#panel [data-x="go"]').addEventListener('click', () => this.showChapterSummary());
   }
 
@@ -1070,7 +1270,7 @@ export class Hud {
         else if (act === 'blanket') {
           if (!this.state.world.blanketUnlocked) {
             sfx.play('sniff');
-            this.toast("You don't know how to use the blanket yet. Did the library have any tips?");
+            this.card("You don't know how to use the blanket yet. Did the library have any tips?");
           } else this.dispatch({ type: 'blanket' });
         }
       }),
@@ -1080,6 +1280,15 @@ export class Hud {
       this.showThought();
     });
 
+    $('#msgcard [data-x="ok"]').addEventListener('click', () => {
+      sfx.play('tap');
+      this.nextCard();
+    });
+    $('#btn-log').addEventListener('click', () => {
+      sfx.unlock();
+      sfx.play('tap');
+      this.showLog();
+    });
     const soundBtn = $('#btn-sound');
     const readBtn = $('#btn-read');
     const syncToggles = () => {

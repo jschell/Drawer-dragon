@@ -21,6 +21,7 @@
         <div id="meters" aria-live="polite"></div>
         <div id="topright">
           <button class="icon-btn" id="btn-sound" aria-label="Sound on or off">🔊</button>
+          <button class="icon-btn" id="btn-log" aria-label="What did they say? See recent messages">📜</button>
           <button class="icon-btn" id="btn-read" aria-label="Read aloud on or off">🗣️</button>
         </div>
         <button id="bubble" hidden aria-label="The dragon is thinking something. Tap to read it."></button>
@@ -39,6 +40,11 @@
           <button class="act" data-eve="blanket"><span class="emo">🛏️</span><span class="lbl">Blanket</span></button>
         </div>
         <div id="banner" hidden></div>
+      </div>
+
+      <div id="msgcard" hidden role="alertdialog" aria-live="assertive">
+        <div class="msg-body"></div>
+        <div class="row"><button class="btn" data-x="ok">OK</button></div>
       </div>
 
       <div id="research" hidden></div>

@@ -7,6 +7,7 @@ import eveningJson from '../../content/evening.json';
 import storyJson from '../../content/story.json';
 import storeJson from '../../content/store.json';
 import daysJson from '../../content/days.json';
+import readingJson from '../../content/reading.json';
 
 export const NUTRIENTS = ['protein', 'greens', 'minerals'] as const;
 export type Nutrient = (typeof NUTRIENTS)[number];
@@ -262,7 +263,28 @@ const StorySchema = z.object({
   kitDiscovers: z.string(),
 });
 
+const ReadingSchema = z.object({
+  starsForSticker: z.number().int().positive(),
+  readToCalm: z.number().positive(),
+  readsForSticker: z.number().int().positive(),
+  questions: z.array(
+    z.object({
+      id: z.string(),
+      /** Which story panel this question follows: june, library-N, evening-N or store. */
+      panel: z.string(),
+      question: z.string(),
+      choices: z
+        .array(z.object({ id: z.string(), label: z.string(), correct: z.boolean() }))
+        .min(2)
+        .refine((c) => c.filter((x) => x.correct).length === 1, { message: 'Exactly one correct answer' }),
+      /** The words in the panel that hold the answer; highlighted after a wrong answer. */
+      answerText: z.string(),
+    }),
+  ),
+});
+
 export type StoryDef = z.infer<typeof StorySchema>;
+export type ReadingDef = z.infer<typeof ReadingSchema>;
 export type FoodDef = z.infer<typeof FoodSchema>;
 export type PageDef = z.infer<typeof PageSchema>;
 export type ArchiveDef = z.infer<typeof ArchiveSchema>;
@@ -292,6 +314,18 @@ export interface Content {
   store: StoreDef;
   days: DaysDef;
   story: StoryDef;
+  reading: ReadingDef;
+}
+
+/** The text of a story panel, as written in the content files ({name} not filled in). */
+export function panelText(c: Content, panel: string): string[] {
+  const [kind, n] = panel.split('-');
+  const day = c.days.days.find((d) => d.day === Number(n));
+  if (panel === 'june') return c.story.juneIntro.paragraphs;
+  if (panel === 'store') return [c.store.intro];
+  if (kind === 'library' && day?.afternoon.kind === 'research') return [day.afternoon.intro];
+  if (kind === 'evening' && day) return day.evening.intro ?? c.story.eveningIntro.paragraphs;
+  return [];
 }
 
 export function dayDef(c: Content, day: number): DayDef {
@@ -376,7 +410,18 @@ export function parseContent(raw: { items: unknown; recipes: unknown; thoughts: 
     store,
     days,
     story: StorySchema.parse(storyJson),
+    reading: ReadingSchema.parse(readingJson),
   };
 }
 
+function checkReading(c: Content) {
+  for (const q of c.reading.questions) {
+    const text = panelText(c, q.panel).join(' ');
+    if (!text) throw new Error(`Reading question ${q.id}: unknown panel "${q.panel}"`);
+    // The answer must really be in the panel, so a reader can always find it.
+    if (!text.toLowerCase().includes(q.answerText.toLowerCase())) throw new Error(`Reading question ${q.id}: "${q.answerText}" is not in the ${q.panel} panel`);
+  }
+}
+
 export const content: Content = parseContent({ items: itemsJson, recipes: recipesJson, thoughts: thoughtsJson, archive: archiveJson, evening: eveningJson });
+checkReading(content);

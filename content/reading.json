@@ -1,0 +1,73 @@
+{
+  "starsForSticker": 3,
+  "readToCalm": 6,
+  "readsForSticker": 3,
+  "questions": [
+    {
+      "id": "june-cases",
+      "panel": "june",
+      "question": "What does Silas Crane keep rare things in?",
+      "choices": [
+        { "id": "cases", "label": "Glass cases", "correct": true },
+        { "id": "boxes", "label": "Cardboard boxes", "correct": false },
+        { "id": "tree", "label": "A treehouse", "correct": false }
+      ],
+      "answerText": "keeps them in glass cases"
+    },
+    {
+      "id": "library-knock",
+      "panel": "library-1",
+      "question": "What scares {name}?",
+      "choices": [
+        { "id": "knocks", "label": "Knocks on the door", "correct": true },
+        { "id": "thunder", "label": "Thunder", "correct": false },
+        { "id": "cats", "label": "Cats", "correct": false }
+      ],
+      "answerText": "gets scared of knocks"
+    },
+    {
+      "id": "evening-kit",
+      "panel": "evening-1",
+      "question": "Who is Kit?",
+      "choices": [
+        { "id": "sibling", "label": "Your little sibling", "correct": true },
+        { "id": "neighbor", "label": "The neighbor", "correct": false },
+        { "id": "cat", "label": "A cat", "correct": false }
+      ],
+      "answerText": "Your little sibling, Kit, is seven years old"
+    },
+    {
+      "id": "store-compare",
+      "panel": "store",
+      "question": "What should you compare carefully at the store?",
+      "choices": [
+        { "id": "serving", "label": "The price per serving", "correct": true },
+        { "id": "signs", "label": "Which sign is biggest", "correct": false },
+        { "id": "colors", "label": "The colors of the bags", "correct": false }
+      ],
+      "answerText": "the cheapest price per serving isn't always the one with the biggest sign"
+    },
+    {
+      "id": "evening-helpers",
+      "panel": "evening-2",
+      "question": "Who has been seen on your street?",
+      "choices": [
+        { "id": "helpers", "label": "Crane's helpers", "correct": true },
+        { "id": "june", "label": "Aunt June", "correct": false },
+        { "id": "mail", "label": "The mail carrier", "correct": false }
+      ],
+      "answerText": "Crane's helpers have been seen on your street"
+    },
+    {
+      "id": "evening-stones",
+      "panel": "evening-3",
+      "question": "If lots happens at once tonight, what should you do?",
+      "choices": [
+        { "id": "stone", "label": "One stone at a time", "correct": true },
+        { "id": "all", "label": "Everything at once", "correct": false },
+        { "id": "hide", "label": "Hide under the bed", "correct": false }
+      ],
+      "answerText": "one stone at a time"
+    }
+  ]
+}
