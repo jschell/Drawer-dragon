@@ -222,6 +222,25 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 
 ---
 
+### 5.9 Fair play and careful reading
+**Rule: the game never rewards mischief, spam-tapping or random guessing.** Care, careful looking and careful reading are what earn rewards. `tests/fairplay.test.ts` pins each of these:
+- **Spice tin:** only a correct mix can be fed. A wrong mix stays in the tin with feedback beside the recipe card and up to three "Ask Aunt June" hints. Pepper and chili are refused (they'd make a hatchling sneeze and hiccup), so there's no funny reaction to farm.
+- **Fix-Its come from accidents, not mischief:** on Day 1 the first loud noise startles the hatchling into a smoky hiccup that scorches a sock. Cleaning it up is the player's job.
+- **No spam rewards:** the blanket's calm bonus comes once a night; "Read to Pip" calms once per panel.
+- **No guessing rewards:**
+  - "Source Sleuth" counts each page's first trust rating.
+  - "Thought Reader" counts thoughts solved without a wrong guess (hints are fine).
+  - "Scout Spotter" needs no false alarms at the window (tapping harmless things costs nothing, but isn't rewarded).
+  - Sharp Reader stars come only from a right first answer.
+- **Honest boundaries are never punished:** "Can I have some quiet time, please?" costs nothing and gets a friendly reply.
+
+**Encouraging reading without forcing it:**
+- **Message cards:** feedback that teaches something (why food was refused, what a thought meant, how a visitor answered, scouts spotted or missed) stays on screen until the player taps OK, and the game waits. Passing comments are short pop-ups that stay longer when there's more to read.
+- **📜 "What did they say?"** shows the last 10 messages.
+- **Sharp Reader:** after some story panels (Aunt June, the library and store intros, the evening intros) the dragon asks one question about what it said (`content/reading.json`). A wrong answer highlights the sentence with the answer, at no cost; a right first answer earns a star. 3 stars give the "Sharp Reader" sticker. The content check fails if an answer isn't actually in its panel.
+- **Read to Pip:** a button on story panels. Reading the panel to the dragon calms it (once per panel; in the evening this helps keep it calm). 3 panels give the "Storyteller" sticker.
+- **No forced waiting:** buttons are never locked behind timers, which frustrates fast readers and teaches waiting rather than reading.
+
 ## 6. Story script
 
 ### 6.1 Chapter 1: "Hatchling" (vertical slice, Days 1–3)

@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { answerReading, okCards } from './helpers';
 import { expect, test } from './wording';
 
 async function tapWorld(page: Page, x: number, y: number) {
@@ -19,6 +20,7 @@ async function toAfternoon(page: Page, speed = 1) {
   }
   await page.getByRole('button', { name: 'Pip' }).click();
   await page.getByRole('button', { name: "That's the name!" }).click();
+  await okCards(page);
   await page.locator('.act.go').click({ force: true });
   await page.getByRole('button', { name: 'Go anyway' }).click();
   await page.getByRole('button', { name: /the afternoon/ }).click();
@@ -26,7 +28,9 @@ async function toAfternoon(page: Page, speed = 1) {
   await expect(page.locator('#panel')).toContainText('Silas Crane');
   await expect(page.locator('#panel')).toContainText('glass case');
   await page.getByRole('button', { name: 'Thanks, Aunt June!' }).click();
+  await answerReading(page);
   await page.getByRole('button', { name: 'Start searching' }).click();
+  await answerReading(page);
   await expect(page.locator('#research')).toBeVisible();
 }
 
@@ -76,6 +80,7 @@ test('evening: an unprepared night still ends well, with honest choices only', a
   // The evening starts by introducing the household, so players know who Kit is.
   await expect(page.locator('#panel')).toContainText('Your little sibling, Kit');
   await page.getByRole('button', { name: "Let's go" }).click();
+  await answerReading(page);
   await expect(page.locator('#banner')).toContainText('Kit (your little sibling) is coming!', { timeout: 20_000 });
 
   // With no preparation, the dragon squeaks when Kit knocks.
@@ -88,6 +93,7 @@ test('evening: an unprepared night still ends well, with honest choices only', a
   const goodnight = page.getByRole('button', { name: /^Goodnight, / });
   let sawParentChoice = false;
   for (let i = 0; i < 60 && !(await goodnight.isVisible()); i++) {
+    await okCards(page);
     const reply = page.locator('#panel .choice').first();
     if (await reply.isVisible()) {
       const label = (await reply.textContent()) ?? '';

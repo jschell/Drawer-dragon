@@ -42,6 +42,12 @@ Three in-game days, about 30–40 minutes in all. Every part saves automatically
 - **Evening: Stepping Stones.** A hungry dragon, Kit at the door and BLINK at the window, all at once. Put them in order on three stepping stones and say why. Every order works out; closing the curtains first is quickest. If Kit doesn't know yet, Kit spots the dragon, and "Show Kit the dragon" is the first choice.
 - **Cliffhanger:** the dragon outgrows the shoebox. Aunt June suggests a family meeting about the treehouse (or, if the parents don't know yet, offers to come along when you tell them). Then a Chapter 1 summary.
 
+### Reading and fair play (all days)
+- Feedback worth reading stays on screen until you tap **OK**, and the game waits. **📜** shows the last 10 messages.
+- **Sharp Reader:** after some story panels the dragon asks a question about what it said. A wrong answer highlights where the answer is; a right first answer earns a star.
+- **Read to Pip:** reading a story panel to the dragon calms it (once per panel).
+- **The spice tin only feeds the right mix**, with Aunt June's hints if you're stuck. The game never rewards mischief, spam-tapping or guessing (see SPEC.md §5.9).
+
 **📖 Find out more** (on the end-of-day summary)
 - Credits the *Dragon Keepers* books by Kate Klimo as the inspiration and encourages kids to ask a grown-up to find them at a library.
 - **For grown-ups**, behind a simple multiplication check: links to the series on Goodreads, and a library finder that turns a ZIP code (or the device's location) into a map search for public libraries. The ZIP code is not saved. These are the only links out of the game.

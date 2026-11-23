@@ -1,6 +1,6 @@
 import type { CheckKey, GrowthStage, Nutrient, Plate, PulseTarget } from './content';
 
-export const SAVE_VERSION = 3;
+export const SAVE_VERSION = 4;
 
 /** Morning care sub-phase. */
 export type Phase = 'egg' | 'naming' | 'care' | 'done';
@@ -77,6 +77,7 @@ export interface ResearchState {
   opened: string[];
   checks: Record<string, CheckKey[]>;
   ratings: Record<string, Rating>;
+  firstRatings: Record<string, Rating>; // stickers count first judgments, not repeated guesses
   trapChoices: Record<string, TrapChoice>;
   tipSaved: boolean;
 }
@@ -95,6 +96,8 @@ export interface EveningState {
   calmKnocks: number; // knocks the dragon stayed calm through
   scaredKnocks: number; // knocks that startled it
   helpers: number; // visits from family who already know and came to help
+  falseAlarms: number; // harmless things tapped at the window
+  blanketBonusUsed: boolean;
   stones: SteppingStonesState;
   kitDiscovers: boolean; // Day 3: Kit spots the dragon during the Stepping Stones moment
   over: boolean;
@@ -109,6 +112,8 @@ export interface GameState {
   store: StoreState;
   ownUpPending: boolean; // the chewed slipper is fixed; time to give it back to Kit
   history: DayRecord[];
+  /** Reading rewards, kept across days: Sharp Reader stars and panels read to the dragon. */
+  reading: { answered: string[]; stars: number; readTo: string[] };
   research: ResearchState;
   evening: EveningState;
   t: number; // seconds of care time elapsed
@@ -126,6 +131,7 @@ export interface GameState {
   fixIt: FixItState | null;
   stats: {
     thoughtsSolved: string[];
+    thoughtsReadWell: string[]; // solved without a wrong guess (hints are fine)
     hintsUsed: number;
     balancedPlate: boolean;
     perfectMix: boolean;
@@ -170,7 +176,9 @@ export type Action =
   | { type: 'pay'; tender: number[] }
   | { type: 'checkChange'; answer: 'right' | 'wrong' }
   | { type: 'ownUp'; choice: 'sorry' | 'sorry-chores' }
-  | { type: 'stepOrder'; order: StoneId[]; reason: string };
+  | { type: 'stepOrder'; order: StoneId[]; reason: string }
+  | { type: 'readingAnswer'; questionId: string; choiceId: string; firstTry: boolean }
+  | { type: 'readToDragon'; panelId: string };
 
 export type GameEvent =
   | { type: 'egg-crack'; taps: number }
@@ -212,6 +220,7 @@ export type GameEvent =
   | { type: 'window-thing'; thingId: string }
   | { type: 'window-gone'; thingId: string; missed: boolean }
   | { type: 'spotted'; thingId: string; suspicious: boolean }
+  | { type: 'startle-scorch' }
   | { type: 'lamp'; dim: boolean }
   | { type: 'blanket'; on: boolean }
   | { type: 'evening-over' }
@@ -225,6 +234,8 @@ export type GameEvent =
   | { type: 'owned-up'; choice: 'sorry' | 'sorry-chores' }
   | { type: 'stepping-stones' }
   | { type: 'stones-done'; order: StoneId[]; reason: string; best: boolean }
+  | { type: 'reading-answer'; questionId: string; correct: boolean; star: boolean }
+  | { type: 'read-to-dragon'; panelId: string; calm: number }
 
 export interface StepResult {
   state: GameState;
@@ -245,6 +256,7 @@ export function initialState(seed = 12345): GameState {
     store: emptyStore(),
     ownUpPending: false,
     history: [],
+    reading: { answered: [], stars: 0, readTo: [] },
     research: {
       searches: 0,
       query: [],
@@ -254,6 +266,7 @@ export function initialState(seed = 12345): GameState {
       opened: [],
       checks: {},
       ratings: {},
+      firstRatings: {},
       trapChoices: {},
       tipSaved: false,
     },
@@ -271,6 +284,8 @@ export function initialState(seed = 12345): GameState {
       calmKnocks: 0,
       scaredKnocks: 0,
       helpers: 0,
+      falseAlarms: 0,
+      blanketBonusUsed: false,
       stones: { active: false, done: false, order: [], reason: null },
       kitDiscovers: false,
       over: false,
@@ -297,6 +312,7 @@ export function initialState(seed = 12345): GameState {
     fixIt: null,
     stats: {
       thoughtsSolved: [],
+      thoughtsReadWell: [],
       hintsUsed: 0,
       balancedPlate: false,
       perfectMix: false,

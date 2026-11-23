@@ -27,6 +27,7 @@ function nextDay(s: GameState, events: GameEvent[], c: Content) {
     stickers: s.stickers,
     history: s.history,
     seed: fresh.seed,
+    reading: s.reading,
   };
   Object.assign(s, fresh, carry);
   s.phase = 'care';
@@ -174,12 +175,43 @@ function stepStones(s: GameState, a: Action, events: GameEvent[]): boolean {
   return true;
 }
 
+// ---------- Reading rewards ----------
+
+function stepReading(s: GameState, a: Action, events: GameEvent[], c: Content): boolean {
+  const r = s.reading;
+  if (a.type === 'readingAnswer') {
+    const q = c.reading.questions.find((x) => x.id === a.questionId);
+    const choice = q?.choices.find((x) => x.id === a.choiceId);
+    if (!q || !choice) return true;
+    // A star only for a right first answer, so guessing isn't rewarded. Wrong answers cost nothing.
+    const star = choice.correct && a.firstTry && !r.answered.includes(q.id);
+    if (choice.correct && !r.answered.includes(q.id)) r.answered.push(q.id);
+    if (star) {
+      r.stars += 1;
+      if (r.stars >= c.reading.starsForSticker) addSticker(s, 'Sharp Reader');
+    }
+    events.push({ type: 'reading-answer', questionId: q.id, correct: choice.correct, star });
+    return true;
+  }
+  if (a.type === 'readToDragon') {
+    const key = `${s.day}:${a.panelId}`;
+    if (r.readTo.includes(key)) return true; // once per panel, so it can't be farmed
+    r.readTo.push(key);
+    const calm = s.part === 'evening' || (s.part === 'morning' && s.phase === 'care') ? c.reading.readToCalm : 0;
+    s.dragon.calm = clamp(s.dragon.calm + calm);
+    if (r.readTo.length >= c.reading.readsForSticker) addSticker(s, 'Storyteller');
+    events.push({ type: 'read-to-dragon', panelId: a.panelId, calm });
+    return true;
+  }
+  return false;
+}
+
 export function stepDays(s: GameState, a: Action, events: GameEvent[], c: Content): boolean {
   if (a.type === 'nextDay') {
     if (s.part === 'end' && s.day < Math.min(LAST_DAY, c.days.days.length)) nextDay(s, events, c);
     return true;
   }
-  return stepStore(s, a, events, c) || stepOwnUp(s, a, events) || stepStones(s, a, events);
+  return stepStore(s, a, events, c) || stepOwnUp(s, a, events) || stepStones(s, a, events) || stepReading(s, a, events, c);
 }
 
 /** Called when the afternoon starts, so store days begin with the week's allowance. */

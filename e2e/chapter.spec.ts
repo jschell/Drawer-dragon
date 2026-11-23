@@ -1,4 +1,5 @@
 import type { Page } from '@playwright/test';
+import { okCards } from './helpers';
 import { expect, test } from './wording';
 
 type Hud = {
@@ -26,6 +27,7 @@ async function startGame(page: Page) {
   });
   await page.getByRole('button', { name: 'Pip' }).click();
   await page.getByRole('button', { name: "That's the name!" }).click();
+  await okCards(page);
 }
 
 test('Day 2: shop at the corner store, compare prices and check the change', async ({ page }) => {
@@ -102,7 +104,15 @@ test('Day 3: Stepping Stones, Kit can be shown the dragon, and the chapter ends'
   await page.locator('[data-p="kit"]').click();
   await page.getByRole('button', { name: "It's quick to do" }).click();
   await page.getByRole('button', { name: /One stone at a time/ }).click();
-  await expect(page.locator('#toast')).toContainText('Closing the curtains first');
+  // Read through any waiting message cards; the Stepping Stones feedback is among them.
+  const seen: string[] = [];
+  for (let i = 0; i < 8; i++) {
+    const card = page.locator('#msgcard:not([hidden])');
+    if (!(await card.isVisible())) break;
+    seen.push((await card.textContent()) ?? '');
+    await card.locator('[data-x="ok"]').click();
+  }
+  expect(seen.join(' ')).toContain('Closing the curtains first');
 
   // Kit spots the dragon. Showing Kit is always the first choice.
   await expect(page.locator('#panel')).toContainText('Is that... a DRAGON?', { timeout: 6000 });
