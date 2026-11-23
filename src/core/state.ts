@@ -1,6 +1,6 @@
-import type { CheckKey, GrowthStage, Nutrient, Plate, PulseTarget } from './content';
+import type { AfternoonKind, CheckKey, GrowthStage, Nutrient, Plate, PulseTarget, SpecialKind } from './content';
 
-export const SAVE_VERSION = 4;
+export const SAVE_VERSION = 5;
 
 /** Morning care sub-phase. */
 export type Phase = 'egg' | 'naming' | 'care' | 'done';
@@ -53,7 +53,7 @@ export interface DayRecord {
   ready: boolean;
   balancedPlate: boolean;
   perfectMix: boolean;
-  afternoon: 'research' | 'store';
+  afternoon: AfternoonKind;
   foundAnswer: boolean;
   smartShopper: boolean;
   calmKnocks: number;
@@ -61,7 +61,26 @@ export interface DayRecord {
   helpers: number;
   spotted: number;
   missed: number;
+  thoughts?: number; // dragon thoughts understood that morning (for Bond)
 }
+
+/**
+ * Progress on one of Chapter 2–3's short activities (a morning lesson, an afternoon
+ * task or an evening story moment). Wrong picks and answers are remembered only so
+ * the screen can explain them; they never cost anything (spec §5.9).
+ */
+export interface TaskState {
+  done: boolean;
+  picks: string[]; // chosen items (materials, clues, evidence, favorites)
+  wrong: string[]; // items tapped that weren't right, with an explanation shown
+  tries: number[]; // flight distances, in feet
+  correct: string[]; // questions answered right
+  missed: string[]; // questions answered wrong at least once (so stickers need a first-try answer)
+  submits: number;
+  juneFilled: string[]; // evidence Aunt June found for the player, so no one is stuck
+}
+
+export type Ending = 'stay' | 'fly';
 
 export interface FixItState {
   id: 'scorched-sock' | 'chewed-slipper';
@@ -100,6 +119,8 @@ export interface EveningState {
   blanketBonusUsed: boolean;
   stones: SteppingStonesState;
   kitDiscovers: boolean; // Day 3: Kit spots the dragon during the Stepping Stones moment
+  /** Chapters 2–3: tonight's story moment (Crane at the door, the hill flight, the choice). */
+  special: TaskState & { kind: SpecialKind | null; active: boolean };
   over: boolean;
 }
 
@@ -108,7 +129,21 @@ export interface GameState {
   part: Part;
   day: number;
   coins: number; // cents in the wallet
-  world: { collectorAttention: number; circle: string[]; blanketUnlocked: boolean; lullabyUnlocked: boolean };
+  world: {
+    collectorAttention: number;
+    circle: string[];
+    blanketUnlocked: boolean;
+    lullabyUnlocked: boolean;
+    /** Facts for the Evidence Board, collected in Chapter 2. */
+    evidence: string[];
+    familyMeeting: boolean; // Day 4: the whole family agreed on the treehouse
+    craneGone: boolean;
+    favorites: Record<string, string>;
+    ending: Ending | null;
+  };
+  /** Today's morning lesson and afternoon task (Chapters 2–3). */
+  activity: TaskState;
+  task: TaskState;
   store: StoreState;
   ownUpPending: boolean; // the chewed slipper is fixed; time to give it back to Kit
   history: DayRecord[];
@@ -178,7 +213,14 @@ export type Action =
   | { type: 'ownUp'; choice: 'sorry' | 'sorry-chores' }
   | { type: 'stepOrder'; order: StoneId[]; reason: string }
   | { type: 'readingAnswer'; questionId: string; choiceId: string; firstTry: boolean }
-  | { type: 'readToDragon'; panelId: string };
+  | { type: 'readToDragon'; panelId: string }
+  | { type: 'familyMeeting' }
+  | { type: 'pick'; id: string }
+  | { type: 'submit' }
+  | { type: 'flap'; power: number }
+  | { type: 'answer'; qid: string; value: string }
+  | { type: 'activityDone' }
+  | { type: 'chooseEnding'; choice: Ending };
 
 export type GameEvent =
   | { type: 'egg-crack'; taps: number }
@@ -236,6 +278,17 @@ export type GameEvent =
   | { type: 'stones-done'; order: StoneId[]; reason: string; best: boolean }
   | { type: 'reading-answer'; questionId: string; correct: boolean; star: boolean }
   | { type: 'read-to-dragon'; panelId: string; calm: number }
+  | { type: 'family-meeting'; joined: string[] }
+  | { type: 'picked'; id: string; on: boolean; ok: boolean }
+  | { type: 'submitted'; ok: boolean; wrong: string[] }
+  | { type: 'flapped'; power: number; distance: number; inZone: boolean; tryNo: number }
+  | { type: 'answered'; qid: string; correct: boolean }
+  | { type: 'activity-done'; slot: 'morning' | 'afternoon' | 'evening' }
+  | { type: 'evidence'; id: string }
+  | { type: 'june-filled'; ids: string[] }
+  | { type: 'special'; kind: SpecialKind }
+  | { type: 'crane-left' }
+  | { type: 'ending-chosen'; choice: Ending }
 
 export interface StepResult {
   state: GameState;
@@ -246,13 +299,29 @@ export function emptyStore(): StoreState {
   return { cart: {}, paid: false, total: 0, tendered: 0, changeGiven: null, changeChecked: null, bought: {} };
 }
 
+export function emptyTask(): TaskState {
+  return { done: false, picks: [], wrong: [], tries: [], correct: [], missed: [], submits: 0, juneFilled: [] };
+}
+
 export function initialState(seed = 12345): GameState {
   return {
     version: SAVE_VERSION,
     part: 'morning',
     day: 1,
     coins: 0,
-    world: { collectorAttention: 0, circle: ['june'], blanketUnlocked: false, lullabyUnlocked: false },
+    world: {
+      collectorAttention: 0,
+      circle: ['june'],
+      blanketUnlocked: false,
+      lullabyUnlocked: false,
+      evidence: [],
+      familyMeeting: false,
+      craneGone: false,
+      favorites: {},
+      ending: null,
+    },
+    activity: emptyTask(),
+    task: emptyTask(),
     store: emptyStore(),
     ownUpPending: false,
     history: [],
@@ -288,6 +357,7 @@ export function initialState(seed = 12345): GameState {
       blanketBonusUsed: false,
       stones: { active: false, done: false, order: [], reason: null },
       kitDiscovers: false,
+      special: { ...emptyTask(), kind: null, active: false },
       over: false,
     },
     t: 0,

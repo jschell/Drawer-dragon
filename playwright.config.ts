@@ -9,6 +9,10 @@ export default defineConfig({
   testDir: 'e2e',
   timeout: 60_000,
   retries: process.env.CI ? 1 : 0,
+  // CI runners have no GPU, so every game canvas is drawn on the CPU. Two browsers at
+  // once starved each other there (clicks went unanswered until tests timed out), so
+  // CI runs one browser at a time.
+  workers: process.env.CI ? 1 : undefined,
   reporter: process.env.CI ? 'github' : 'list',
   use: { baseURL: 'http://localhost:4173', trace: 'off' },
   webServer: {

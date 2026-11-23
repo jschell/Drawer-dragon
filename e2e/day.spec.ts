@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { answerReading, okCards } from './helpers';
+import { answerReading, okCards, pickName } from './helpers';
 import { expect, test } from './wording';
 
 async function tapWorld(page: Page, x: number, y: number) {
@@ -18,8 +18,7 @@ async function toAfternoon(page: Page, speed = 1) {
     await tapWorld(page, 720, 446);
     await page.waitForTimeout(250);
   }
-  await page.getByRole('button', { name: 'Pip' }).click();
-  await page.getByRole('button', { name: "That's the name!" }).click();
+  await pickName(page, 'Pip');
   await okCards(page);
   await page.locator('.act.go').click({ force: true });
   await page.getByRole('button', { name: 'Go anyway' }).click();

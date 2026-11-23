@@ -279,6 +279,202 @@
           "missLine": "BLINK swept past one more time..."
         }
       ]
+    },
+    "day4": {
+      "endAt": 120,
+      "visitors": [
+        {
+          "id": "mom",
+          "at": 30,
+          "line": "\"Is the new nest cozy enough?\"",
+          "knownLine": "Mom pokes a head into the treehouse: \"Is the new nest cozy enough?\""
+        },
+        {
+          "id": "kit",
+          "at": 80,
+          "line": "\"Can I say goodnight to the dragon?\"",
+          "knownLine": "Kit pokes a head into the treehouse: \"Can I say goodnight to the dragon?\""
+        }
+      ],
+      "windowThings": [
+        {
+          "id": "owl4",
+          "art": "moth",
+          "at": 20,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Just a moth near the lantern. The owl hooting is far away."
+        },
+        {
+          "id": "surveyor4",
+          "art": "surveyor",
+          "at": 45,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "The clipboard person is staring at the treehouse! Curtains closed.",
+          "missLine": "The clipboard person wrote something down while looking at the treehouse..."
+        },
+        {
+          "id": "cat4",
+          "art": "cat",
+          "at": 66,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Pickles the cat is climbing the fence."
+        },
+        {
+          "id": "blink4b",
+          "art": "blink",
+          "at": 98,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "BLINK! Curtains closed just in time.",
+          "missLine": "BLINK's red light hovered near the treehouse..."
+        }
+      ]
+    },
+    "day5": {
+      "endAt": 120,
+      "visitors": [
+        {
+          "id": "dad",
+          "at": 40,
+          "line": "\"I heard there was a first flight today!\"",
+          "knownLine": "Dad pokes a head into the treehouse: \"I heard there was a first flight today!\""
+        }
+      ],
+      "windowThings": [
+        {
+          "id": "blink5",
+          "art": "blink",
+          "at": 24,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "BLINK with a searchlight! Curtains closed.",
+          "missLine": "BLINK's searchlight swept across the treehouse..."
+        },
+        {
+          "id": "moth5",
+          "art": "moth",
+          "at": 58,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "A moth, dancing near the lantern."
+        },
+        {
+          "id": "surveyor5",
+          "art": "surveyor",
+          "at": 84,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "The clipboard person again. Curtains closed!",
+          "missLine": "Someone with a clipboard lingered by the fence..."
+        },
+        {
+          "id": "cat5",
+          "art": "cat",
+          "at": 104,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Pickles, out for a midnight stroll."
+        }
+      ]
+    },
+    "day6": {
+      "endAt": 120,
+      "specialAt": 30,
+      "special": "crane-door",
+      "visitors": [
+        {
+          "id": "kit",
+          "at": 80,
+          "line": "\"Was that man at the door a bad guy?\"",
+          "knownLine": "Kit pokes a head into the treehouse: \"Was that man at the door a bad guy?\""
+        }
+      ],
+      "windowThings": [
+        {
+          "id": "moth6",
+          "art": "moth",
+          "at": 60,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Just a moth."
+        },
+        {
+          "id": "blink6",
+          "art": "blink",
+          "at": 96,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "BLINK, one more time. Curtains closed!",
+          "missLine": "BLINK hovered by the treehouse window..."
+        }
+      ]
+    },
+    "day7": {
+      "endAt": 100,
+      "visitors": [
+        {
+          "id": "mom",
+          "at": 30,
+          "line": "\"I'm so proud of what you did at the meeting.\"",
+          "knownLine": "Mom pokes a head into the treehouse: \"I'm so proud of what you did at the meeting.\""
+        },
+        {
+          "id": "dad",
+          "at": 70,
+          "line": "\"Goodnight, detective!\"",
+          "knownLine": "Dad pokes a head into the treehouse: \"Goodnight, detective!\""
+        }
+      ],
+      "windowThings": [
+        {
+          "id": "moth7",
+          "art": "moth",
+          "at": 20,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "A moth. And BLINK beeps at it in a friendly way."
+        },
+        {
+          "id": "cat7",
+          "art": "cat",
+          "at": 55,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Pickles the cat. Nothing to worry about anymore."
+        }
+      ]
+    },
+    "day8": {
+      "endAt": 100,
+      "specialAt": 8,
+      "special": "hill-flight",
+      "visitors": [
+        {
+          "id": "kit",
+          "at": 60,
+          "line": "\"That was the BEST flight!\"",
+          "knownLine": "Kit pokes a head into the treehouse: \"That was the BEST flight!\""
+        }
+      ],
+      "windowThings": [
+        {
+          "id": "moth8",
+          "art": "moth",
+          "at": 40,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Just a moth. BLINK is keeping watch."
+        }
+      ]
+    },
+    "day9": {
+      "endAt": 3,
+      "special": "choice",
+      "visitors": [],
+      "windowThings": []
     }
   }
 }

@@ -1,3 +1,4 @@
+import { content } from '../src/core/content';
 import { describe, expect, it } from 'vitest';
 import { isReady, step } from '../src/core/reducer';
 import { initialState } from '../src/core/state';
@@ -14,6 +15,14 @@ describe('hatching', () => {
     s = step(r2.state, { type: 'name', name: '   ' }).state;
     expect(s.dragon.name).toBe('Sprocket');
     expect(s.phase).toBe('care');
+  });
+
+  it('only accepts names from the list: typed text never becomes the name', () => {
+    const hatched = run(initialState(), [{ type: 'tapEgg' }, { type: 'tapEgg' }, { type: 'tapEgg' }]).state;
+    for (const typed of ['Bob', 'pip', 'Pip!', '<b>Hi</b>', 'Mochi Mochi', 'x'.repeat(40)]) {
+      expect(step(hatched, { type: 'name', name: typed }).state.dragon.name).toBe(content.names.default);
+    }
+    expect(step(hatched, { type: 'name', name: 'Tumble' }).state.dragon.name).toBe('Tumble');
   });
 
   it('does not run the clock before care starts', () => {

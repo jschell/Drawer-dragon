@@ -4,14 +4,16 @@ A cozy creature-care browser game for ages 8–11: raise a baby dragon, learn ho
 
 **▶ Play it:** https://jschell.github.io/Drawer-dragon/ (best on an iPad or iPhone held sideways; tap Share → Add to Home Screen for full screen)
 
-## Status: Chapter 1 is playable (Days 1–3)
+## Status: the whole game is playable (3 chapters, Days 1–9)
 
-Three in-game days, about 30–40 minutes in all. Every part saves automatically, and the dragon's name, the Keeper Circle, Collector Attention, stickers and money carry over between days.
+Nine in-game days in three chapters, about 1½–2 hours in all. Every part saves automatically, and the dragon's name, the Keeper Circle, Collector Attention, the Evidence Board, stickers and money carry over between days.
+
+## Chapter 1: Hatchling (Days 1–3)
 
 ### Day 1: The Warm Rock
 
 **☀️ Morning: care** (prototype 1)
-1. **Hatch** the egg (tap it 3 times) and **name** your dragon.
+1. **Hatch** the egg (tap it 3 times) and **name** your dragon: pick from a list of 36 names, 6 at a time (**More names ▶** shows others). There is no typing anywhere in the game, so nothing a player types can show up on screen.
 2. Get it **ready for the day**: fed, warm and calm.
    - **Food:** drag food onto the dragon (or tap a food, then the dragon). It wants a balanced plate: meat, greens and minerals.
    - **Spice tin:** follow the recipe card's *parts* (2 cinnamon : 1 ginger). A double batch gives it hiccups and scorches a sock (a rub-it-clean Fix-It).
@@ -42,11 +44,49 @@ Three in-game days, about 30–40 minutes in all. Every part saves automatically
 - **Evening: Stepping Stones.** A hungry dragon, Kit at the door and BLINK at the window, all at once. Put them in order on three stepping stones and say why. Every order works out; closing the curtains first is quickest. If Kit doesn't know yet, Kit spots the dragon, and "Show Kit the dragon" is the first choice.
 - **Cliffhanger:** the dragon outgrows the shoebox. Aunt June suggests a family meeting about the treehouse (or, if the parents don't know yet, offers to come along when you tell them). Then a Chapter 1 summary.
 
+## Chapter 2: Bigger Nest (Days 4–6)
+
+The dragon is a **fledgling** now: bigger, with a **2× batch** of the spice mix. From Day 4 it lives in the **treehouse**.
+
+### Day 4: Family Meeting
+- **Morning:** a family meeting about the treehouse. If Mom, Dad or Kit don't know yet, Aunt June comes with you and the button is **"Show Mom, Dad and Kit the dragon"**. Then **build the nest**: test five materials with a thermometer and pick the two that keep it warmest and dry (wool and straw trap air; wet leaves pull heat away).
+- **Afternoon: a poster on the lane.** Tap the three suspicious things on a "Larkspur Wildlife Rescue" poster. A red herring (it offers a reward) is explained and costs nothing, but only real clues count. The poster goes on your **Evidence Board**.
+- **Evening:** the first night in the treehouse. The whole family drops by to help.
+
+### Day 5: First Flight
+- **Morning: flight practice.** Tap **Flap!** when the wing meter is in the green zone: three tries, each one added to a **bar graph**, then "how many feet farther was your best try than your first?". Flapping wildly never goes farther.
+- **Afternoon:** research how fledglings learn to fly. The posters point to a fake "rescue" website made last week; the library's **community directory** lists the real wildlife rescue. Judging both correctly adds them to the Evidence Board.
+
+### Day 6: Fire Control
+- **Morning:** outdoors on Aunt June's stone slab, with June there, match **glow, puff or spark** to three jobs. Only the dragon makes fire, and sparks are only for the stone slab outdoors.
+- **Afternoon:** the library's **newspaper archive**: in 2009 Crane's private animal display was closed for keeping animals in tiny glass cases.
+- **Evening: someone at the door.** Silas Crane, calling himself a "rescue volunteer". Dad politely says no thank you while you spot three clues (muddy boots, BLINK's remote, the fake rescue's business card).
+- **Cliffhanger:** the dragon sends a new thought: mountains, and many wings far away, calling.
+
+## Chapter 3: The Call (Days 7–9)
+
+### Day 7: The Evidence Board
+- **Afternoon:** pick the three strongest pieces of evidence that the "rescue" is fake. "Crane has a mean face" and "Kit thinks he's spooky" are explained and don't count: facts others can check are strongest. If you missed some evidence, **Aunt June fills the gaps**, so no one is stuck.
+- At the **neighborhood meeting** you show the website is fake (never mentioning the dragon), and the real wildlife rescue takes it from there. Crane's van rattles out of town, and BLINK is left behind: from now on it's your friendly lookout.
+
+### Day 8: Many Wings
+- **Morning:** Aunt June's old letter about her dragon, Cinder, who chose the flock and came back every summer (with a Sharp Reader question).
+- **Afternoon: mapping the way north.** A grid map (each square is 10 miles): which direction, how far, and how many servings to pack for the trip. Wrong answers show the working.
+- **Evening:** the dragon's longest flight yet, over Larkspur Hill.
+
+### Day 9: Choose Together
+- **Morning:** pick the dragon's favorite breakfast, sock and spot (there are no wrong answers). **Afternoon:** thank Mr. Patel, Ms. Ortiz and Aunt June.
+- **Sunset on the hill:** the dragon's last thought shows two pictures, home and the flock. Everyone says they'll be happy either way, and you **choose together**:
+  - **Stay on Larkspur Lane:** a proper roost on the hill; the dragon becomes the neighborhood's hidden guardian.
+  - **Fly with the flock:** it isn't goodbye. A postcard arrives from the high lakes, and next summer the dragon comes home for a visit.
+- **Bond** (how well the dragon was cared for all week) is never shown as a score. It only adds small extra epilogue moments, and every player gets a warm, complete ending.
+
 ### Reading and fair play (all days)
 - Feedback worth reading stays on screen until you tap **OK**, and the game waits. **📜** shows the last 10 messages.
 - **Sharp Reader:** after some story panels the dragon asks a question about what it said. A wrong answer highlights where the answer is; a right first answer earns a star.
 - **Read to Pip:** reading a story panel to the dragon calms it (once per panel).
 - **The spice tin only feeds the right mix**, with Aunt June's hints if you're stuck. The game never rewards mischief, spam-tapping or guessing (see SPEC.md §5.9).
+- In Chapters 2–3, wrong picks and answers are explained and cost nothing, but stickers need a first-try answer, a clean set of clues or a flap in the green zone, and the right answers are never simply listed first.
 
 **📖 Find out more** (on the end-of-day summary)
 - Credits the *Dragon Keepers* books by Kate Klimo as the inspiration and encourages kids to ask a grown-up to find them at a library.
@@ -78,12 +118,12 @@ The dragon is always kept **safe from strangers** (the collector and his helpers
 
 | Path | What |
 |---|---|
-| `src/core/` | Game rules as a pure `step(state, action)` reducer (`day.ts` has the afternoon and evening), content validation, saving |
-| `content/` | Foods, spices, recipes, dragon thoughts, the in-game websites and the evening schedule, as JSON checked at build time |
+| `src/core/` | Game rules as a pure `step(state, action)` reducer (`day.ts` has the afternoon and evening, `days.ts` moving between days, `chapters.ts` the Chapter 2–3 lessons, tasks, evidence and ending), content validation, saving |
+| `content/` | Foods, spices, recipes, dragon thoughts, the in-game websites, the evening schedules, the nine days and the Chapter 2–3 activities (`activities.json`), as JSON checked at build time |
 | `src/scenes/` | Phaser scene: bedroom, the layered dragon, animations |
 | `src/art/` | Generated SVG art |
 | `src/audio/` | Generated sound effects |
-| `src/ui/` | HTML overlay: meters, buttons, panels, read-aloud, and the library computer (`research.ts`) |
+| `src/ui/` | HTML overlay: meters, buttons, panels, read-aloud, the library computer (`research.ts`), the store (`store.ts`) and the Chapter 2–3 screens (`chapters.ts`) |
 | `tests/` | Unit tests and the autoplay bot |
 | `e2e/` | Playwright browser tests |
 

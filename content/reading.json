@@ -8,9 +8,21 @@
       "panel": "june",
       "question": "What does Silas Crane keep rare things in?",
       "choices": [
-        { "id": "cases", "label": "Glass cases", "correct": true },
-        { "id": "boxes", "label": "Cardboard boxes", "correct": false },
-        { "id": "tree", "label": "A treehouse", "correct": false }
+        {
+          "id": "cases",
+          "label": "Glass cases",
+          "correct": true
+        },
+        {
+          "id": "boxes",
+          "label": "Cardboard boxes",
+          "correct": false
+        },
+        {
+          "id": "tree",
+          "label": "A treehouse",
+          "correct": false
+        }
       ],
       "answerText": "keeps them in glass cases"
     },
@@ -19,9 +31,21 @@
       "panel": "library-1",
       "question": "What scares {name}?",
       "choices": [
-        { "id": "knocks", "label": "Knocks on the door", "correct": true },
-        { "id": "thunder", "label": "Thunder", "correct": false },
-        { "id": "cats", "label": "Cats", "correct": false }
+        {
+          "id": "knocks",
+          "label": "Knocks on the door",
+          "correct": true
+        },
+        {
+          "id": "thunder",
+          "label": "Thunder",
+          "correct": false
+        },
+        {
+          "id": "cats",
+          "label": "Cats",
+          "correct": false
+        }
       ],
       "answerText": "gets scared of knocks"
     },
@@ -30,9 +54,21 @@
       "panel": "evening-1",
       "question": "Who is Kit?",
       "choices": [
-        { "id": "sibling", "label": "Your little sibling", "correct": true },
-        { "id": "neighbor", "label": "The neighbor", "correct": false },
-        { "id": "cat", "label": "A cat", "correct": false }
+        {
+          "id": "sibling",
+          "label": "Your little sibling",
+          "correct": true
+        },
+        {
+          "id": "neighbor",
+          "label": "The neighbor",
+          "correct": false
+        },
+        {
+          "id": "cat",
+          "label": "A cat",
+          "correct": false
+        }
       ],
       "answerText": "Your little sibling, Kit, is seven years old"
     },
@@ -41,9 +77,21 @@
       "panel": "store",
       "question": "What should you compare carefully at the store?",
       "choices": [
-        { "id": "serving", "label": "The price per serving", "correct": true },
-        { "id": "signs", "label": "Which sign is biggest", "correct": false },
-        { "id": "colors", "label": "The colors of the bags", "correct": false }
+        {
+          "id": "serving",
+          "label": "The price per serving",
+          "correct": true
+        },
+        {
+          "id": "signs",
+          "label": "Which sign is biggest",
+          "correct": false
+        },
+        {
+          "id": "colors",
+          "label": "The colors of the bags",
+          "correct": false
+        }
       ],
       "answerText": "the cheapest price per serving isn't always the one with the biggest sign"
     },
@@ -52,9 +100,21 @@
       "panel": "evening-2",
       "question": "Who has been seen on your street?",
       "choices": [
-        { "id": "helpers", "label": "Crane's helpers", "correct": true },
-        { "id": "june", "label": "Aunt June", "correct": false },
-        { "id": "mail", "label": "The mail carrier", "correct": false }
+        {
+          "id": "helpers",
+          "label": "Crane's helpers",
+          "correct": true
+        },
+        {
+          "id": "june",
+          "label": "Aunt June",
+          "correct": false
+        },
+        {
+          "id": "mail",
+          "label": "The mail carrier",
+          "correct": false
+        }
       ],
       "answerText": "Crane's helpers have been seen on your street"
     },
@@ -63,11 +123,69 @@
       "panel": "evening-3",
       "question": "If lots happens at once tonight, what should you do?",
       "choices": [
-        { "id": "stone", "label": "One stone at a time", "correct": true },
-        { "id": "all", "label": "Everything at once", "correct": false },
-        { "id": "hide", "label": "Hide under the bed", "correct": false }
+        {
+          "id": "stone",
+          "label": "One stone at a time",
+          "correct": true
+        },
+        {
+          "id": "all",
+          "label": "Everything at once",
+          "correct": false
+        },
+        {
+          "id": "hide",
+          "label": "Hide under the bed",
+          "correct": false
+        }
       ],
       "answerText": "one stone at a time"
+    },
+    {
+      "id": "letter-visits",
+      "panel": "letter",
+      "question": "What did Cinder do every summer?",
+      "choices": [
+        {
+          "id": "visit",
+          "label": "Came back to visit",
+          "correct": true
+        },
+        {
+          "id": "slept",
+          "label": "Slept all summer",
+          "correct": false
+        },
+        {
+          "id": "moved",
+          "label": "Moved to the beach",
+          "correct": false
+        }
+      ],
+      "answerText": "every summer she came back to visit me"
+    },
+    {
+      "id": "evening4-lantern",
+      "panel": "evening-4",
+      "question": "Why keep the lantern low tonight?",
+      "choices": [
+        {
+          "id": "window",
+          "label": "A bright window shows from the street",
+          "correct": true
+        },
+        {
+          "id": "sleep",
+          "label": "Dragons hate lanterns",
+          "correct": false
+        },
+        {
+          "id": "battery",
+          "label": "To save batteries",
+          "correct": false
+        }
+      ],
+      "answerText": "a bright window shows from the street"
     }
   ]
 }

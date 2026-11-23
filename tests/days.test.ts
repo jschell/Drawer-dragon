@@ -55,12 +55,12 @@ describe('moving to the next day', () => {
     expect(n.dragon.spark).toBe(8); // Day 2 starts with a cold belly
   });
 
-  it('stops after Day 3', () => {
+  it('goes on to Chapter 2 after Day 3', () => {
     let s = toDay(3);
     s = run(s, [{ type: 'finishMorning' }, { type: 'startAfternoon' }, { type: 'startEvening' }]).state;
     s = finishEvening(s);
     expect(s.day).toBe(3);
-    expect(step(s, { type: 'nextDay' }).state.day).toBe(3);
+    expect(step(s, { type: 'nextDay' }).state.day).toBe(4);
     expect(s.history.map((h) => h.day)).toEqual([1, 2, 3]);
   });
 });

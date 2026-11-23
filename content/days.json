@@ -10,7 +10,8 @@
           "calm": 45
         },
         "recipeScale": 1,
-        "intro": "Hello, {name}! It's hungry, chilly and a bit scared. Help it get ready for the day."
+        "intro": "Hello, {name}! It's hungry, chilly and a bit scared. Help it get ready for the day.",
+        "stage": "hatchling"
       },
       "afternoon": {
         "kind": "research",
@@ -32,7 +33,8 @@
           "calm": 55
         },
         "recipeScale": 1,
-        "intro": "Day 2. Brrr! {name} is shivering: its belly fire went out in the night. Time for breakfast and the spice tin."
+        "intro": "Day 2. Brrr! {name} is shivering: its belly fire went out in the night. Time for breakfast and the spice tin.",
+        "stage": "hatchling"
       },
       "afternoon": {
         "kind": "store"
@@ -57,7 +59,8 @@
         },
         "recipeScale": 1.5,
         "chewedSlipper": true,
-        "intro": "Day 3. Whoa, {name} had a growth spurt overnight! It needs a bigger spice mix today. And... is that one of Kit's slippers in the nest?"
+        "intro": "Day 3. Whoa, {name} had a growth spurt overnight! It needs a bigger spice mix today. And... is that one of Kit's slippers in the nest?",
+        "stage": "hatchling"
       },
       "afternoon": {
         "kind": "research",
@@ -73,15 +76,195 @@
           "As always, you can show your family the dragon, and watch the window for Crane's helpers."
         ]
       }
+    },
+    {
+      "day": 4,
+      "title": "Family Meeting",
+      "morning": {
+        "start": {
+          "hunger": 60,
+          "spark": 30,
+          "calm": 50
+        },
+        "recipeScale": 2,
+        "stage": "fledgling",
+        "activity": "insulation",
+        "opening": "family",
+        "intro": "Day 4. {name} is a fledgling now: bigger, stronger, and much too big for the shoebox. Today it moves into the treehouse. Build it a warm nest, then get it ready for the day."
+      },
+      "afternoon": {
+        "kind": "clues",
+        "set": "poster"
+      },
+      "evening": {
+        "schedule": "day4",
+        "intro": [
+          "The first night in the treehouse. Everything is new: the creaky boards, the wind, an owl somewhere.",
+          "Help {name} feel at home. And keep the lantern low: a bright window shows from the street, and Crane's helpers are still around."
+        ]
+      }
+    },
+    {
+      "day": 5,
+      "title": "First Flight",
+      "morning": {
+        "start": {
+          "hunger": 65,
+          "spark": 25,
+          "calm": 55
+        },
+        "recipeScale": 2,
+        "stage": "fledgling",
+        "activity": "flight",
+        "intro": "Day 5. {name}'s wings are twitching. Today is flight practice at dawn, behind the hedge where no one can see."
+      },
+      "afternoon": {
+        "kind": "research",
+        "set": "fledgling",
+        "intro": "Find out how fledglings learn to fly safely. Watch out: the posters pointed to a 'rescue' website. Check it carefully, and see what the library says about the REAL wildlife rescue."
+      },
+      "evening": {
+        "schedule": "day5",
+        "intro": [
+          "{name} is tired from all that flying. BLINK has been seen patrolling at night with a searchlight.",
+          "Keep the treehouse cozy and dark, and watch the window."
+        ]
+      }
+    },
+    {
+      "day": 6,
+      "title": "Fire Control",
+      "morning": {
+        "start": {
+          "hunger": 65,
+          "spark": 20,
+          "calm": 55
+        },
+        "recipeScale": 2,
+        "stage": "fledgling",
+        "activity": "fire",
+        "intro": "Day 6. {name}'s inner fire is getting stronger. Today Aunt June teaches fire control, outdoors on her stone slab."
+      },
+      "afternoon": {
+        "kind": "research",
+        "set": "newspaper",
+        "intro": "Ms. Ortiz shows you the library's newspaper archive. What do the old newspapers say about Silas Crane?"
+      },
+      "evening": {
+        "schedule": "day6",
+        "intro": [
+          "Something feels different tonight. A car has been parked down the street for an hour.",
+          "Stay calm, keep watching, and remember: your family is on your side."
+        ]
+      }
+    },
+    {
+      "day": 7,
+      "title": "The Evidence Board",
+      "morning": {
+        "start": {
+          "hunger": 60,
+          "spark": 30,
+          "calm": 60
+        },
+        "recipeScale": 2,
+        "stage": "fledgling",
+        "intro": "Day 7. Big day! Tonight is the neighborhood meeting. First, a calm morning: you know {name}'s routine by heart now."
+      },
+      "afternoon": {
+        "kind": "board"
+      },
+      "evening": {
+        "schedule": "day7",
+        "intro": [
+          "A peaceful evening at last. No posters, no clipboards, no red lights sneaking around.",
+          "BLINK hums happily on the treehouse windowsill, keeping watch."
+        ]
+      }
+    },
+    {
+      "day": 8,
+      "title": "Many Wings",
+      "morning": {
+        "start": {
+          "hunger": 70,
+          "spark": 25,
+          "calm": 45
+        },
+        "recipeScale": 2,
+        "stage": "fledgling",
+        "activity": "letter",
+        "intro": "Day 8. {name} is restless and keeps staring north. Aunt June comes over with something to show you."
+      },
+      "afternoon": {
+        "kind": "map"
+      },
+      "evening": {
+        "schedule": "day8",
+        "intro": [
+          "Dusk on Larkspur Hill. Tonight is {name}'s longest flight yet, with BLINK as lookout.",
+          "The whole Keeper Circle has come to watch."
+        ]
+      }
+    },
+    {
+      "day": 9,
+      "title": "Choose Together",
+      "morning": {
+        "start": {
+          "hunger": 60,
+          "spark": 30,
+          "calm": 60
+        },
+        "recipeScale": 2,
+        "stage": "fledgling",
+        "activity": "favorites",
+        "intro": "Day 9. The last morning of the week. Make it a special one for {name}."
+      },
+      "afternoon": {
+        "kind": "farewell"
+      },
+      "evening": {
+        "schedule": "day9",
+        "intro": [
+          "Sunset. Everyone is gathering on Larkspur Hill."
+        ]
+      }
     }
   ],
-  "cliffhanger": {
-    "title": "Too big for the shoebox!",
-    "paragraphs": [
-      "That night, {name} turns around three times in the nest... and the shoebox goes CRUNCH. Your dragon has outgrown it!",
-      "Aunt June peeks in the next morning and laughs. \"Time to think bigger, my dear.\""
-    ],
-    "toldParents": "\"Your mom and dad already know, so let's have a family meeting about the treehouse.\"",
-    "notToldParents": "\"And it's time to talk to your mom and dad. A dragon this size needs the whole family. I'll come with you when you tell them.\""
-  }
+  "chapters": [
+    {
+      "n": 1,
+      "title": "Hatchling",
+      "lastDay": 3,
+      "cliffhanger": {
+        "title": "Too big for the shoebox!",
+        "paragraphs": [
+          "That night, {name} turns around three times in the nest... and the shoebox goes CRUNCH. Your dragon has outgrown it!",
+          "Aunt June peeks in the next morning and laughs. \"Time to think bigger, my dear.\""
+        ],
+        "toldParents": "\"Your mom and dad already know, so let's have a family meeting about the treehouse.\"",
+        "notToldParents": "\"And it's time to talk to your mom and dad. A dragon this size needs the whole family. I'll come with you when you tell them.\""
+      }
+    },
+    {
+      "n": 2,
+      "title": "Bigger Nest",
+      "lastDay": 6,
+      "cliffhanger": {
+        "title": "Many wings, far away",
+        "paragraphs": [
+          "That night {name} can't settle. It sends you a new kind of thought: tall mountains, and many wings, far away, calling.",
+          "Aunt June looks at the sky for a long time. \"I've seen that one before,\" she says quietly. \"Tomorrow, we have work to do.\""
+        ],
+        "toldParents": "",
+        "notToldParents": ""
+      }
+    },
+    {
+      "n": 3,
+      "title": "The Call",
+      "lastDay": 9
+    }
+  ]
 }

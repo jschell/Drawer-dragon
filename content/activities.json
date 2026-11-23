@@ -1,0 +1,405 @@
+{
+  "family": {
+    "title": "Family meeting",
+    "told": [
+      "Everyone squeezes around the kitchen table: you, Kit, Mom, Dad and Aunt June. {name} is curled up in your lap, twice as big as it was on Monday."
+    ],
+    "notTold": [
+      "Aunt June walks in with you, and you take a deep breath. \"Mom, Dad, Kit... there's someone I want you to meet.\" {name} peeks out of your hoodie.",
+      "Mom's mouth falls open. Dad sits down very slowly. Then Kit squeals, and everyone starts laughing. \"Thank you for telling us,\" Mom says. \"Now we can help.\""
+    ],
+    "rules": [
+      "{name} sleeps in the treehouse from now on: it's warm, high up and hidden by the big oak.",
+      "Fire only outdoors, on Aunt June's stone slab, with Aunt June there.",
+      "Everyone in the family helps keep {name} safe."
+    ],
+    "toldButton": "Let's build the treehouse nest!",
+    "notToldButton": "Show Mom, Dad and Kit the dragon"
+  },
+  "insulation": {
+    "title": "Build the treehouse nest",
+    "intro": "The treehouse gets cold at night. Test the materials with Aunt June's thermometer, then pick the TWO that keep the nest warmest and dry.",
+    "pick": 2,
+    "materials": [
+      {
+        "id": "newspaper",
+        "label": "Newspaper",
+        "emoji": "📰",
+        "warmth": 4,
+        "dry": true,
+        "note": "Paper helps a little, but it's thin."
+      },
+      {
+        "id": "wool",
+        "label": "Wool blanket",
+        "emoji": "🧶",
+        "warmth": 9,
+        "dry": true,
+        "note": "Wool traps lots of warm air."
+      },
+      {
+        "id": "foil",
+        "label": "Foil",
+        "emoji": "🪙",
+        "warmth": 3,
+        "dry": true,
+        "note": "Foil reflects heat, but on its own it's thin and crinkly."
+      },
+      {
+        "id": "straw",
+        "label": "Straw",
+        "emoji": "🌾",
+        "warmth": 7,
+        "dry": true,
+        "note": "Straw has air pockets between the stalks."
+      },
+      {
+        "id": "wet-leaves",
+        "label": "Wet leaves",
+        "emoji": "🍂",
+        "warmth": 2,
+        "dry": false,
+        "note": "Wet things pull heat away. A damp nest is a cold nest!"
+      }
+    ],
+    "best": [
+      "wool",
+      "straw"
+    ],
+    "success": "Toasty! Wool and straw both trap air, and trapped air keeps heat in. {name} curls up in the new treehouse nest."
+  },
+  "flight": {
+    "title": "Flight practice",
+    "intro": "Dawn in the backyard. The fence and hedge hide {name} from the street. Tap Flap! when the wing meter is in the green zone. You get three tries; each one goes on the bar graph.",
+    "tries": 3,
+    "zone": [
+      60,
+      80
+    ],
+    "maxDistance": 30,
+    "question": "Look at your bar graph. How many feet farther was your best try than your first try?",
+    "after": "Great practice! Every try counts, and {name}'s wings are getting stronger."
+  },
+  "fire": {
+    "title": "Fire control lesson",
+    "intro": "Out in the backyard, on Aunt June's stone slab, {name} learns three ways to use its fire. Aunt June is right here. For each job, pick the right one: glow, puff or spark.",
+    "abilities": [
+      {
+        "id": "spark",
+        "label": "Spark",
+        "emoji": "🔥",
+        "about": "a tiny flame, only on the stone slab outdoors"
+      },
+      {
+        "id": "glow",
+        "label": "Glow",
+        "emoji": "✨",
+        "about": "a warm belly light, no flame"
+      },
+      {
+        "id": "puff",
+        "label": "Puff",
+        "emoji": "💨",
+        "about": "a little smoke ring"
+      }
+    ],
+    "scenarios": [
+      {
+        "id": "warm-nest",
+        "job": "Warm up the nest on a chilly night",
+        "answer": "glow",
+        "why": "A glow warms things gently with no flame, so it's safe near straw and blankets."
+      },
+      {
+        "id": "hello-kit",
+        "job": "Say hello to Kit",
+        "answer": "puff",
+        "why": "A smoke ring is a friendly, harmless hello."
+      },
+      {
+        "id": "light-lantern",
+        "job": "Light Aunt June's lantern, sitting on the stone slab outdoors",
+        "answer": "spark",
+        "why": "Sparks are only for the stone slab outdoors, with Aunt June watching. Never indoors."
+      }
+    ],
+    "after": "{name} has learned fire control: glow, puff and spark, each in the right place."
+  },
+  "letter": {
+    "title": "Aunt June's old letter",
+    "paragraphs": [
+      "Aunt June hands you a folded letter, yellow with age. \"I wrote this when I was ten,\" she says.",
+      "\"Dear Diary. Today Cinder flew over the hill and came back with a feather from the high lakes. She keeps staring north. I think she hears the other dragons calling.\"",
+      "\"I was sad at first. Then I understood: a dragon's heart is big enough for two homes. Cinder chose the flock, and every summer she came back to visit me.\""
+    ]
+  },
+  "favorites": {
+    "title": "A special last morning",
+    "intro": "Make {name}'s morning extra special. Pick a favorite for each:",
+    "groups": [
+      {
+        "id": "food",
+        "label": "Favorite breakfast",
+        "options": [
+          "Ground beef",
+          "Dandelion greens",
+          "Apple slices"
+        ]
+      },
+      {
+        "id": "sock",
+        "label": "Favorite sock",
+        "options": [
+          "Red striped",
+          "Fuzzy blue",
+          "Kit's rainbow one"
+        ]
+      },
+      {
+        "id": "spot",
+        "label": "Favorite spot",
+        "options": [
+          "The treehouse window",
+          "Aunt June's porch",
+          "The top of the hill"
+        ]
+      }
+    ]
+  },
+  "clues": {
+    "poster": {
+      "title": "A poster on the lane",
+      "intro": "A new poster is taped to every lamppost on Larkspur Lane. Look closely. Tap the THREE things that seem suspicious.",
+      "picture": "poster",
+      "items": [
+        {
+          "id": "reward",
+          "label": "It offers a reward",
+          "real": false,
+          "why": "Lots of real lost-pet posters offer rewards, so that alone isn't suspicious."
+        },
+        {
+          "id": "no-phone",
+          "label": "There's no phone number or address, just a website",
+          "real": true,
+          "why": "Real rescues list how to reach them."
+        },
+        {
+          "id": "color",
+          "label": "It's printed on green paper",
+          "real": false,
+          "why": "Paper color doesn't tell us anything."
+        },
+        {
+          "id": "logo",
+          "label": "The 'rescue' logo is a lizard in a glass case",
+          "real": true,
+          "why": "Why would a rescue use a glass case as its logo?"
+        },
+        {
+          "id": "handwriting",
+          "label": "The handwriting matches the clipboard 'bird counter'",
+          "real": true,
+          "why": "The same person seems to be behind both."
+        }
+      ],
+      "evidence": "poster",
+      "done": "You found the suspicious clues. Aunt June pins a copy of the poster to your Evidence Board."
+    },
+    "crane": {
+      "title": "Someone at the door",
+      "intro": "A tall man in a long coat knocks at the front door: Silas Crane, saying he's a \"rescue volunteer\". Dad answers politely: \"No, thank you, we're not interested.\" While they talk, look carefully. Tap the THREE clues.",
+      "picture": "crane",
+      "items": [
+        {
+          "id": "hat",
+          "label": "A very tall hat",
+          "real": false,
+          "why": "Lots of people wear hats. That isn't a clue."
+        },
+        {
+          "id": "boots",
+          "label": "Muddy boots, with mud just like under the treehouse ladder",
+          "real": true,
+          "why": "Has he been snooping in your backyard?"
+        },
+        {
+          "id": "umbrella",
+          "label": "A neat umbrella",
+          "real": false,
+          "why": "An umbrella doesn't tell us anything."
+        },
+        {
+          "id": "remote",
+          "label": "A drone remote with a red button sticking out of his pocket",
+          "real": true,
+          "why": "That's BLINK's remote!"
+        },
+        {
+          "id": "card",
+          "label": "His business card has the same fake rescue name as the poster",
+          "real": true,
+          "why": "The poster, the website and Crane all connect."
+        }
+      ],
+      "evidence": "business-card",
+      "done": "Crane tips his hat and leaves. Dad closes the door: \"Something's not right about that man.\" His business card goes on your Evidence Board."
+    }
+  },
+  "evidence": {
+    "items": [
+      {
+        "id": "poster",
+        "label": "The poster: no phone number, a glass-case logo, the same handwriting as the clipboard",
+        "strong": true
+      },
+      {
+        "id": "mean-face",
+        "label": "Crane has a mean face",
+        "strong": false,
+        "why": "How someone looks isn't evidence. Lots of kind people look grumpy!"
+      },
+      {
+        "id": "fake-site",
+        "label": "The \"rescue\" website was made last week and has no address or names",
+        "strong": true
+      },
+      {
+        "id": "directory",
+        "label": "The library directory lists the REAL wildlife rescue, with a different name and address",
+        "strong": true
+      },
+      {
+        "id": "kit-spooky",
+        "label": "Kit thinks Crane is spooky",
+        "strong": false,
+        "why": "A feeling isn't proof. We need facts that others can check."
+      },
+      {
+        "id": "newspaper",
+        "label": "An old newspaper article: Crane's private animal display was closed after complaints",
+        "strong": true
+      },
+      {
+        "id": "business-card",
+        "label": "Crane's business card uses the fake rescue's name",
+        "strong": true
+      }
+    ],
+    "pick": 3,
+    "boardIntro": "The neighborhood meeting is tonight at the library. Pick the THREE strongest pieces of evidence that the \"Larkspur Wildlife Rescue\" is fake. Facts others can check are strongest.",
+    "juneFills": "Aunt June found this one for you.",
+    "meeting": [
+      "At the library's community room, you show your three pieces of evidence. Ms. Ortiz nods and pulls up the real wildlife rescue's website.",
+      "The real rescue's director stands up: \"Thank you. We'll warn everyone that this 'rescue' is fake.\" Neighbors start taking down the posters.",
+      "You never mention the dragon. You only showed that the website was fake, and that was enough."
+    ],
+    "exit": "That evening, Silas Crane's van rattles out of town with an empty glass case strapped on top. He doesn't look back. Something small and round is left behind, stuck in your treehouse: BLINK!"
+  },
+  "map": {
+    "title": "Mapping the way north",
+    "intro": "Keeper's Commons says dragons follow warm winds to gather at the high lakes. Aunt June unrolls an old map. Each square is 10 miles.",
+    "rows": 6,
+    "cols": 6,
+    "home": [
+      1,
+      4
+    ],
+    "lakes": [
+      4,
+      1
+    ],
+    "questions": [
+      {
+        "id": "direction",
+        "question": "Which way are the high lakes from Larkspur Lane?",
+        "choices": [
+          "South-west",
+          "North-east",
+          "North-west"
+        ],
+        "answer": "North-east",
+        "why": "The lakes are up (north) and to the right (east) on the map: north-east."
+      },
+      {
+        "id": "distance",
+        "question": "Count the squares straight up, then across. Up 3 and across 3 is 6 squares. How many miles is that?",
+        "choices": [
+          "6 miles",
+          "30 miles",
+          "60 miles"
+        ],
+        "answer": "60 miles",
+        "why": "6 squares × 10 miles = 60 miles."
+      },
+      {
+        "id": "rations",
+        "question": "The trip takes 4 days, and {name} eats 2 servings a day. How many servings should you pack?",
+        "choices": [
+          "6 servings",
+          "8 servings",
+          "4 servings"
+        ],
+        "answer": "8 servings",
+        "why": "4 days × 2 servings = 8 servings."
+      }
+    ],
+    "after": "The route is planned and the travel snacks are packed, whichever way {name} chooses."
+  },
+  "farewell": {
+    "title": "Visiting everyone",
+    "visits": [
+      {
+        "who": "Mr. Patel",
+        "emoji": "🏪",
+        "line": "Mr. Patel slips an extra bag of dandelion greens into your hand. \"For your hungry pet. On the house!\""
+      },
+      {
+        "who": "Ms. Ortiz",
+        "emoji": "📚",
+        "line": "Ms. Ortiz gives you a bookmark shaped like a wing. \"Keep reading, keeper. You're very good at checking your sources.\""
+      },
+      {
+        "who": "Aunt June",
+        "emoji": "👵",
+        "line": "Aunt June hugs you. \"Whatever you two choose tonight, you've been a wonderful keeper.\""
+      }
+    ]
+  },
+  "ending": {
+    "title": "Choose together",
+    "intro": [
+      "Sunset on Larkspur Hill. The whole Keeper Circle is here. {name} looks north, then back at you, and sends one last thought: two pictures at once. Your home... and a sky full of wings.",
+      "Kit squeezes your hand: \"Whatever you pick, I'll help.\" Aunt June smiles: \"A dragon's heart is big enough for two homes.\""
+    ],
+    "parentsLine": "Mom and Dad sit down beside you: \"We'll be proud of you either way.\"",
+    "choices": [
+      {
+        "id": "stay",
+        "label": "Stay on Larkspur Lane",
+        "result": "The family builds {name} a proper roost on the hill. Every dawn, {name} flies high over the town, and every night it curls up close to home: Larkspur Lane's very own hidden guardian.",
+        "epilogue": "Months later, on the first snowy evening, {name} warms the whole family on the porch with a gentle glow."
+      },
+      {
+        "id": "fly",
+        "label": "Fly with the flock",
+        "result": "The flock arrives at sunset, wings glowing orange. {name} circles the hill three times, then flies north with them. It isn't goodbye: dragons always come back to the people they love.",
+        "epilogue": "A postcard arrives from the high lakes, signed with a scorch mark. And next summer, a familiar shape lands in your backyard. {name} is home for a visit!"
+      }
+    ],
+    "bondExtras": [
+      {
+        "min": 0,
+        "line": ""
+      },
+      {
+        "min": 3,
+        "line": "{name} draws you a picture in the frost on your window: the whole Keeper Circle, holding hands."
+      },
+      {
+        "min": 6,
+        "line": "And one more surprise: an old dragon with silver scales lands beside {name}. Aunt June gasps. \"Cinder!\" Her dragon came back to see her, too."
+      }
+    ]
+  }
+}

@@ -1,7 +1,16 @@
 import type { Page } from '@playwright/test';
 
 /** The right answers to the Sharp Reader questions (content/reading.json). */
-const READING_ANSWERS = ['Glass cases', 'Knocks on the door', 'Your little sibling', 'The price per serving', "Crane's helpers", 'One stone at a time'];
+const READING_ANSWERS = [
+  'Glass cases',
+  'Knocks on the door',
+  'Your little sibling',
+  'The price per serving',
+  "Crane's helpers",
+  'One stone at a time',
+  'Came back to visit',
+  'A bright window shows from the street',
+];
 
 /** Taps OK on any message cards waiting to be read. */
 export async function okCards(page: Page) {
@@ -22,4 +31,12 @@ export async function answerReading(page: Page) {
       return;
     }
   }
+}
+
+/** Picks a dragon name from the list, tapping "More names" until it shows up. */
+export async function pickName(page: Page, name: string) {
+  const b = page.locator(`#panel [data-name="${name}"]`);
+  for (let i = 0; i < 12 && !(await b.isVisible()); i++) await page.getByRole('button', { name: 'More names ▶' }).click();
+  await b.click();
+  await page.getByRole('button', { name: `${name} it is!` }).click();
 }

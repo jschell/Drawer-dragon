@@ -8,6 +8,8 @@ import storyJson from '../../content/story.json';
 import storeJson from '../../content/store.json';
 import daysJson from '../../content/days.json';
 import readingJson from '../../content/reading.json';
+import activitiesJson from '../../content/activities.json';
+import namesJson from '../../content/names.json';
 
 export const NUTRIENTS = ['protein', 'greens', 'minerals'] as const;
 export type Nutrient = (typeof NUTRIENTS)[number];
@@ -96,7 +98,9 @@ const PageSchema = z
     body: z.array(z.string()).min(1),
     checks: z.object({ who: z.string(), when: z.string(), why: z.string(), proof: z.string() }),
     trap: z.object({ prompt: z.string() }).optional(),
-    tip: z.object({ text: z.string(), unlocks: z.enum(['blanket', 'lullaby']) }).optional(),
+    tip: z.object({ text: z.string(), unlocks: z.enum(['blanket', 'lullaby', 'none']) }).optional(),
+    /** Judging this page correctly adds a piece of evidence to the Evidence Board (Chapter 2). */
+    evidence: z.string().optional(),
   })
   .strict()
   .refine((p) => (p.credibility === 'trap') === (p.trap !== undefined), { message: 'Trap pages (and only trap pages) need a trap prompt' });
@@ -166,13 +170,19 @@ const EveningTuningSchema = z.object({
   attention: z.object({ missed: z.number(), missedBright: z.number(), spotted: z.number(), share: z.number() }),
 });
 
+export const SPECIALS = ['crane-door', 'hill-flight', 'choice'] as const;
+export type SpecialKind = (typeof SPECIALS)[number];
+
 /** One evening: shared tuning plus that day's schedule, with family details filled in. */
 const EveningSchema = EveningTuningSchema.extend({
   endAt: z.number().positive(),
   /** Day 3: the moment three problems happen at once (spec §5.6). */
   steppingStonesAt: z.number().positive().optional(),
-  visitors: z.array(VisitorSchema).min(1),
-  windowThings: z.array(WindowThingSchema).min(1),
+  /** Chapters 2–3: a story moment that pauses the evening (Crane at the door, the hill flight, the choice). */
+  special: z.enum(SPECIALS).optional(),
+  specialAt: z.number().nonnegative().optional(),
+  visitors: z.array(VisitorSchema),
+  windowThings: z.array(WindowThingSchema),
 });
 
 const ScheduleVisitorSchema = z.object({
@@ -191,8 +201,10 @@ const EveningFileSchema = EveningTuningSchema.extend({
     z.object({
       endAt: z.number().positive(),
       steppingStonesAt: z.number().positive().optional(),
+      special: z.enum(SPECIALS).optional(),
+      specialAt: z.number().nonnegative().optional(),
       visitors: z.array(ScheduleVisitorSchema),
-      windowThings: z.array(WindowThingSchema).min(1),
+      windowThings: z.array(WindowThingSchema),
     }),
   ),
 });
@@ -217,25 +229,151 @@ const StoreSchema = z.object({
   intro: z.string(),
 });
 
+/** Story characters' names, which a dragon can't share (it would muddle the story). */
+const STORY_NAMES = ['Cinder', 'Kit', 'June', 'Crane', 'Silas', 'Blink', 'Pickles', 'Patel', 'Ortiz'];
+
+/**
+ * Dragon names are picked from this list only: there is no free-text entry anywhere in
+ * the game, so nothing a player types can appear on screen (spec §10.4).
+ */
+const NamesSchema = z
+  .object({
+    perPage: z.number().int().min(2).max(8),
+    default: z.string(),
+    names: z.array(z.string().regex(/^[A-Z][a-z]{1,11}$/, { message: 'Names are one simple word, 2–12 letters' })).min(12),
+  })
+  .refine((n) => new Set(n.names).size === n.names.length, { message: 'Duplicate dragon name' })
+  .refine((n) => n.names.includes(n.default), { message: 'The default name must be in the list' })
+  .refine((n) => !n.names.some((x) => STORY_NAMES.includes(x)), { message: "A dragon name can't be a story character's name" });
+
+export const ACTIVITIES = ['insulation', 'flight', 'fire', 'letter', 'favorites'] as const;
+export type ActivityKind = (typeof ACTIVITIES)[number];
+export const AFTERNOONS = ['research', 'store', 'clues', 'board', 'map', 'farewell'] as const;
+export type AfternoonKind = (typeof AFTERNOONS)[number];
+
 const DaySchema = z.object({
   day: z.number().int().positive(),
   title: z.string(),
   morning: z.object({
     start: z.object({ hunger: z.number(), spark: z.number(), calm: z.number() }),
     recipeScale: z.number().positive(),
+    stage: z.enum(['hatchling', 'fledgling']).default('hatchling'),
     chewedSlipper: z.boolean().optional(),
+    /** A short morning lesson before care (Chapters 2–3). */
+    activity: z.enum(ACTIVITIES).optional(),
+    /** Day 4: the family meeting about the treehouse. */
+    opening: z.literal('family').optional(),
     intro: z.string(),
   }),
   afternoon: z.discriminatedUnion('kind', [
     z.object({ kind: z.literal('research'), set: z.string(), june: z.boolean().optional(), intro: z.string() }),
     z.object({ kind: z.literal('store') }),
+    z.object({ kind: z.literal('clues'), set: z.string() }),
+    z.object({ kind: z.literal('board') }),
+    z.object({ kind: z.literal('map') }),
+    z.object({ kind: z.literal('farewell') }),
   ]),
   evening: z.object({ schedule: z.string(), cliffhanger: z.boolean().optional(), intro: z.array(z.string()).optional() }),
 });
 
+const CliffhangerSchema = z.object({
+  title: z.string(),
+  paragraphs: z.array(z.string()).min(1),
+  toldParents: z.string(),
+  notToldParents: z.string(),
+});
+
 const DaysSchema = z.object({
   days: z.array(DaySchema).min(1),
-  cliffhanger: z.object({ title: z.string(), paragraphs: z.array(z.string()), toldParents: z.string(), notToldParents: z.string() }),
+  chapters: z
+    .array(z.object({ n: z.number().int().positive(), title: z.string(), lastDay: z.number().int().positive(), cliffhanger: CliffhangerSchema.optional() }))
+    .min(1),
+});
+
+const QuizSchema = z.object({
+  id: z.string(),
+  question: z.string(),
+  choices: z.array(z.string()).min(2),
+  answer: z.string(),
+  why: z.string(),
+});
+
+const ClueSetSchema = z.object({
+  title: z.string(),
+  intro: z.string(),
+  picture: z.string(),
+  items: z.array(z.object({ id: z.string(), label: z.string(), real: z.boolean(), why: z.string() })).min(3),
+  evidence: z.string(),
+  done: z.string(),
+});
+
+const ActivitiesSchema = z.object({
+  family: z.object({
+    title: z.string(),
+    told: z.array(z.string()).min(1),
+    notTold: z.array(z.string()).min(1),
+    rules: z.array(z.string()).min(1),
+    toldButton: z.string(),
+    // Child-safety rule (spec §5.4): telling the family is always "show them the dragon".
+    notToldButton: z.string().regex(/^Show /, { message: 'The family meeting button must be "Show ... the dragon"' }),
+  }),
+  insulation: z.object({
+    title: z.string(),
+    intro: z.string(),
+    pick: z.number().int().positive(),
+    materials: z.array(z.object({ id: z.string(), label: z.string(), emoji: z.string(), warmth: z.number(), dry: z.boolean(), note: z.string() })).min(3),
+    best: z.array(z.string()),
+    success: z.string(),
+  }),
+  flight: z.object({
+    title: z.string(),
+    intro: z.string(),
+    tries: z.number().int().positive(),
+    zone: z.tuple([z.number(), z.number()]),
+    maxDistance: z.number().positive(),
+    question: z.string(),
+    after: z.string(),
+  }),
+  fire: z.object({
+    title: z.string(),
+    intro: z.string(),
+    abilities: z.array(z.object({ id: z.string(), label: z.string(), emoji: z.string(), about: z.string() })).min(2),
+    scenarios: z.array(z.object({ id: z.string(), job: z.string(), answer: z.string(), why: z.string() })).min(1),
+    after: z.string(),
+  }),
+  letter: z.object({ title: z.string(), paragraphs: z.array(z.string()).min(1) }),
+  favorites: z.object({
+    title: z.string(),
+    intro: z.string(),
+    groups: z.array(z.object({ id: z.string(), label: z.string(), options: z.array(z.string()).min(2) })).min(1),
+  }),
+  clues: z.record(z.string(), ClueSetSchema),
+  evidence: z.object({
+    items: z.array(z.object({ id: z.string(), label: z.string(), strong: z.boolean(), why: z.string().optional() })).min(4),
+    pick: z.number().int().positive(),
+    boardIntro: z.string(),
+    juneFills: z.string(),
+    meeting: z.array(z.string()).min(1),
+    exit: z.string(),
+  }),
+  map: z.object({
+    title: z.string(),
+    intro: z.string(),
+    rows: z.number().int().positive(),
+    cols: z.number().int().positive(),
+    home: z.tuple([z.number().int(), z.number().int()]),
+    lakes: z.tuple([z.number().int(), z.number().int()]),
+    questions: z.array(QuizSchema).min(1),
+    after: z.string(),
+  }),
+  farewell: z.object({ title: z.string(), visits: z.array(z.object({ who: z.string(), emoji: z.string(), line: z.string() })).min(1) }),
+  ending: z.object({
+    title: z.string(),
+    intro: z.array(z.string()).min(1),
+    parentsLine: z.string(),
+    choices: z.array(z.object({ id: z.enum(['stay', 'fly']), label: z.string(), result: z.string(), epilogue: z.string() })).length(2),
+    bondExtras: z.array(z.object({ min: z.number().int().nonnegative(), line: z.string() })).min(1),
+  }),
 });
 
 const StorySchema = z.object({
@@ -293,6 +431,8 @@ export type StoreDef = z.infer<typeof StoreSchema>;
 export type StoreItemDef = z.infer<typeof StoreItemSchema>;
 export type DayDef = z.infer<typeof DaySchema>;
 export type DaysDef = z.infer<typeof DaysSchema>;
+export type ActivitiesDef = z.infer<typeof ActivitiesSchema>;
+export type ChapterDef = DaysDef['chapters'][number];
 export type VisitorDef = z.infer<typeof VisitorSchema>;
 export type WindowThingDef = z.infer<typeof WindowThingSchema>;
 export type SpiceDef = z.infer<typeof SpiceSchema>;
@@ -315,6 +455,8 @@ export interface Content {
   days: DaysDef;
   story: StoryDef;
   reading: ReadingDef;
+  activities: ActivitiesDef;
+  names: z.infer<typeof NamesSchema>;
 }
 
 /** The text of a story panel, as written in the content files ({name} not filled in). */
@@ -323,6 +465,7 @@ export function panelText(c: Content, panel: string): string[] {
   const day = c.days.days.find((d) => d.day === Number(n));
   if (panel === 'june') return c.story.juneIntro.paragraphs;
   if (panel === 'store') return [c.store.intro];
+  if (panel === 'letter') return c.activities.letter.paragraphs;
   if (kind === 'library' && day?.afternoon.kind === 'research') return [day.afternoon.intro];
   if (kind === 'evening' && day) return day.evening.intro ?? c.story.eveningIntro.paragraphs;
   return [];
@@ -336,6 +479,16 @@ export function dayDef(c: Content, day: number): DayDef {
 export function archiveFor(c: Content, day: number): ArchiveDef {
   const a = dayDef(c, day).afternoon;
   return a.kind === 'research' ? (c.archiveSets[a.set] ?? c.archive) : c.archive;
+}
+
+/** The chapter a day belongs to. */
+export function chapterFor(c: Content, day: number): ChapterDef {
+  return c.days.chapters.find((ch) => day <= ch.lastDay) ?? c.days.chapters[c.days.chapters.length - 1];
+}
+
+/** The last day of the game. */
+export function lastDay(c: Content): number {
+  return Math.min(c.days.days.length, c.days.chapters[c.days.chapters.length - 1].lastDay);
 }
 
 export function eveningFor(c: Content, day: number): EveningDef {
@@ -387,6 +540,8 @@ export function parseContent(raw: { items: unknown; recipes: unknown; thoughts: 
     if (d.afternoon.kind === 'research' && !archiveSets[d.afternoon.set] && rawArchive.sets) throw new Error(`Day ${d.day}: unknown research set "${d.afternoon.set}"`);
     if (!eveningSchedules[d.evening.schedule] && !(raw.evening && 'visitors' in (raw.evening as object))) throw new Error(`Day ${d.day}: unknown evening schedule "${d.evening.schedule}"`);
   }
+  const activities = ActivitiesSchema.parse(activitiesJson);
+  checkActivities(activities, archiveSets, days);
   for (const item of store.items) if (!items.foods.some((f) => f.id === item.food)) throw new Error(`Store item ${item.id} sells unknown food "${item.food}"`);
 
   const spiceIds = new Set(items.spices.map((s) => s.id));
@@ -411,7 +566,34 @@ export function parseContent(raw: { items: unknown; recipes: unknown; thoughts: 
     days,
     story: StorySchema.parse(storyJson),
     reading: ReadingSchema.parse(readingJson),
+    activities,
+    names: NamesSchema.parse(namesJson),
   };
+}
+
+/** Cross-references for Chapters 2–3, so every puzzle can be finished (spec §6.5). */
+function checkActivities(a: ActivitiesDef, sets: Record<string, ArchiveDef>, days: DaysDef) {
+  const evidence = new Set(a.evidence.items.map((e) => e.id));
+  const strong = a.evidence.items.filter((e) => e.strong);
+  if (strong.length < a.evidence.pick) throw new Error('The Evidence Board needs at least as many strong pieces as the player picks');
+  for (const e of a.evidence.items) if (!e.strong && !e.why) throw new Error(`Weak evidence ${e.id} must explain why it doesn't count`);
+  for (const [id, set] of Object.entries(a.clues)) {
+    if (!evidence.has(set.evidence)) throw new Error(`Clue set ${id} gives unknown evidence "${set.evidence}"`);
+    if (set.items.filter((i) => i.real).length < 1) throw new Error(`Clue set ${id} needs real clues`);
+  }
+  for (const [name, set] of Object.entries(sets)) for (const p of set.pages) if (p.evidence && !evidence.has(p.evidence)) throw new Error(`[${name}] Page ${p.id} gives unknown evidence "${p.evidence}"`);
+  const mats = a.insulation.materials.map((m) => m.id);
+  if (a.insulation.best.length !== a.insulation.pick || a.insulation.best.some((b) => !mats.includes(b))) throw new Error('Insulation: "best" must name exactly `pick` materials');
+  const top = [...a.insulation.materials].filter((m) => m.dry).sort((x, y) => y.warmth - x.warmth).slice(0, a.insulation.pick).map((m) => m.id);
+  if (top.some((t) => !a.insulation.best.includes(t))) throw new Error('Insulation: the best materials must be the warmest dry ones, so testing gives the answer');
+  const ab = a.fire.abilities.map((x) => x.id);
+  for (const sc of a.fire.scenarios) if (!ab.includes(sc.answer)) throw new Error(`Fire scenario ${sc.id} has unknown answer`);
+  for (const q of a.map.questions) if (!q.choices.includes(q.answer)) throw new Error(`Map question ${q.id}: the answer must be one of the choices`);
+  const [lo, hi] = a.flight.zone;
+  if (!(lo < hi && hi <= 100)) throw new Error('Flight zone must be inside 0–100');
+  for (const d of days.days) if (d.afternoon.kind === 'clues' && !a.clues[d.afternoon.set]) throw new Error(`Day ${d.day}: unknown clue set "${d.afternoon.set}"`);
+  const ch = days.chapters;
+  for (let i = 1; i < ch.length; i++) if (ch[i].lastDay <= ch[i - 1].lastDay) throw new Error('Chapters must end on increasing days');
 }
 
 function checkReading(c: Content) {

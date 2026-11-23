@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { okCards } from './helpers';
+import { okCards, pickName } from './helpers';
 import { expect, test } from './wording';
 
 /** Clicks a point in the 1334×750 game world, whatever the screen size. */
@@ -20,8 +20,7 @@ async function hatchAndName(page: Page, name = 'Pip') {
     await tapWorld(page, EGG.x, EGG.y);
     await page.waitForTimeout(250);
   }
-  await page.getByRole('button', { name }).click();
-  await page.getByRole('button', { name: "That's the name!" }).click();
+  await pickName(page, name);
   await okCards(page);
 }
 
@@ -94,4 +93,25 @@ test('touch devices in portrait are asked to turn sideways', async ({ browser },
   await page.goto('/');
   await expect(page.getByText('Turn your device sideways to play!')).toBeVisible();
   await ctx.close();
+});
+
+test('dragon names are picked from a list, 6 at a time, with no typing', async ({ page }) => {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Tap to wake the egg' }).click();
+  for (let i = 0; i < 3; i++) {
+    await tapWorld(page, EGG.x, EGG.y);
+    await page.waitForTimeout(250);
+  }
+  await expect(page.locator('#panel [data-name]')).toHaveCount(6);
+  await expect(page.locator('#panel input, #panel textarea, #panel [contenteditable]')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: "That's the name!" })).toBeDisabled();
+  const first = await page.locator('#panel [data-name]').allTextContents();
+  await page.getByRole('button', { name: 'More names ▶' }).click();
+  const next = await page.locator('#panel [data-name]').allTextContents();
+  expect(next).toHaveLength(6);
+  expect(next).not.toEqual(first);
+  await page.getByRole('button', { name: 'Previous names' }).click();
+  expect(await page.locator('#panel [data-name]').allTextContents()).toEqual(first);
+  await pickName(page, 'Tumble');
+  await expect.poll(() => page.evaluate(() => (window as unknown as { __dk: { hud: { state: { dragon: { name: string } } } } }).__dk.hud.state.dragon.name)).toBe('Tumble');
 });

@@ -1,0 +1,12 @@
+{
+  "perPage": 6,
+  "default": "Sprocket",
+  "names": [
+    "Sprocket", "Pip", "Ember", "Biscuit", "Mochi", "Zuzu",
+    "Pebble", "Juniper", "Waffles", "Clover", "Nugget", "Pumpkin",
+    "Comet", "Maple", "Sparky", "Bramble", "Fig", "Noodle",
+    "Sunny", "Ziggy", "Bean", "Kiwi", "Marble", "Toast",
+    "Olive", "Taffy", "Button", "Fern", "Dash", "Blaze",
+    "Puddle", "Rusty", "Hazel", "Cocoa", "Sage", "Tumble"
+  ]
+}
