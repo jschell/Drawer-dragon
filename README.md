@@ -4,9 +4,11 @@ A cozy creature-care browser game for ages 8–11: raise a baby dragon, learn ho
 
 **▶ Play it:** https://jschell.github.io/Drawer-dragon/ (best on an iPad or iPhone held sideways; tap Share → Add to Home Screen for full screen)
 
-## Status: Day 1 is playable (milestone M0: all three prototypes)
+## Status: Chapter 1 is playable (Days 1–3)
 
-One full in-game day, about 10–12 minutes. Every part saves automatically.
+Three in-game days, about 30–40 minutes in all. Every part saves automatically, and the dragon's name, the Keeper Circle, Collector Attention, stickers and money carry over between days.
+
+### Day 1: The Warm Rock
 
 **☀️ Morning: care** (prototype 1)
 1. **Hatch** the egg (tap it 3 times) and **name** your dragon.
@@ -28,6 +30,17 @@ One full in-game day, about 10–12 minutes. Every part saves automatically.
 - If it squeaks and someone asks, the first choice is always to **show them the dragon**: Kit, Mom or Dad then joins the **Keeper Circle** and helps from then on. Every other reply is honest too. A player can always tell family; the game never penalises it.
 - **Watch the window:** tap the collector's camera drone **BLINK** and the fake "wildlife surveyor" to close the curtains. A moth or the neighbor's cat are harmless. Missed scouts (and a bright lamp) raise **Collector Attention**.
 - The day ends with a summary, a photo of the sleeping dragon, and stickers. There is no fail state anywhere.
+
+### Day 2: Cold Belly
+- **Morning:** the dragon's belly fire went out overnight, so the spice tin matters.
+- **Afternoon: Mr. Patel's corner store.** Shop for three days of food with a $6.00 allowance. A **"Price per serving?"** helper shows the division: the big beef pack is cheaper per serving, and the "SUPER DEAL!" greens bag is actually worse value. The cheapest basket ($5.40) fits the budget; the obvious one doesn't. Pay with a $5 bill and quarters, then **check the change**: Mr. Patel always makes one small mistake.
+- **Evening:** new visits and scouts. Family members who already know about the dragon come in to help.
+
+### Day 3: The Red Light
+- **Morning:** a growth spurt means a **1½ batch** of the spice mix, with half scoops (3 cinnamon and 1½ ginger). Kit's slipper got chewed: stitch it up, then **own up** to Kit (say sorry, or say sorry and offer to do Kit's chores).
+- **Afternoon:** research how to help a hatchling sleep. The copycat site is back, along with Crane's own "WANTED: rare lizards" page. Trusting the right page unlocks a **lullaby** that calms more at night.
+- **Evening: Stepping Stones.** A hungry dragon, Kit at the door and BLINK at the window, all at once. Put them in order on three stepping stones and say why. Every order works out; closing the curtains first is quickest. If Kit doesn't know yet, Kit spots the dragon, and "Show Kit the dragon" is the first choice.
+- **Cliffhanger:** the dragon outgrows the shoebox. Aunt June suggests a family meeting about the treehouse (or, if the parents don't know yet, offers to come along when you tell them). Then a Chapter 1 summary.
 
 **📖 Find out more** (on the end-of-day summary)
 - Credits the *Dragon Keepers* books by Kate Klimo as the inspiration and encourages kids to ask a grown-up to find them at a library.

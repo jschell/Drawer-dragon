@@ -2,7 +2,8 @@
  * Afternoon (research) and evening (protect) rules. Called from `step` in reducer.ts,
  * so they share its contract: mutate the cloned state `s`, push events, never throw.
  */
-import type { Content, PageDef } from './content';
+import { archiveFor, dayDef, eveningFor, type Content, type EveningDef, type PageDef, type VisitorDef } from './content';
+import { cheapestCart, onAfternoonStart } from './days';
 import type { Action, GameEvent, GameState, Rating } from './state';
 
 const clamp = (v: number) => Math.max(0, Math.min(100, v));
@@ -30,33 +31,35 @@ export function ratingIsCorrect(page: PageDef, rating: Rating): boolean {
 }
 
 /** Pages matching every chosen keyword, in search-engine order. */
-export function searchPages(chips: string[], c: Content): PageDef[] {
+export function searchPages(chips: string[], c: Content, day = 1): PageDef[] {
   if (chips.length === 0) return [];
-  return c.archive.pages.filter((p) => chips.every((k) => p.keywords.includes(k))).sort((a, b) => a.rank - b.rank);
+  return archiveFor(c, day).pages.filter((p) => chips.every((k) => p.keywords.includes(k))).sort((a, b) => a.rank - b.rank);
 }
 
 export function stepAfternoon(s: GameState, a: Action, events: GameEvent[], c: Content): boolean {
   const r = s.research;
-  const page = (id: string) => c.archive.pages.find((p) => p.id === id);
+  const archive = archiveFor(c, s.day);
+  const page = (id: string) => archive.pages.find((p) => p.id === id);
   switch (a.type) {
     case 'startAfternoon':
       if (s.part !== 'morning' || s.phase !== 'done') return true;
       s.part = 'afternoon';
       events.push({ type: 'afternoon-start' });
+      onAfternoonStart(s, events, c);
       return true;
     case 'search': {
       if (s.part !== 'afternoon') return true;
-      const chips = [...new Set(a.chips)].filter((k) => c.archive.chips.includes(k)).slice(0, c.archive.maxChips);
+      const chips = [...new Set(a.chips)].filter((k) => archive.chips.includes(k)).slice(0, archive.maxChips);
       r.query = chips;
       if (chips.length === 0) {
         r.results = [];
         r.feedback = 'empty';
       } else {
         r.searches += 1;
-        const found = searchPages(chips, c);
+        const found = searchPages(chips, c, s.day);
         r.results = found.map((p) => p.id);
-        r.feedback = found.length === 0 ? 'none' : found.length > c.archive.tooMany ? 'too-many' : 'ok';
-        if (r.foundAnswerOnSearch === null && r.results.includes(c.archive.answerPageId)) r.foundAnswerOnSearch = r.searches;
+        r.feedback = found.length === 0 ? 'none' : found.length > archive.tooMany ? 'too-many' : 'ok';
+        if (r.foundAnswerOnSearch === null && r.results.includes(archive.answerPageId)) r.foundAnswerOnSearch = r.searches;
       }
       events.push({ type: 'search-results', ids: r.results, feedback: r.feedback });
       return true;
@@ -86,15 +89,16 @@ export function stepAfternoon(s: GameState, a: Action, events: GameEvent[], c: C
       if (s.part !== 'afternoon' || !p?.trap || r.trapChoices[a.pageId]) return true;
       r.trapChoices[a.pageId] = a.choice;
       events.push({ type: 'trap', pageId: a.pageId, choice: a.choice });
-      if (a.choice === 'share') addAttention(s, c.evening.attention.share, events);
+      if (a.choice === 'share') addAttention(s, eveningFor(c, s.day).attention.share, events);
       return true;
     }
     case 'saveTip': {
-      const id = c.archive.answerPageId;
+      const id = archive.answerPageId;
       // You can only save the tip after checking it's trustworthy: that's the lesson.
       if (s.part !== 'afternoon' || r.tipSaved || r.ratings[id] !== 'trust') return true;
       r.tipSaved = true;
-      s.world.blanketUnlocked = true;
+      if (page(id)?.tip?.unlocks === 'lullaby') s.world.lullabyUnlocked = true;
+      else s.world.blanketUnlocked = true;
       events.push({ type: 'tip-saved' });
       return true;
     }
@@ -103,23 +107,38 @@ export function stepAfternoon(s: GameState, a: Action, events: GameEvent[], c: C
   }
 }
 
+/** Bought everything on the list, at the lowest possible price. */
+export function storeSmart(s: GameState, c: Content): boolean {
+  const list = c.store.list;
+  const got = s.store.bought;
+  const enough = list.every((l) => (got[l.food] ?? 0) >= l.servings);
+  return enough && s.store.total <= cheapestCart(c);
+}
+
 function awardAfternoon(s: GameState, c: Content) {
   const r = s.research;
   if (r.foundAnswerOnSearch !== null && r.foundAnswerOnSearch <= 3) addSticker(s, 'Search Star');
   const rated = Object.entries(r.ratings);
-  if (rated.length >= 3 && rated.every(([id, rating]) => ratingIsCorrect(c.archive.pages.find((p) => p.id === id)!, rating))) addSticker(s, 'Source Sleuth');
+  const archive = archiveFor(c, s.day);
+  if (rated.length >= 3 && rated.every(([id, rating]) => ratingIsCorrect(archive.pages.find((p) => p.id === id)!, rating))) addSticker(s, 'Source Sleuth');
   const traps = Object.values(r.trapChoices);
   if (traps.length > 0 && !traps.includes('share')) addSticker(s, 'Privacy Pro');
 }
 
+/** A family member's details for this evening, or from Day 1 if they aren't scheduled today. */
+export function visitorDef(ev: EveningDef, id: string, c: Content): VisitorDef | undefined {
+  return ev.visitors.find((x) => x.id === id) ?? c.evening.visitors.find((x) => x.id === id);
+}
+
 export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Content): boolean {
   const e = s.evening;
-  const ev = c.evening;
+  const ev = eveningFor(c, s.day);
   const d = s.dragon;
   switch (a.type) {
     case 'startEvening':
       if (s.part !== 'afternoon') return true;
-      awardAfternoon(s, c);
+      if (dayDef(c, s.day).afternoon.kind === 'research') awardAfternoon(s, c);
+      else if (s.store.paid && storeSmart(s, c)) addSticker(s, 'Smart Shopper');
       s.part = 'evening';
       d.calm = ev.startCalm;
       events.push({ type: 'evening-start' });
@@ -149,8 +168,9 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
     }
     case 'visitorChoice': {
       if (s.part !== 'evening' || !e.awaiting) return true;
-      const v = ev.visitors.find((x) => x.id === e.awaiting)!;
-      const choice = v.choices.find((x) => x.id === a.choiceId);
+      const v = visitorDef(ev, e.awaiting, c);
+      const choice = v?.choices.find((x) => x.id === a.choiceId);
+      if (!v) return true;
       if (!choice) return true;
       d.calm = clamp(d.calm + choice.calm);
       const joined = !!choice.joins && !s.world.circle.includes(choice.joins);
@@ -159,7 +179,9 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
         addSticker(s, 'I Trusted My Family');
       }
       e.awaiting = null;
-      e.visitorIdx += 1;
+      // Kit spotting the dragon during Stepping Stones isn't one of tonight's scheduled visits.
+      if (e.kitDiscovers && v.id === 'kit') e.kitDiscovers = false;
+      else e.visitorIdx += 1;
       events.push({ type: 'visitor-left', visitorId: v.id, choiceId: choice.id, joined });
       return true;
     }
@@ -167,6 +189,21 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
       if (s.part !== 'evening' || !e.over) return true;
       if (e.scaredKnocks === 0) addSticker(s, 'Calm Night');
       if (e.spotted >= 2) addSticker(s, 'Scout Spotter');
+      s.history = s.history.filter((h) => h.day !== s.day);
+      s.history.push({
+        day: s.day,
+        ready: s.stats.readyAt !== null,
+        balancedPlate: s.stats.balancedPlate,
+        perfectMix: s.stats.perfectMix,
+        afternoon: dayDef(c, s.day).afternoon.kind,
+        foundAnswer: s.research.tipSaved,
+        smartShopper: s.store.paid && storeSmart(s, c),
+        calmKnocks: e.calmKnocks,
+        scaredKnocks: e.scaredKnocks,
+        helpers: e.helpers,
+        spotted: e.spotted,
+        missed: e.missed,
+      });
       s.part = 'end';
       events.push({ type: 'day-finished' });
       return true;
@@ -178,10 +215,18 @@ export function stepEvening(s: GameState, a: Action, events: GameEvent[], c: Con
 /** One second (or less) of evening time. Paused while a visitor waits for an answer. */
 export function tickEvening(s: GameState, dt: number, events: GameEvent[], c: Content) {
   const e = s.evening;
-  const ev = c.evening;
+  const ev = eveningFor(c, s.day);
   const d = s.dragon;
-  if (e.over || e.awaiting) return;
+  if (e.over || e.awaiting || e.stones.active) return;
   e.t += dt;
+
+  if (ev.steppingStonesAt && !e.stones.done && e.t >= ev.steppingStonesAt) {
+    // Three problems at once: a hungry dragon, Kit at the door and BLINK at the window.
+    e.stones.active = true;
+    d.hunger = Math.max(d.hunger, 60);
+    events.push({ type: 'stepping-stones' });
+    return;
+  }
 
   const target = ev.calmBase + (e.lampDim ? ev.calmLampDim : 0) + (e.blanket ? ev.calmBlanket : 0);
   const step = ev.calmDriftPerSec * dt;

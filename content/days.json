@@ -1,0 +1,87 @@
+{
+  "days": [
+    {
+      "day": 1,
+      "title": "The Warm Rock",
+      "morning": {
+        "start": {
+          "hunger": 70,
+          "spark": 20,
+          "calm": 45
+        },
+        "recipeScale": 1,
+        "intro": "Hello, {name}! It's hungry, chilly and a bit scared. Help it get ready for the day."
+      },
+      "afternoon": {
+        "kind": "research",
+        "set": "calm-knock",
+        "june": true,
+        "intro": "Tonight your family will knock on your door, and {name} gets scared of knocks. Search the dragon-care websites, and check each one before you trust it: remember Aunt June's warning about Crane's fake websites!"
+      },
+      "evening": {
+        "schedule": "day1"
+      }
+    },
+    {
+      "day": 2,
+      "title": "Cold Belly",
+      "morning": {
+        "start": {
+          "hunger": 65,
+          "spark": 8,
+          "calm": 55
+        },
+        "recipeScale": 1,
+        "intro": "Day 2. Brrr! {name} is shivering: its belly fire went out in the night. Time for breakfast and the spice tin."
+      },
+      "afternoon": {
+        "kind": "store"
+      },
+      "evening": {
+        "schedule": "day2",
+        "intro": [
+          "Another evening at home. {name} is curled up in the nest, warm from today's spice mix.",
+          "Family may stop by again. Help {name} stay calm when you hear footsteps, and remember: you can always show your family the dragon.",
+          "Keep watching the window. Crane's helpers have been seen on your street."
+        ]
+      }
+    },
+    {
+      "day": 3,
+      "title": "The Red Light",
+      "morning": {
+        "start": {
+          "hunger": 75,
+          "spark": 25,
+          "calm": 50
+        },
+        "recipeScale": 1.5,
+        "chewedSlipper": true,
+        "intro": "Day 3. Whoa, {name} had a growth spurt overnight! It needs a bigger spice mix today. And... is that one of Kit's slippers in the nest?"
+      },
+      "afternoon": {
+        "kind": "research",
+        "set": "sleep",
+        "intro": "{name} keeps waking up in the night. Find out how to help a hatchling sleep, and check every website carefully: Crane's fake sites might be waiting."
+      },
+      "evening": {
+        "schedule": "day3",
+        "cliffhanger": true,
+        "intro": [
+          "The last evening of the week. {name} is bigger now, and a little restless.",
+          "Lots might happen at once tonight. If it does, take a breath: one stone at a time.",
+          "As always, you can show your family the dragon, and watch the window for Crane's helpers."
+        ]
+      }
+    }
+  ],
+  "cliffhanger": {
+    "title": "Too big for the shoebox!",
+    "paragraphs": [
+      "That night, {name} turns around three times in the nest... and the shoebox goes CRUNCH. Your dragon has outgrown it!",
+      "Aunt June peeks in the next morning and laughs. \"Time to think bigger, my dear.\""
+    ],
+    "toldParents": "\"Your mom and dad already know, so let's have a family meeting about the treehouse.\"",
+    "notToldParents": "\"And it's time to talk to your mom and dad. A dragon this size needs the whole family. I'll come with you when you tell them.\""
+  }
+}

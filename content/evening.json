@@ -10,23 +10,20 @@
     "blanket": 4
   },
   "friendlyCalm": 5,
-  "endAt": 125,
   "attention": {
     "missed": 10,
     "missedBright": 5,
     "spotted": -8,
     "share": 25
   },
-  "visitors": [
-    {
-      "id": "kit",
+  "lullabyHumCalm": 25,
+  "family": {
+    "kit": {
       "name": "Kit",
       "role": "your little sibling",
       "member": "kit",
       "emoji": "🧒",
-      "at": 24,
       "warn": 12,
-      "line": "\"Hey, can I borrow a marker?\"",
       "calmLine": "Kit grabs a marker and skips back down the hall. Your dragon stayed calm and cozy.",
       "knownLine": "Kit tiptoes in to whisper goodnight to the dragon, then helps you hum. Your dragon loves it.",
       "noisyLine": "Squeak! \"What was that?\" Kit peeks around the door, curious.",
@@ -52,15 +49,12 @@
         }
       ]
     },
-    {
-      "id": "mom",
+    "mom": {
       "name": "Mom",
       "role": "your mom",
       "member": "parents",
       "emoji": "👩",
-      "at": 58,
       "warn": 12,
-      "line": "\"Lights out in ten minutes, sweetie!\"",
       "calmLine": "Mom blows you a kiss and heads downstairs. Your dragon stayed calm and cozy.",
       "knownLine": "Mom peeks in with a warm towel for the nest. \"Goodnight, you two.\" Your dragon snuggles in.",
       "noisyLine": "Chirp! Mom tilts her head. \"Did you hear something?\"",
@@ -86,15 +80,12 @@
         }
       ]
     },
-    {
-      "id": "dad",
+    "dad": {
       "name": "Dad",
       "role": "your dad",
       "member": "parents",
       "emoji": "👨",
-      "at": 100,
       "warn": 12,
-      "line": "\"Goodnight, kiddo. Sweet dreams!\"",
       "calmLine": "Dad yawns, smiles and closes the door. Your dragon stayed calm and cozy. Goodnight!",
       "knownLine": "Dad brings an extra sock for the nest and whispers, \"Night night, little dragon.\"",
       "noisyLine": "Hiccup! Dad raises an eyebrow. \"Was that a hiccup?\"",
@@ -120,50 +111,174 @@
         }
       ]
     }
-  ],
-  "windowThings": [
-    {
-      "id": "moth",
-      "art": "moth",
-      "at": 26,
-      "stay": 8,
-      "suspicious": false,
-      "tapLine": "Just a moth, fluttering at the glass."
+  },
+  "schedules": {
+    "day1": {
+      "endAt": 125,
+      "visitors": [
+        {
+          "id": "kit",
+          "at": 24,
+          "line": "\"Hey, can I borrow a marker?\""
+        },
+        {
+          "id": "mom",
+          "at": 58,
+          "line": "\"Lights out in ten minutes, sweetie!\""
+        },
+        {
+          "id": "dad",
+          "at": 100,
+          "line": "\"Goodnight, kiddo. Sweet dreams!\""
+        }
+      ],
+      "windowThings": [
+        {
+          "id": "moth",
+          "art": "moth",
+          "at": 26,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Just a moth, fluttering at the glass."
+        },
+        {
+          "id": "blink",
+          "art": "blink",
+          "at": 40,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "A drone with a red light that never blinks: it's BLINK, the collector's camera! You close the curtains.",
+          "missLine": "A red light hovered at the window... then zipped away."
+        },
+        {
+          "id": "cat",
+          "art": "cat",
+          "at": 72,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "It's Pickles, the neighbor's cat, out for a stroll."
+        },
+        {
+          "id": "surveyor",
+          "art": "surveyor",
+          "at": 84,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "A \"wildlife surveyor\" with a clipboard... in the dark? Suspicious! You close the curtains.",
+          "missLine": "Someone with a clipboard was peering at the house..."
+        },
+        {
+          "id": "blink2",
+          "art": "blink",
+          "at": 112,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "BLINK is back! Curtains closed. Nice spotting.",
+          "missLine": "BLINK's red light swept past the window."
+        }
+      ]
     },
-    {
-      "id": "blink",
-      "art": "blink",
-      "at": 40,
-      "stay": 9,
-      "suspicious": true,
-      "tapLine": "A drone with a red light that never blinks: it's BLINK, the collector's camera! You close the curtains.",
-      "missLine": "A red light hovered at the window... then zipped away."
+    "day2": {
+      "endAt": 125,
+      "visitors": [
+        {
+          "id": "mom",
+          "at": 24,
+          "line": "\"Dinner in five minutes! Can you set the table, please?\"",
+          "calmLine": "Mom smiles and heads back to the kitchen. Your dragon stayed calm and cozy."
+        },
+        {
+          "id": "kit",
+          "at": 62,
+          "line": "\"Want to play a board game? Pleeease?\"",
+          "calmLine": "Kit shrugs and runs off to ask Dad instead. Your dragon stayed calm and cozy."
+        },
+        {
+          "id": "dad",
+          "at": 100,
+          "line": "\"Story time in ten minutes, kiddo!\""
+        }
+      ],
+      "windowThings": [
+        {
+          "id": "cat2",
+          "art": "cat",
+          "at": 30,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Pickles the cat is back, chasing a leaf."
+        },
+        {
+          "id": "surveyor2",
+          "art": "surveyor",
+          "at": 44,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "The clipboard \"bird counter\" is back, staring at YOUR window. Curtains closed!",
+          "missLine": "The clipboard person wrote something down while looking at your house..."
+        },
+        {
+          "id": "blink3",
+          "art": "blink",
+          "at": 78,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "BLINK again! You close the curtains just in time.",
+          "missLine": "BLINK hovered at the window, red light glowing..."
+        },
+        {
+          "id": "moth2",
+          "art": "moth",
+          "at": 110,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "Just a moth. It likes the lamp."
+        }
+      ]
     },
-    {
-      "id": "cat",
-      "art": "cat",
-      "at": 72,
-      "stay": 8,
-      "suspicious": false,
-      "tapLine": "It's Pickles, the neighbor's cat, out for a stroll."
-    },
-    {
-      "id": "surveyor",
-      "art": "surveyor",
-      "at": 84,
-      "stay": 9,
-      "suspicious": true,
-      "tapLine": "A \"wildlife surveyor\" with a clipboard... in the dark? Suspicious! You close the curtains.",
-      "missLine": "Someone with a clipboard was peering at the house..."
-    },
-    {
-      "id": "blink2",
-      "art": "blink",
-      "at": 112,
-      "stay": 9,
-      "suspicious": true,
-      "tapLine": "BLINK is back! Curtains closed. Nice spotting.",
-      "missLine": "BLINK's red light swept past the window."
+    "day3": {
+      "endAt": 128,
+      "steppingStonesAt": 26,
+      "visitors": [
+        {
+          "id": "mom",
+          "at": 72,
+          "line": "\"Bath time for Kit, then bed for everyone!\""
+        },
+        {
+          "id": "dad",
+          "at": 106,
+          "line": "\"Lights out soon. Big day tomorrow!\""
+        }
+      ],
+      "windowThings": [
+        {
+          "id": "surveyor3",
+          "art": "surveyor",
+          "at": 52,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "The clipboard person is back again. Curtains closed!",
+          "missLine": "The clipboard person peered at the house for a long time..."
+        },
+        {
+          "id": "moth3",
+          "art": "moth",
+          "at": 88,
+          "stay": 8,
+          "suspicious": false,
+          "tapLine": "A sleepy moth. Nothing to worry about."
+        },
+        {
+          "id": "blink4",
+          "art": "blink",
+          "at": 116,
+          "stay": 9,
+          "suspicious": true,
+          "tapLine": "BLINK, one last time tonight. Curtains closed!",
+          "missLine": "BLINK swept past one more time..."
+        }
+      ]
     }
-  ]
+  }
 }

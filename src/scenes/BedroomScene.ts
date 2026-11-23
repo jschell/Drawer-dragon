@@ -15,12 +15,13 @@ import {
   note,
   ROOM,
   sockArt,
+  slipperArt,
   sparkle,
   windowThingArt,
   zzz,
   type Art,
 } from '../art/svg';
-import { content } from '../core/content';
+import { content, eveningFor } from '../core/content';
 import type { GameEvent, GameState } from '../core/state';
 
 export const TEX_SCALE = 2;
@@ -36,6 +37,7 @@ export function textureList(): Record<string, Art> {
     note,
     sock: sockArt(false),
     sockScorched: sockArt(true),
+    slipperChewed: slipperArt(true),
     nightWindow,
     floorLamp,
     lampGlow,
@@ -230,6 +232,7 @@ export class BedroomScene extends Phaser.Scene {
     }
     this.nestSock.setVisible(s.sockInNest && !this.night);
     this.floorSock.setVisible(s.fixIt !== null && s.part === 'morning');
+    if (s.fixIt) this.floorSock.setTexture(s.fixIt.id === 'chewed-slipper' ? 'slipperChewed' : 'sockScorched');
     if (s.part === 'evening' || s.part === 'end') this.applyNight(s, first);
     const spark = s.dragon.spark;
     this.parts.glow.setAlpha(Phaser.Math.Clamp((spark - 10) / 70, 0, 1) * 0.9);
@@ -563,7 +566,7 @@ export class BedroomScene extends Phaser.Scene {
 
   private showThing(id: string) {
     this.hideThing(false);
-    const def = content.evening.windowThings.find((t) => t.id === id);
+    const def = eveningFor(content, this.state?.day ?? 1).windowThings.find((t) => t.id === id);
     if (!def) return;
     const [x, y] = this.thingPos(def.art);
     const im = this.add.image(x, y + 20, `thing-${def.art}`).setScale(HALF * 0.9).setAlpha(0).setDepth(DEPTH.thing);

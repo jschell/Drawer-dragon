@@ -5,6 +5,8 @@ import thoughtsJson from '../../content/thoughts.json';
 import archiveJson from '../../content/archive.json';
 import eveningJson from '../../content/evening.json';
 import storyJson from '../../content/story.json';
+import storeJson from '../../content/store.json';
+import daysJson from '../../content/days.json';
 
 export const NUTRIENTS = ['protein', 'greens', 'minerals'] as const;
 export type Nutrient = (typeof NUTRIENTS)[number];
@@ -93,7 +95,7 @@ const PageSchema = z
     body: z.array(z.string()).min(1),
     checks: z.object({ who: z.string(), when: z.string(), why: z.string(), proof: z.string() }),
     trap: z.object({ prompt: z.string() }).optional(),
-    tip: z.object({ text: z.string(), unlocks: z.literal('blanket') }).optional(),
+    tip: z.object({ text: z.string(), unlocks: z.enum(['blanket', 'lullaby']) }).optional(),
   })
   .strict()
   .refine((p) => (p.credibility === 'trap') === (p.trap !== undefined), { message: 'Trap pages (and only trap pages) need a trap prompt' });
@@ -150,7 +152,7 @@ const WindowThingSchema = z.object({
   missLine: z.string().optional(),
 });
 
-const EveningSchema = z.object({
+const EveningTuningSchema = z.object({
   startCalm: z.number(),
   calmBase: z.number(),
   calmLampDim: z.number(),
@@ -159,10 +161,80 @@ const EveningSchema = z.object({
   calmEnough: z.number(),
   knockCalm: z.object({ normal: z.number(), blanket: z.number() }),
   friendlyCalm: z.number(),
-  endAt: z.number().positive(),
+  lullabyHumCalm: z.number().default(25),
   attention: z.object({ missed: z.number(), missedBright: z.number(), spotted: z.number(), share: z.number() }),
+});
+
+/** One evening: shared tuning plus that day's schedule, with family details filled in. */
+const EveningSchema = EveningTuningSchema.extend({
+  endAt: z.number().positive(),
+  /** Day 3: the moment three problems happen at once (spec §5.6). */
+  steppingStonesAt: z.number().positive().optional(),
   visitors: z.array(VisitorSchema).min(1),
   windowThings: z.array(WindowThingSchema).min(1),
+});
+
+const ScheduleVisitorSchema = z.object({
+  id: z.string(),
+  at: z.number().positive(),
+  line: z.string(),
+  calmLine: z.string().optional(),
+  knownLine: z.string().optional(),
+  noisyLine: z.string().optional(),
+});
+
+const EveningFileSchema = EveningTuningSchema.extend({
+  family: z.record(z.string(), VisitorSchema.innerType().omit({ id: true, at: true, line: true })),
+  schedules: z.record(
+    z.string(),
+    z.object({
+      endAt: z.number().positive(),
+      steppingStonesAt: z.number().positive().optional(),
+      visitors: z.array(ScheduleVisitorSchema),
+      windowThings: z.array(WindowThingSchema).min(1),
+    }),
+  ),
+});
+
+const StoreItemSchema = z.object({
+  id: z.string(),
+  food: z.string(),
+  name: z.string(),
+  servings: z.number().int().positive(),
+  price: z.number().int().positive(), // cents
+  art: z.string(),
+  tag: z.string().optional(),
+});
+
+const StoreSchema = z.object({
+  shopkeeper: z.string(),
+  allowance: z.number().int().positive(),
+  wallet: z.array(z.number().int().positive()).min(1),
+  list: z.array(z.object({ food: z.string(), servings: z.number().int().positive(), label: z.string() })).min(1),
+  items: z.array(StoreItemSchema).min(2),
+  changeMistake: z.number().int().positive(),
+  intro: z.string(),
+});
+
+const DaySchema = z.object({
+  day: z.number().int().positive(),
+  title: z.string(),
+  morning: z.object({
+    start: z.object({ hunger: z.number(), spark: z.number(), calm: z.number() }),
+    recipeScale: z.number().positive(),
+    chewedSlipper: z.boolean().optional(),
+    intro: z.string(),
+  }),
+  afternoon: z.discriminatedUnion('kind', [
+    z.object({ kind: z.literal('research'), set: z.string(), june: z.boolean().optional(), intro: z.string() }),
+    z.object({ kind: z.literal('store') }),
+  ]),
+  evening: z.object({ schedule: z.string(), cliffhanger: z.boolean().optional(), intro: z.array(z.string()).optional() }),
+});
+
+const DaysSchema = z.object({
+  days: z.array(DaySchema).min(1),
+  cliffhanger: z.object({ title: z.string(), paragraphs: z.array(z.string()), toldParents: z.string(), notToldParents: z.string() }),
 });
 
 const StorySchema = z.object({
@@ -179,6 +251,15 @@ const StorySchema = z.object({
     paragraphs: z.array(z.string()).min(1),
     button: z.string(),
   }),
+  steppingStones: z.object({
+    title: z.string(),
+    intro: z.string(),
+    problems: z.array(z.object({ id: z.enum(['hungry', 'kit', 'blink']), emoji: z.string(), label: z.string() })).length(3),
+    reasons: z.array(z.object({ id: z.string(), label: z.string() })).min(2),
+    firstFeedback: z.object({ hungry: z.string(), kit: z.string(), blink: z.string() }),
+    after: z.string(),
+  }),
+  kitDiscovers: z.string(),
 });
 
 export type StoryDef = z.infer<typeof StorySchema>;
@@ -186,6 +267,10 @@ export type FoodDef = z.infer<typeof FoodSchema>;
 export type PageDef = z.infer<typeof PageSchema>;
 export type ArchiveDef = z.infer<typeof ArchiveSchema>;
 export type EveningDef = z.infer<typeof EveningSchema>;
+export type StoreDef = z.infer<typeof StoreSchema>;
+export type StoreItemDef = z.infer<typeof StoreItemSchema>;
+export type DayDef = z.infer<typeof DaySchema>;
+export type DaysDef = z.infer<typeof DaysSchema>;
 export type VisitorDef = z.infer<typeof VisitorSchema>;
 export type WindowThingDef = z.infer<typeof WindowThingSchema>;
 export type SpiceDef = z.infer<typeof SpiceSchema>;
@@ -199,9 +284,54 @@ export interface Content {
   plateTargets: Record<string, Plate>;
   spiceRecipes: SpiceRecipe[];
   thoughts: ThoughtDef[];
+  /** Day 1's research set and evening (kept for convenience; use archiveFor/eveningFor for other days). */
   archive: ArchiveDef;
   evening: EveningDef;
+  archiveSets: Record<string, ArchiveDef>;
+  eveningSchedules: Record<string, EveningDef>;
+  store: StoreDef;
+  days: DaysDef;
   story: StoryDef;
+}
+
+export function dayDef(c: Content, day: number): DayDef {
+  return c.days.days.find((d) => d.day === day) ?? c.days.days[0];
+}
+
+/** The research set for a day (falls back to Day 1's). */
+export function archiveFor(c: Content, day: number): ArchiveDef {
+  const a = dayDef(c, day).afternoon;
+  return a.kind === 'research' ? (c.archiveSets[a.set] ?? c.archive) : c.archive;
+}
+
+export function eveningFor(c: Content, day: number): EveningDef {
+  return c.eveningSchedules[dayDef(c, day).evening.schedule] ?? c.evening;
+}
+
+function checkArchive(name: string, archive: ArchiveDef) {
+  const answer = archive.pages.find((p) => p.id === archive.answerPageId);
+  if (!answer || answer.credibility !== 'trusted' || !answer.tip) throw new Error(`[${name}] The answer page must exist, be trusted and have a tip`);
+  for (const p of archive.pages) {
+    const unknown = p.keywords.find((k) => !archive.chips.includes(k));
+    if (unknown) throw new Error(`[${name}] Page ${p.id} uses keyword "${unknown}" that has no chip`);
+  }
+}
+
+/** Accepts the evening file (family + schedules) or, for tests, a single ready-made evening. */
+function parseEvenings(raw: unknown): Record<string, EveningDef> {
+  if (raw && typeof raw === 'object' && 'visitors' in raw) return { day1: EveningSchema.parse(raw) };
+  const f = EveningFileSchema.parse(raw);
+  const { family, schedules, ...tuning } = f;
+  const out: Record<string, EveningDef> = {};
+  for (const [id, sch] of Object.entries(schedules)) {
+    const visitors = sch.visitors.map((v) => {
+      const base = family[v.id];
+      if (!base) throw new Error(`[${id}] Unknown family visitor "${v.id}"`);
+      return { ...base, ...Object.fromEntries(Object.entries(v).filter(([, x]) => x !== undefined)) };
+    });
+    out[id] = EveningSchema.parse({ ...tuning, ...sch, visitors });
+  }
+  return out;
 }
 
 /** Validates raw content and checks cross-references. Throws with a readable message on failure. */
@@ -209,15 +339,21 @@ export function parseContent(raw: { items: unknown; recipes: unknown; thoughts: 
   const items = ItemsSchema.parse(raw.items);
   const recipes = RecipesSchema.parse(raw.recipes);
   const thoughts = ThoughtsSchema.parse(raw.thoughts);
-  const archive = ArchiveSchema.parse(raw.archive ?? archiveJson);
-  const evening = EveningSchema.parse(raw.evening ?? eveningJson);
-
-  const answer = archive.pages.find((p) => p.id === archive.answerPageId);
-  if (!answer || answer.credibility !== 'trusted' || !answer.tip) throw new Error('The answer page must exist, be trusted and have a tip');
-  for (const p of archive.pages) {
-    const unknown = p.keywords.find((k) => !archive.chips.includes(k));
-    if (unknown) throw new Error(`Page ${p.id} uses keyword "${unknown}" that has no chip`);
+  const rawArchive = (raw.archive ?? archiveJson) as { sets?: unknown };
+  const archiveSets = rawArchive.sets
+    ? z.record(z.string(), ArchiveSchema).parse(rawArchive.sets)
+    : { 'calm-knock': ArchiveSchema.parse(rawArchive) };
+  for (const [name, a] of Object.entries(archiveSets)) checkArchive(name, a);
+  const archive = archiveSets['calm-knock'] ?? Object.values(archiveSets)[0];
+  const eveningSchedules = parseEvenings(raw.evening ?? eveningJson);
+  const evening = eveningSchedules['day1'] ?? Object.values(eveningSchedules)[0];
+  const days = DaysSchema.parse(daysJson);
+  const store = StoreSchema.parse(storeJson);
+  for (const d of days.days) {
+    if (d.afternoon.kind === 'research' && !archiveSets[d.afternoon.set] && rawArchive.sets) throw new Error(`Day ${d.day}: unknown research set "${d.afternoon.set}"`);
+    if (!eveningSchedules[d.evening.schedule] && !(raw.evening && 'visitors' in (raw.evening as object))) throw new Error(`Day ${d.day}: unknown evening schedule "${d.evening.schedule}"`);
   }
+  for (const item of store.items) if (!items.foods.some((f) => f.id === item.food)) throw new Error(`Store item ${item.id} sells unknown food "${item.food}"`);
 
   const spiceIds = new Set(items.spices.map((s) => s.id));
   for (const r of recipes.spiceRecipes) {
@@ -229,7 +365,18 @@ export function parseContent(raw: { items: unknown; recipes: unknown; thoughts: 
   const dup = ids.find((id, i) => ids.indexOf(id) !== i);
   if (dup) throw new Error(`Duplicate content id "${dup}"`);
 
-  return { ...items, ...recipes, thoughts: thoughts.thoughts, archive, evening, story: StorySchema.parse(storyJson) };
+  return {
+    ...items,
+    ...recipes,
+    thoughts: thoughts.thoughts,
+    archive,
+    evening,
+    archiveSets,
+    eveningSchedules,
+    store,
+    days,
+    story: StorySchema.parse(storyJson),
+  };
 }
 
 export const content: Content = parseContent({ items: itemsJson, recipes: recipesJson, thoughts: thoughtsJson, archive: archiveJson, evening: eveningJson });

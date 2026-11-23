@@ -1,5 +1,5 @@
 import { sfx } from '../audio/sfx';
-import { CHECK_KEYS, content, type CheckKey, type PageDef } from '../core/content';
+import { archiveFor, CHECK_KEYS, content, type CheckKey, type PageDef } from '../core/content';
 import { attentionWord, ratingIsCorrect } from '../core/day';
 import type { Action, GameEvent, GameState, Rating, TrapChoice } from '../core/state';
 
@@ -49,6 +49,10 @@ export class ResearchScreen {
     this.root = document.getElementById('research')!;
   }
 
+  private get archive() {
+    return archiveFor(content, this.host.state.day);
+  }
+
   show() {
     if (this.root.hidden) {
       this.view = 'search';
@@ -78,7 +82,7 @@ export class ResearchScreen {
         <div class="pill attention ${a >= 20 ? 'warn' : ''}" title="Collector Attention">👁️ Collector: <b>${attentionWord(a)}</b></div>
         <button class="btn ${done ? '' : 'ghost'} small" data-x="home">Head home ➜</button>
       </div>
-      <div class="question ${done ? 'done' : ''}">${done ? '✅' : '❓'} <b>Find out:</b> ${esc(content.archive.question)}</div>
+      <div class="question ${done ? 'done' : ''}">${done ? '✅' : '❓'} <b>Find out:</b> ${esc(this.archive.question)}</div>
       <div class="browser">
         <div class="urlbar">
           <button class="nav" data-x="back" ${this.view === 'search' ? 'disabled' : ''} aria-label="Back">◀</button>
@@ -102,17 +106,17 @@ export class ResearchScreen {
   }
 
   private page(id: string) {
-    return content.archive.pages.find((p) => p.id === id)!;
+    return this.archive.pages.find((p) => p.id === id)!;
   }
 
   private searchView() {
     const r = this.host.state.research;
-    const max = content.archive.maxChips;
+    const max = this.archive.maxChips;
     const results = r.results.map((id) => this.page(id));
     return `
       <div class="search-box">${this.chips.length ? this.chips.map((c) => `<span class="q-chip">${c}</span>`).join(' ') : '<span class="sub">Tap up to ' + max + ' words…</span>'}
         <button class="btn small" data-x="search">🔎 Search</button></div>
-      <div class="chips">${content.archive.chips
+      <div class="chips">${this.archive.chips
         .map((c) => `<button class="chip ${this.chips.includes(c) ? 'on' : ''}" data-chip="${c}">${c}</button>`)
         .join('')}</div>
       ${r.feedback && SEARCH_MSG[r.feedback] ? `<p class="search-msg">${SEARCH_MSG[r.feedback]}</p>` : ''}
@@ -131,7 +135,7 @@ export class ResearchScreen {
     const revealed = r.checks[p.id] ?? [];
     const rating = r.ratings[p.id];
     const trap = r.trapChoices[p.id];
-    const isAnswer = p.id === content.archive.answerPageId;
+    const isAnswer = p.id === this.archive.answerPageId;
     const fb = rating ? FEEDBACK[p.credibility][ratingIsCorrect(p, rating) ? 'right' : 'wrong'] : '';
     const trapBox = p.trap
       ? `<div class="trap-box">
@@ -176,7 +180,7 @@ export class ResearchScreen {
         isAnswer && rating === 'trust'
           ? `<div class="tip-box">${
               r.tipSaved
-                ? `✅ <b>Saved to your journal:</b> ${esc(p.tip!.text)}<br/><span class="sub">You can use a blanket tonight! Head home when you're ready.</span>`
+                ? `✅ <b>Saved to your journal:</b> ${esc(p.tip!.text)}<br/><span class="sub">${p.tip!.unlocks === 'lullaby' ? 'Tonight, humming plays your new lullaby!' : 'You can use a blanket tonight!'} Head home when you're ready.</span>`
                 : `<p><b>💡 Useful tip:</b> ${esc(p.tip!.text)}</p><button class="btn" data-x="save">📓 Save this tip to my journal</button>`
             }</div>`
           : ''
@@ -194,8 +198,8 @@ export class ResearchScreen {
         tap();
         const c = b.dataset.chip!;
         if (this.chips.includes(c)) this.chips = this.chips.filter((x) => x !== c);
-        else if (this.chips.length < content.archive.maxChips) this.chips.push(c);
-        else this.host.toast(`Up to ${content.archive.maxChips} words. Tap a word again to remove it.`);
+        else if (this.chips.length < this.archive.maxChips) this.chips.push(c);
+        else this.host.toast(`Up to ${this.archive.maxChips} words. Tap a word again to remove it.`);
         this.render();
       }),
     );
@@ -247,7 +251,8 @@ export class ResearchScreen {
       b.addEventListener('click', () => {
         sfx.play('trill');
         this.host.dispatch({ type: 'saveTip' });
-        this.host.toast('Tip saved! Tonight you can cover the nest with a blanket.');
+        const tip = this.page(this.archive.answerPageId).tip!;
+        this.host.toast(tip.unlocks === 'lullaby' ? 'Tip saved! Tonight, humming plays the lullaby, and it works even better.' : 'Tip saved! Tonight you can cover the nest with a blanket.');
       }),
     );
     q('[data-x="read"]').forEach((b) =>
