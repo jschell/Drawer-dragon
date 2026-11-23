@@ -32,3 +32,11 @@ export async function answerReading(page: Page) {
     }
   }
 }
+
+/** Picks a dragon name from the list, tapping "More names" until it shows up. */
+export async function pickName(page: Page, name: string) {
+  const b = page.locator(`#panel [data-name="${name}"]`);
+  for (let i = 0; i < 12 && !(await b.isVisible()); i++) await page.getByRole('button', { name: 'More names ▶' }).click();
+  await b.click();
+  await page.getByRole('button', { name: `${name} it is!` }).click();
+}

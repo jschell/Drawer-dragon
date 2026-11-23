@@ -9,6 +9,7 @@ import storeJson from '../../content/store.json';
 import daysJson from '../../content/days.json';
 import readingJson from '../../content/reading.json';
 import activitiesJson from '../../content/activities.json';
+import namesJson from '../../content/names.json';
 
 export const NUTRIENTS = ['protein', 'greens', 'minerals'] as const;
 export type Nutrient = (typeof NUTRIENTS)[number];
@@ -228,6 +229,23 @@ const StoreSchema = z.object({
   intro: z.string(),
 });
 
+/** Story characters' names, which a dragon can't share (it would muddle the story). */
+const STORY_NAMES = ['Cinder', 'Kit', 'June', 'Crane', 'Silas', 'Blink', 'Pickles', 'Patel', 'Ortiz'];
+
+/**
+ * Dragon names are picked from this list only: there is no free-text entry anywhere in
+ * the game, so nothing a player types can appear on screen (spec §10.4).
+ */
+const NamesSchema = z
+  .object({
+    perPage: z.number().int().min(2).max(8),
+    default: z.string(),
+    names: z.array(z.string().regex(/^[A-Z][a-z]{1,11}$/, { message: 'Names are one simple word, 2–12 letters' })).min(12),
+  })
+  .refine((n) => new Set(n.names).size === n.names.length, { message: 'Duplicate dragon name' })
+  .refine((n) => n.names.includes(n.default), { message: 'The default name must be in the list' })
+  .refine((n) => !n.names.some((x) => STORY_NAMES.includes(x)), { message: "A dragon name can't be a story character's name" });
+
 export const ACTIVITIES = ['insulation', 'flight', 'fire', 'letter', 'favorites'] as const;
 export type ActivityKind = (typeof ACTIVITIES)[number];
 export const AFTERNOONS = ['research', 'store', 'clues', 'board', 'map', 'farewell'] as const;
@@ -438,6 +456,7 @@ export interface Content {
   story: StoryDef;
   reading: ReadingDef;
   activities: ActivitiesDef;
+  names: z.infer<typeof NamesSchema>;
 }
 
 /** The text of a story panel, as written in the content files ({name} not filled in). */
@@ -548,6 +567,7 @@ export function parseContent(raw: { items: unknown; recipes: unknown; thoughts: 
     story: StorySchema.parse(storyJson),
     reading: ReadingSchema.parse(readingJson),
     activities,
+    names: NamesSchema.parse(namesJson),
   };
 }
 

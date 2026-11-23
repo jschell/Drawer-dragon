@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { okCards } from './helpers';
+import { okCards, pickName } from './helpers';
 import { expect, test } from './wording';
 
 type Hud = {
@@ -25,8 +25,7 @@ async function startGame(page: Page) {
   await act(page, (go) => {
     for (let i = 0; i < 3; i++) go({ type: 'tapEgg' });
   });
-  await page.getByRole('button', { name: 'Pip' }).click();
-  await page.getByRole('button', { name: "That's the name!" }).click();
+  await pickName(page, 'Pip');
   await okCards(page);
 }
 

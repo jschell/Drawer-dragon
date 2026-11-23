@@ -78,7 +78,8 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
     }
     case 'name': {
       if (s.phase !== 'naming') break;
-      d.name = action.name.trim().slice(0, 16) || 'Sprocket';
+      // Only names from the list are accepted: nothing typed can become the dragon's name.
+      d.name = c.names.names.includes(action.name) ? action.name : c.names.default;
       s.phase = 'care';
       events.push({ type: 'named', name: d.name });
       break;

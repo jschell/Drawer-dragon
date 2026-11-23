@@ -389,6 +389,10 @@ describe('old Chapter 1 saves', () => {
     expect(s.world.ending).toBeNull();
     expect(s.activity.done).toBe(false);
     expect(s.evening.special.active).toBe(false);
+    // A name typed in an older version is replaced: only listed names are shown now.
+    const typed = { ...old, dragon: { ...old.dragon!, name: 'Typed Name' } };
+    store.set('dragon-keeper:proto-save', JSON.stringify(typed));
+    expect(loadSave()!.dragon.name).toBe(content.names.default);
     delete (globalThis as { localStorage?: unknown }).localStorage;
   });
 });

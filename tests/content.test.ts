@@ -26,4 +26,12 @@ describe('content', () => {
     bad.spiceRecipes[0].parts = { saffron: 1 };
     expect(() => parseContent({ items, recipes: bad, thoughts })).toThrow(/unknown spice/);
   });
+
+  it('dragon names: a long list, simple words, no story characters, no duplicates', () => {
+    const n = content.names;
+    expect(n.names.length).toBeGreaterThanOrEqual(n.perPage * 4);
+    expect(new Set(n.names).size).toBe(n.names.length);
+    for (const name of n.names) expect(name).toMatch(/^[A-Z][a-z]{1,11}$/);
+    for (const story of ['Cinder', 'Kit', 'Blink', 'Pickles']) expect(n.names).not.toContain(story);
+  });
 });

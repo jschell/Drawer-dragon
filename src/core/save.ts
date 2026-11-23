@@ -1,3 +1,4 @@
+import { content } from './content';
 import { emptyTask, initialState, SAVE_VERSION, type GameState } from './state';
 
 const KEY = 'dragon-keeper:proto-save';
@@ -10,6 +11,8 @@ export function loadSave(): GameState | null {
     const s = JSON.parse(raw) as GameState;
     if (s?.version === 4) migrate4(s);
     if (s?.version !== SAVE_VERSION || s.part === 'end') return null;
+    // Older versions let players type a name. Only listed names are shown now.
+    if (s.dragon?.name && !content.names.names.includes(s.dragon.name)) s.dragon.name = content.names.default;
     return s;
   } catch {
     return null;

@@ -13,7 +13,7 @@ Nine in-game days in three chapters, about 1½–2 hours in all. Every part save
 ### Day 1: The Warm Rock
 
 **☀️ Morning: care** (prototype 1)
-1. **Hatch** the egg (tap it 3 times) and **name** your dragon.
+1. **Hatch** the egg (tap it 3 times) and **name** your dragon: pick from a list of 36 names, 6 at a time (**More names ▶** shows others). There is no typing anywhere in the game, so nothing a player types can show up on screen.
 2. Get it **ready for the day**: fed, warm and calm.
    - **Food:** drag food onto the dragon (or tap a food, then the dragon). It wants a balanced plate: meat, greens and minerals.
    - **Spice tin:** follow the recipe card's *parts* (2 cinnamon : 1 ginger). A double batch gives it hiccups and scorches a sock (a rub-it-clean Fix-It).

@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { okCards } from './helpers';
+import { okCards, pickName } from './helpers';
 import { expect, test } from './wording';
 
 type Hud = { state: { dragon: { calm: number }; reading: { stars: number; readTo: string[] }; stickers: string[] } };
@@ -12,8 +12,7 @@ async function hatch(page: Page) {
     const h = (window as unknown as { __dk: { hud: { dispatch(a: object): unknown } } }).__dk.hud;
     for (let i = 0; i < 3; i++) h.dispatch({ type: 'tapEgg' });
   });
-  await page.getByRole('button', { name: 'Pip' }).click();
-  await page.getByRole('button', { name: "That's the name!" }).click();
+  await pickName(page, 'Pip');
 }
 
 test('important messages wait for OK, and the 📜 log keeps them', async ({ page }) => {

@@ -72,7 +72,7 @@ Minimum browser: Safari on iOS/iPadOS 16+. Chromebooks are **not** a target for 
 
 | Name | Role | Notes |
 |---|---|---|
-| **The Keeper** (player-named) | Player character, age ~10 | The player picks an avatar and a nickname. Suggested nicknames come from a list; free text is optional and stays on the device. |
+| **The Keeper** (player-named) | Player character, age ~10 | The player picks an avatar and a nickname from a list. There is no free-text entry anywhere in the game (the same rule as dragon names, §10.4). |
 | **The dragon** (player-named, default "Sprocket") | Hatchling | Communicates in feelings, pictures, and very short riddles. Shy, curious, easily startled, loves warm socks. |
 | **Great-Aunt June Hollis** | Mentor, trusted adult | Lives next door. Retired science teacher. Kept a dragon herself as a girl, and her old notebook becomes the player's **Field Journal**. Meets the dragon on the afternoon of Day 1 and explains why Crane is a danger. |
 | **Mom & Dad** | Family (two-parent household, fixed) | Busy, kind, observant. Join the Keeper Circle together, in Chapter 2 by default or earlier if the player tells them (§5.4). |
@@ -683,7 +683,8 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 - **External links appear in one place only:** the "Find out more" page at the end of the day. It sits behind a grown-up check (a multiplication question) and only links to approved sites (`content/resources.json`, enforced by a test):
   - the Dragon Keepers series by Kate Klimo on Goodreads, credited as the inspiration, with a note that the game isn't made by or connected to the author or publisher;
   - a library finder: a grown-up enters a 5-digit ZIP code (or uses their location) to open a map search for nearby public libraries. The ZIP code is never saved or sent by the game itself; it only goes into the map link the grown-up opens.
-- Nicknames and saves never leave the device.
+- **No typed text from players.** Dragon names (and nicknames) are picked from a curated list (`content/names.json`: simple words, no story characters' names, checked at build time), shown 6 at a time with "More names". The game rules ignore any name not on the list, and saves from older versions that had a typed name fall back to the default name. The only text field in the game is the grown-up's ZIP code on the Find out more page, which is digits only and never shown in the game.
+- Names and saves never leave the device.
 - Trap-site puzzles never collect real data; they only offer choices.
 - This is designed to stay well clear of US children's privacy law (COPPA) and school data rules (FERPA). Confirm with counsel before any school distribution.
 

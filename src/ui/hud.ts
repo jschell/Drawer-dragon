@@ -18,8 +18,6 @@ const esc = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
 const WANTS: Record<Nutrient, string> = { protein: 'meaty', greens: 'leafy and green', minerals: 'crunchy and white' };
 
-const NAME_IDEAS = ['Sprocket', 'Pip', 'Ember', 'Biscuit', 'Mochi', 'Zuzu'];
-
 export class Hud {
   state: GameState;
   private scene!: BedroomScene;
@@ -582,37 +580,46 @@ export class Hud {
 
   private showNaming() {
     if (this.state.phase !== 'naming') return;
-    this.openPanel(`
-      <h2>Your dragon needs a name!</h2>
-      <div class="row">${NAME_IDEAS.map((n) => `<button class="choice" data-name="${n}">${n}</button>`).join('')}</div>
-      <div class="row"><input class="name" maxlength="16" placeholder="...or type your own" aria-label="Type your own name" /></div>
-      <p class="sub">Names stay on this device.</p>
-      <div class="row"><button class="btn big" id="name-ok" disabled>That's the name!</button></div>`);
+    const { names, perPage } = content.names;
+    const pages = Math.ceil(names.length / perPage);
+    let page = Math.floor(Math.random() * pages); // a fresh set of ideas each new game
     let chosen = '';
-    const ok = $('#name-ok') as HTMLButtonElement;
-    const input = $('#panel input.name') as HTMLInputElement;
-    $('#panel')
-      .querySelectorAll<HTMLButtonElement>('[data-name]')
-      .forEach((b) =>
+    const draw = () => {
+      const shown = names.slice(page * perPage, page * perPage + perPage);
+      this.openPanel(`
+        <h2>Your dragon needs a name!</h2>
+        <p class="sub">Pick one you like. Tap "More names" to see others.</p>
+        <div class="row name-grid">${shown.map((n) => `<button class="choice ${n === chosen ? 'picked' : ''}" data-name="${n}">${n}</button>`).join('')}</div>
+        <div class="row">
+          <button class="btn ghost" data-x="prev" aria-label="Previous names">◀</button>
+          <span class="sub name-page">${page + 1} of ${pages}</span>
+          <button class="btn ghost" data-x="more">More names ▶</button>
+        </div>
+        <div class="row"><button class="btn big" id="name-ok" ${chosen ? '' : 'disabled'}>${chosen ? `${chosen} it is!` : "That's the name!"}</button></div>`);
+      const p = $('#panel');
+      p.querySelectorAll<HTMLButtonElement>('[data-name]').forEach((b) =>
         b.addEventListener('click', () => {
           sfx.play('tap');
           chosen = b.dataset.name!;
-          input.value = '';
-          $('#panel').querySelectorAll('.choice').forEach((c) => c.classList.toggle('picked', c === b));
-          ok.disabled = false;
+          draw();
         }),
       );
-    input.addEventListener('input', () => {
-      chosen = input.value.trim();
-      $('#panel').querySelectorAll('.choice').forEach((c) => c.classList.remove('picked'));
-      ok.disabled = chosen.length === 0;
-    });
-    ok.addEventListener('click', () => {
-      this.closePanel();
-      this.dispatch({ type: 'name', name: chosen });
-      this.paused = false;
-      this.card(this.fill(this.today.morning.intro));
-    });
+      const flip = (d: number) => {
+        sfx.play('tap');
+        page = (page + d + pages) % pages;
+        draw();
+      };
+      p.querySelector('[data-x="prev"]')!.addEventListener('click', () => flip(-1));
+      p.querySelector('[data-x="more"]')!.addEventListener('click', () => flip(1));
+      $('#name-ok').addEventListener('click', () => {
+        if (!chosen) return;
+        this.closePanel();
+        this.dispatch({ type: 'name', name: chosen });
+        this.paused = false;
+        this.card(this.fill(this.today.morning.intro));
+      });
+    };
+    draw();
   }
 
   private showThought() {

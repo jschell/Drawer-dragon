@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { answerReading, okCards } from './helpers';
+import { answerReading, okCards, pickName } from './helpers';
 import { expect, test } from './wording';
 
 /** Where review screenshots go when SHOTS is set (e.g. SHOTS=/tmp/shots). */
@@ -45,8 +45,7 @@ test('Chapters 2–3: treehouse, flight, fire, Crane, the Evidence Board, the ma
   await page.goto('/');
   await page.getByRole('button', { name: 'Tap to wake the egg' }).click();
   for (let i = 0; i < 3; i++) await go(page, { type: 'tapEgg' });
-  await page.getByRole('button', { name: 'Pip' }).click();
-  await page.getByRole('button', { name: "That's the name!" }).click();
+  await pickName(page, 'Pip');
   await okCards(page);
   // Days 1–3, fast, keeping the dragon quiet so Day 4 has the telling scene.
   for (let d = 1; d <= 3; d++) {
