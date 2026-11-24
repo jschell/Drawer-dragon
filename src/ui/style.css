@@ -1657,3 +1657,24 @@ mark {
 .polaroid.scrap figcaption {
   font-size: calc(var(--u) * 0.85);
 }
+
+/* ---------- Flight game ---------- */
+
+.flight-host {
+  width: min(100%, 560px);
+}
+.flight-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 640 / 300;
+  border-radius: calc(var(--u) * 1);
+  border: 3px solid var(--paper-edge);
+  touch-action: none;
+  cursor: pointer;
+}
+@media (max-height: 420px) {
+  .flight-host {
+    width: min(100%, 440px);
+  }
+}
