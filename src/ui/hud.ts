@@ -1,5 +1,6 @@
 import { dataUri, foodArt, slipperArt, sockArt } from '../art/svg';
 import { sfx } from '../audio/sfx';
+import { music } from '../audio/music';
 import { archiveFor, chapterFor, content, dayDef, eveningFor, lastDay, type Nutrient, type ThoughtDef } from '../core/content';
 import { bondExtras, morningActivityDone } from '../core/chapters';
 import { ChapterScreens } from './chapters';
@@ -42,6 +43,7 @@ export class Hud {
   constructor(initial: GameState) {
     this.state = initial;
     sfx.enabled = loadPref('sound', true);
+    music.setEnabled(loadPref('music', true));
     this.research = new ResearchScreen(this);
     this.storeScreen = new StoreScreen(this);
     this.chapters = new ChapterScreens(this);
@@ -337,6 +339,8 @@ export class Hud {
     $('#actions').hidden = !caring;
     $('#actions-evening').hidden = !evening;
     $('#actions-free').hidden = s.part !== 'free';
+    // The music follows the time of day; it starts once a tap has unlocked audio.
+    music.setMood(s.phase === 'egg' && s.part === 'morning' ? null : s.part === 'afternoon' ? 'afternoon' : s.part === 'evening' || s.part === 'end' ? 'night' : 'morning');
     if (!caring) $('#tray').hidden = true;
     if (caring) this.renderMeters();
     if (evening) this.renderEvening();
@@ -1489,15 +1493,24 @@ export class Hud {
     });
     const soundBtn = $('#btn-sound');
     const readBtn = $('#btn-read');
+    const musicBtn = $('#btn-music');
     const syncToggles = () => {
       soundBtn.classList.toggle('off', !sfx.enabled);
       soundBtn.textContent = sfx.enabled ? '🔊' : '🔇';
+      musicBtn.classList.toggle('off', !music.enabled || !sfx.enabled);
+      music.refresh();
       readBtn.classList.toggle('off', !this.readAloud);
     };
     soundBtn.addEventListener('click', () => {
       sfx.unlock();
       sfx.enabled = !sfx.enabled;
       savePref('sound', sfx.enabled);
+      syncToggles();
+    });
+    musicBtn.addEventListener('click', () => {
+      sfx.unlock();
+      music.setEnabled(!music.enabled);
+      savePref('music', music.enabled);
       syncToggles();
     });
     readBtn.addEventListener('click', () => {

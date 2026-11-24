@@ -26,6 +26,11 @@ class Sfx {
   private master: GainNode | null = null;
   enabled = true;
 
+  /** The audio context once audio has been unlocked by a tap (shared with the music). */
+  get context(): AudioContext | null {
+    return this.ctx;
+  }
+
   /** Must be called from a user gesture (iOS only allows audio after a tap). */
   unlock() {
     if (!this.ctx) {
