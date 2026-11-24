@@ -53,3 +53,13 @@ async function boot() {
 }
 
 void boot();
+
+// Offline play: the built game registers a service worker that keeps every file on the
+// device (see vite.config.ts). Development builds skip it so changes show up at once.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {
+      /* the game still works online without it */
+    });
+  });
+}

@@ -111,6 +111,7 @@ function grownUpPage(panel: HTMLElement, onBack: () => void) {
   const r = resources.inspiration;
   panel.innerHTML = `
     <h2>For grown-ups</h2>
+    ${navigator.onLine ? '' : '<p class="hint">📶 These links need the internet. The game itself works offline.</p>'}
     <div class="find-cols">
       <div>
         <p><b>📚 The books</b></p>

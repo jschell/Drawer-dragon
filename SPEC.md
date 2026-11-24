@@ -657,7 +657,7 @@ Content is validated at build time by a schema check (e.g., zod). The build fail
 - **TypeScript + Vite**, building to a static site. Host on GitHub Pages or Cloudflare Pages.
 - **Rendering:** PixiJS or Phaser 3 (2D, WebGL with Canvas fallback) for scenes. **DOM overlay** for text-heavy UI: Journal, browser, dialogue, store. DOM gives better text, read-aloud, and accessibility.
 - **State:** the pure reducer (§8) plus a tiny event bus to the renderer.
-- **Offline:** a service worker precaches the shell and Chapter 1, plus a web-app manifest.
+- **Offline (built):** a service worker precaches the whole game (every file of the build, listed at build time, one cache per version) plus the web-app manifest. Pages and files are served from the device; ignoreVary is used because the script loads in CORS mode. Updates install in the background on the next online visit. A browser test reloads the game with the network off and plays on.
 - **No third-party network requests** at runtime. Fonts and assets are bundled.
 
 ### 10.2 Saving
