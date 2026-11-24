@@ -55,6 +55,23 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      # Browsers are cached between runs; the system packages they need are always installed.
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('package-lock.json') }}
+      # A download or package mirror can stall on one machine (once it took 9+ minutes
+      # on one job while the same step took 30 seconds on the others), so each attempt
+      # gets 4 minutes and the step tries up to 3 times.
+      - name: Install ${{ matrix.browser }}
+        timeout-minutes: 13
+        run: |
+          for attempt in 1 2 3; do
+            if timeout 240 npx playwright install --with-deps ${{ matrix.browser }}; then exit 0; fi
+            echo "Install attempt $attempt didn't finish; trying again."
+            sleep 5
+          done
+          exit 1
       - name: Browser tests (${{ matrix.project }})
         run: npx playwright test --project=${{ matrix.project }} --trace off
