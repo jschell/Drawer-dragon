@@ -40,7 +40,7 @@ function rng(seed: number) {
 
 export function mountFlightGame(
   host: HTMLElement,
-  opts: { night: boolean; seed: number; total?: number; onLand: (r: FlightResult) => void },
+  opts: { night: boolean; seed: number; total?: number; onLand: (r: FlightResult) => void; onStop?: () => void },
 ): () => void {
   const total = opts.total ?? 6;
   const canvas = document.createElement('canvas');
@@ -162,7 +162,9 @@ export function mountFlightGame(
 
   const tick = (now: number) => {
     if (!canvas.isConnected) return stop();
-    const dt = Math.min(0.05, (now - last) / 1000);
+    // Up to 0.1 s per frame, so a slow device runs the game at the right pace (ring
+    // passing is checked by crossing, so bigger steps can't skip a ring).
+    const dt = Math.min(0.1, (now - last) / 1000);
     last = now;
     flapAnim = Math.max(0, flapAnim - dt * 5);
     if (started && !done) {
@@ -201,7 +203,11 @@ export function mountFlightGame(
     raf = requestAnimationFrame(tick);
   };
 
+  let stopped = false;
   function stop() {
+    if (stopped) return;
+    stopped = true;
+    opts.onStop?.();
     cancelAnimationFrame(raf);
     canvas.removeEventListener('pointerdown', onPointer);
     window.removeEventListener('keydown', onKey);

@@ -59,7 +59,9 @@ async function toAfternoon(page: Page) {
 }
 
 test('Chapters 2–3: treehouse, flight, fire, Crane, the Evidence Board, the map and the choice', async ({ page }) => {
-  test.setTimeout(240_000);
+  // Plays Days 4–9 through the real screens, including six flight-game tries: on
+  // CI machines with no GPU that takes several minutes.
+  test.setTimeout(360_000);
   // ?speed=4 makes each flight-game try take a few seconds instead of ten.
   await page.goto('/?speed=4');
   await page.getByRole('button', { name: 'Tap to wake the egg' }).click();

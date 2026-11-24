@@ -699,6 +699,13 @@ export class Hud {
     draw();
   }
 
+  pauseScene(paused: boolean) {
+    const loop = this.scene?.game?.loop;
+    if (!loop) return;
+    if (paused) loop.sleep();
+    else loop.wake();
+  }
+
   speakText(text: string) {
     this.speakForce(text);
   }

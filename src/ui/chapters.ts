@@ -25,6 +25,8 @@ export interface ChapterHost {
   askReading(panelId: string, paragraphs: string[], then: () => void): void;
   readPipButton(panelId: string): string;
   bindReadPip(panelId: string): void;
+  /** Pauses the room scene's drawing while a mini-game has the screen (smoother on older devices). */
+  pauseScene(paused: boolean): void;
 }
 
 export class ChapterScreens {
@@ -196,7 +198,9 @@ export class ChapterScreens {
         }`);
       const host = document.querySelector<HTMLElement>('#panel .flight-host');
       if (host) {
+        this.h.pauseScene(true);
         mountFlightGame(host, {
+          onStop: () => this.h.pauseScene(false),
           night: hill,
           seed: this.s.day * 31 + t.tries.length * 7 + 1,
           onLand: ({ rings, total }) => {
