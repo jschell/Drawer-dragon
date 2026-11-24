@@ -61,17 +61,19 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ matrix.browser }}-${{ hashFiles('package-lock.json') }}
-      # A download or package mirror can stall on one machine (once it took 9+ minutes
-      # on one job while the same step took 30 seconds on the others), so each attempt
-      # gets 4 minutes and the step tries up to 3 times.
+      # Chrome: the runner image already has Chrome's system libraries (Google Chrome is
+      # preinstalled), so only the browser is fetched, from Playwright's own server.
+      # WebKit: also needs system packages from the Ubuntu mirror. That mirror is
+      # sometimes very slow (about 70 s per 5 MB once), so those ~22 MB are installed
+      # only for the WebKit jobs. No retry loop: a stopped attempt left apt-get running
+      # and holding the package lock, so retries could only fail.
       - name: Install ${{ matrix.browser }}
-        timeout-minutes: 13
+        timeout-minutes: 10
         run: |
-          for attempt in 1 2 3; do
-            if timeout 240 npx playwright install --with-deps ${{ matrix.browser }}; then exit 0; fi
-            echo "Install attempt $attempt didn't finish; trying again."
-            sleep 5
-          done
-          exit 1
+          if [ "${{ matrix.browser }}" = "webkit" ]; then
+            npx playwright install --with-deps webkit
+          else
+            npx playwright install chromium
+          fi
       - name: Browser tests (${{ matrix.project }})
         run: npx playwright test --project=${{ matrix.project }} --trace off
