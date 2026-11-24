@@ -385,7 +385,7 @@ All meters run 0–100 internally and are **shown as 5 icon pips** (never a bare
 ### 6.6 Chapters 2–3 as built (first version)
 The first playable version follows §6.2–6.5, with these simplifications to revisit after playtesting:
 - **Day 4 nest:** the materials are wool, straw, newspaper, foil and wet leaves (wet leaves show that damp pulls heat away). The two best are the warmest dry ones, so testing with the thermometer always gives the answer.
-- **Day 5:** no corner-store visit and no Stepping Stones moment; the afternoon is the fake-rescue research plus the library directory. Flight practice has three tries on a wing meter; the bar-graph question is "best try minus first try".
+- **Day 5:** no corner-store visit and no Stepping Stones moment; the afternoon is the fake-rescue research plus the library directory. Flight practice is a flying game (docs/FUN-PLAN.md): three tries through six rings, where the rings flown through set the distance; the bar-graph question is "best try minus first try".
 - **Day 6:** the spice recipe is 2× the usual mix (no smoked paprika yet).
 - **Day 7:** the board asks for the 3 strongest pieces (no ordering step). Aunt June adds any strong evidence the player missed. Collector Attention drops to zero for good when Crane leaves.
 - **Day 8:** the map puzzle asks direction, distance (10 miles a square) and travel rations (4 days × 2 servings) as multiple choice, with the working shown after a wrong answer. Aunt June's dragon is called **Cinder** (not one of the players' name suggestions).

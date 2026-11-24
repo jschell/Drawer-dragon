@@ -569,7 +569,12 @@ export class Hud {
       <p>You found a warm, speckled stone by the creek...<br/>and now it's wiggling!</p>
       <div class="row">
         ${hasSave ? '<button class="btn big" data-go="continue">Continue</button><button class="btn ghost" data-go="new">New game</button>' : '<button class="btn big" data-go="new">Tap to wake the egg</button>'}
+        ${hasSave && loadScrapbook().length ? '<button class="btn ghost" data-x="scrapbook">📷 Scrapbook</button>' : ''}
       </div>`);
+    $('#panel [data-x="scrapbook"]')?.addEventListener('click', () => {
+      sfx.unlock();
+      this.showScrapbook(() => this.showTitle(hasSave));
+    });
     $('#panel').querySelectorAll<HTMLButtonElement>('[data-go]').forEach((b) =>
       b.addEventListener('click', () => {
         sfx.unlock();
