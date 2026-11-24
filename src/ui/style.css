@@ -1698,3 +1698,18 @@ mark {
   border-radius: 50%;
   background: var(--berry);
 }
+
+/* Offline readiness stays in the title panel, away from the game's controls. */
+.offline-status {
+  margin-top: calc(var(--u) * 0.8);
+  font-size: calc(var(--u) * 1.05);
+  color: var(--ink-soft);
+}
+.offline-status[data-state="ready"] {
+  color: var(--teal-dark);
+}
+.offline-status button {
+  margin-left: calc(var(--u) * 0.7);
+  min-width: 48px;
+  min-height: 48px;
+}
