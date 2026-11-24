@@ -1678,3 +1678,23 @@ mark {
     width: min(100%, 440px);
   }
 }
+
+/* Route tracing on the map */
+.map button.cell {
+  background: transparent;
+  border: 1px solid #d8c49a;
+  padding: 0;
+  font: inherit;
+  font-size: calc(var(--u) * 1.4);
+  cursor: pointer;
+}
+.map .cell.route {
+  background: #ffe6a8;
+}
+.map .cell .dot {
+  display: inline-block;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--berry);
+}

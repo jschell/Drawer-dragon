@@ -177,6 +177,11 @@ test('Chapters 2–3: treehouse, flight, fire, Crane, the Evidence Board, the ma
   await okCards(page);
   await toAfternoon(page);
   await expect(page.locator('#panel h2')).toContainText('Mapping');
+  // Trace the route square by square: up three, then across three.
+  await page.locator('[data-cell="3,3"]').click();
+  await expect(page.locator('#panel .hint')).toContainText('right next to');
+  for (const c of ['1,3', '1,2', '1,1', '2,1', '3,1', '4,1']) await page.locator(`[data-cell="${c}"]`).click();
+  await expect(page.locator('#panel .hint')).toContainText('shortest way');
   await page.locator('[data-m="South-west"]').click();
   await expect(page.locator('#panel .hint')).toContainText('north');
   await shot(page, '11-map');

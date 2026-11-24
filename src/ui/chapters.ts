@@ -467,28 +467,77 @@ export class ChapterScreens {
     const m = A.map;
     let said = '';
     const wrong = new Set<string>();
+    // First, trace the route with a finger: one square at a time, from home to the lakes.
+    let route: [number, number][] = [[m.home[0], m.home[1]]];
+    let routeDone = false;
+    const shortest = Math.abs(m.lakes[0] - m.home[0]) + Math.abs(m.lakes[1] - m.home[1]);
     const draw = () => {
       const t = this.s.task;
       const q = m.questions.find((x) => !t.correct.includes(x.id));
       if (!q) return;
+      const tracing = !routeDone;
+      const onRoute = (x: number, y: number) => route.findIndex(([rx, ry]) => rx === x && ry === y);
       const cells = Array.from({ length: m.rows * m.cols }, (_, i) => {
         const x = i % m.cols;
         const y = Math.floor(i / m.cols);
         const home = x === m.home[0] && y === m.home[1];
         const lakes = x === m.lakes[0] && y === m.lakes[1];
-        return `<div class="cell">${home ? '🏠' : lakes ? '🏔️' : ''}</div>`;
+        const step = onRoute(x, y);
+        const mark = home ? '🏠' : lakes ? '🏔️' : step > 0 ? '<span class="dot"></span>' : '';
+        const cls = `cell ${step >= 0 ? 'route' : ''}`;
+        return tracing ? `<button class="${cls}" data-cell="${x},${y}" aria-label="Square ${x + 1} across, ${y + 1} down">${mark}</button>` : `<div class="${cls}">${mark}</div>`;
       }).join('');
+      const moves = route.length - 1;
       this.h.openPanel(`
         <h2>🗺️ ${esc(m.title)}</h2>
         <p>${this.h.fill(m.intro)}</p>
         <div class="map-wrap">
-          <div class="map" style="grid-template-columns:repeat(${m.cols},1fr);grid-template-rows:repeat(${m.rows},1fr)" role="img" aria-label="A map: home is near the bottom left, the high lakes are up and to the right">${cells}</div>
+          <div class="map" style="grid-template-columns:repeat(${m.cols},1fr);grid-template-rows:repeat(${m.rows},1fr)" ${tracing ? '' : 'role="img"'} aria-label="A map: home is near the bottom left, the high lakes are up and to the right">${cells}</div>
           <div class="compass" aria-hidden="true">N<br/>W ✛ E<br/>S</div>
         </div>
         <p class="sub">🏠 Larkspur Lane · 🏔️ The high lakes · each square is 10 miles</p>
         ${said ? `<p class="hint">${said}</p>` : ''}
-        <p class="riddle">${this.h.fill(q.question)}</p>
-        <div class="row">${q.choices.map((c) => `<button class="choice ${wrong.has(q.id + c) ? 'wrong' : ''}" data-m="${esc(c)}" ${wrong.has(q.id + c) ? 'disabled' : ''}>${esc(c)}</button>`).join('')}</div>`);
+        ${
+          tracing
+            ? `<p class="riddle">Trace ${this.name}'s route: tap the squares one by one, from 🏠 to 🏔️.</p>
+               <p><b>${moves} square${moves === 1 ? '' : 's'} · ${moves * 10} miles</b></p>
+               <div class="row"><button class="btn ghost" data-x="undo" ${moves ? '' : 'disabled'}>Undo</button><button class="btn ghost" data-x="clear" ${moves ? '' : 'disabled'}>Start over</button></div>`
+            : `<p class="riddle">${this.h.fill(q.question)}</p>
+               <div class="row">${q.choices.map((c) => `<button class="choice ${wrong.has(q.id + c) ? 'wrong' : ''}" data-m="${esc(c)}" ${wrong.has(q.id + c) ? 'disabled' : ''}>${esc(c)}</button>`).join('')}</div>`
+        }`);
+      this.on('[data-cell]', (b) => {
+        const [x, y] = b.dataset.cell!.split(',').map(Number);
+        const [lx, ly] = route[route.length - 1];
+        const at = onRoute(x, y);
+        if (at === route.length - 1 && at > 0) {
+          route.pop(); // tap the last square again to take it back
+        } else if (at < 0 && Math.abs(x - lx) + Math.abs(y - ly) === 1) {
+          route.push([x, y]);
+          sfx.play('tap');
+        } else {
+          said = 'Tap a square right next to the last one (up, down, left or right).';
+          return draw();
+        }
+        said = '';
+        if (x === m.lakes[0] && y === m.lakes[1]) {
+          routeDone = true;
+          sfx.play('sparkle');
+          const n = route.length - 1;
+          said =
+            n === shortest
+              ? `🗺️ You made it in ${n} squares: ${n * 10} miles. That's the shortest way!`
+              : `🗺️ You made it in ${n} squares: ${n * 10} miles. Can you spot a shorter way? (The shortest is ${shortest} squares.)`;
+        }
+        draw();
+      });
+      this.on('[data-x="undo"]', () => {
+        if (route.length > 1) route.pop();
+        draw();
+      });
+      this.on('[data-x="clear"]', () => {
+        route = [[m.home[0], m.home[1]]];
+        draw();
+      });
       this.on('[data-m]', (b) => {
         const evs = this.h.dispatch({ type: 'answer', qid: q.id, value: b.dataset.m! });
         const r = evs.find((e) => e.type === 'answered');
