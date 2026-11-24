@@ -1,0 +1,78 @@
+{
+  "toys": [
+    {
+      "id": "yarn",
+      "label": "Yarn ball",
+      "emoji": "🧶",
+      "firstCalm": 12,
+      "againCalm": 3,
+      "rest": 15,
+      "lines": [
+        "{name} pounces on the yarn ball and rolls over with it, tail wagging!",
+        "{name} bats the yarn ball across the floor and chases it.",
+        "{name} gets tangled in the yarn and looks very proud of itself."
+      ],
+      "tiredLine": "{name} is catching its breath. Let it rest a moment before the next game."
+    },
+    {
+      "id": "pinecone",
+      "label": "Pinecone",
+      "emoji": "🌰",
+      "fromDay": 4,
+      "firstCalm": 12,
+      "againCalm": 3,
+      "rest": 15,
+      "lines": [
+        "{name} carries the pinecone around like a treasure.",
+        "{name} tosses the pinecone up and catches it on its nose!",
+        "{name} hides the pinecone in the nest, then 'finds' it again."
+      ],
+      "tiredLine": "{name} is catching its breath. Let it rest a moment before the next game."
+    }
+  ],
+  "tricks": [
+    {
+      "id": "spin",
+      "label": "Spin",
+      "emoji": "🌀",
+      "fromDay": 2,
+      "learned": "New trick! Aunt June shows you how to wave your finger in a circle, and {name} chases its tail in a happy spin.",
+      "line": "{name} spins around three times and wobbles to a stop."
+    },
+    {
+      "id": "roll",
+      "label": "Roll over",
+      "emoji": "🙃",
+      "fromDay": 3,
+      "learned": "New trick! Kit taught {name} to roll over, and named it the Pancake Roll.",
+      "line": "The Pancake Roll! {name} flops over and shows its belly."
+    },
+    {
+      "id": "smoke-ring",
+      "label": "Smoke ring",
+      "emoji": "💨",
+      "fromDay": 6,
+      "learned": "New trick! After fire control, {name} can puff a perfect smoke ring (just smoke, no flame).",
+      "line": "{name} puffs a perfect little smoke ring. Ta-da!"
+    },
+    {
+      "id": "loop",
+      "label": "Loop-the-loop",
+      "emoji": "🎢",
+      "fromDay": 8,
+      "learned": "New trick! After all that flight practice, {name} can do a loop-the-loop.",
+      "line": "{name} flaps up, does a loop-the-loop, and lands with a bow."
+    }
+  ],
+  "trickCalm": 4,
+  "twists": [
+    { "day": 2, "anim": "hide", "text": "Where's {name}? The nest is empty... then a tail pokes out from under the bed. It was playing hide-and-seek!" },
+    { "day": 3, "anim": "hearts", "text": "{name} brought you a present this morning: a very shiny bottle cap. It's the best thing it owns." },
+    { "day": 4, "anim": "zoomies", "text": "The treehouse is so exciting that {name} does three laps of it before breakfast. Zoomies!" },
+    { "day": 5, "anim": "sparkles", "text": "A butterfly lands on {name}'s nose. It goes cross-eyed trying to look at it, then sneezes a tiny sparkle." },
+    { "day": 6, "anim": "hearts", "text": "{name} has learned to say good morning: a warm little huff right on your cheek." },
+    { "day": 7, "anim": "zoomies", "text": "BLINK beeps at the window, and {name} tries to play tag with it through the glass." },
+    { "day": 8, "anim": "sparkles", "text": "{name} found a feather from somewhere far away and won't stop looking at it." },
+    { "day": 9, "anim": "hearts", "text": "{name} is waiting for you at the treehouse door, wings wiggling. It knows today is special." }
+  ]
+}

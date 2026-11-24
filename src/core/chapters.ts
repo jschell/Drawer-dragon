@@ -58,6 +58,18 @@ export function inZone(power: number, c: Content): boolean {
   return power >= lo && power <= hi;
 }
 
+/**
+ * The flight game's score (docs/FUN-PLAN.md): rings flown through, out of all the rings,
+ * become the flap power that sets the distance. Every ring gives the farthest flight,
+ * missing one is still in the green zone, and missing more always goes less far.
+ * Flapping wildly only misses rings, so it never helps.
+ */
+export function flightPower(rings: number, total: number): number {
+  if (total <= 0) return 0;
+  const r = Math.max(0, Math.min(total, Math.round(rings)));
+  return Math.round(70 - (total - r) * (50 / total));
+}
+
 /** The bar-graph question: how much farther the best try went than the first. */
 export function flightAnswer(tries: number[]): number {
   return tries.length ? Math.max(...tries) - tries[0] : 0;

@@ -54,7 +54,7 @@ The dragon is a **fledgling** now: bigger, with a **2× batch** of the spice mix
 - **Evening:** the first night in the treehouse. The whole family drops by to help.
 
 ### Day 5: First Flight
-- **Morning: flight practice.** Tap **Flap!** when the wing meter is in the green zone: three tries, each one added to a **bar graph**, then "how many feet farther was your best try than your first?". Flapping wildly never goes farther.
+- **Morning: flight practice.** A flying game: tap to flap through six rings, three tries, each one added to a **bar graph**, then "how many feet farther was your best try than your first?". Flapping wildly only misses rings, so it never goes farther.
 - **Afternoon:** research how fledglings learn to fly. The posters point to a fake "rescue" website made last week; the library's **community directory** lists the real wildlife rescue. Judging both correctly adds them to the Evidence Board.
 
 ### Day 6: Fire Control
@@ -80,6 +80,17 @@ The dragon is a **fledgling** now: bigger, with a **2× batch** of the spice mix
   - **Stay on Larkspur Lane:** a proper roost on the hill; the dragon becomes the neighborhood's hidden guardian.
   - **Fly with the flock:** it isn't goodbye. A postcard arrives from the high lakes, and next summer the dragon comes home for a visit.
 - **Bond** (how well the dragon was cared for all week) is never shown as a score. It only adds small extra epilogue moments, and every player gets a warm, complete ending.
+
+### Play, music and keepsakes (all days)
+- **🧶 Play** in the morning: toys (a yarn ball, and a pinecone from Day 4) and tricks the dragon learns on story days (Spin on Day 2, the Pancake Roll on Day 3, Smoke ring on Day 6, Loop-the-loop on Day 8). The first game with a toy calms the dragon most, later ones only a little after a short rest, and each trick cheers it once a day.
+- **A morning surprise** from Day 2: hide-and-seek, a shiny present, zoomies and more, each with a little animation.
+- **The flight game** (Days 5 and 8): tap to flap through six rings. The rings flown through set the distance on the bar graph. There's no crashing.
+- **Map tracing** (Day 8): tap the route square by square before the map questions.
+- **📷 Scrapbook:** the day's photo of the sleeping dragon is kept on the device.
+- **🎶 Music:** gentle generated tunes for morning, afternoon and night, with their own button.
+- **Visit your dragon:** after the ending, free play with toys and tricks, no clock and no goals.
+
+See [`docs/FUN-PLAN.md`](docs/FUN-PLAN.md) for the plan and what's next.
 
 ### Reading and fair play (all days)
 - Feedback worth reading stays on screen until you tap **OK**, and the game waits. **📜** shows the last 10 messages.

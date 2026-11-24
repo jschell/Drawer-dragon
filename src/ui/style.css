@@ -951,7 +951,8 @@ button {
 
 /* ---------- Evening ---------- */
 
-#actions-evening {
+#actions-evening,
+#actions-free {
   position: absolute;
   bottom: max(calc(var(--u) * 0.7), env(safe-area-inset-bottom));
   left: 50%;
@@ -1616,4 +1617,84 @@ mark {
     min-height: 40px;
     padding: 6px 10px;
   }
+}
+
+/* ---------- Play (toys and tricks) ---------- */
+
+.play-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--u) * 0.6);
+  justify-content: center;
+}
+.play-grid .act {
+  min-width: max(76px, calc(var(--u) * 8));
+}
+.play-grid .act .sub {
+  font-size: calc(var(--u) * 0.8);
+  font-weight: normal;
+}
+
+/* ---------- Scrapbook ---------- */
+
+.scrapbook {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--u) * 11), 1fr));
+  gap: calc(var(--u) * 0.8);
+  margin: calc(var(--u) * 0.6) 0;
+}
+.polaroid.scrap {
+  margin: 0;
+  transform: rotate(-1.5deg);
+}
+.polaroid.scrap:nth-child(even) {
+  transform: rotate(1.5deg);
+}
+.polaroid.scrap img {
+  width: 100%;
+  height: auto;
+}
+.polaroid.scrap figcaption {
+  font-size: calc(var(--u) * 0.85);
+}
+
+/* ---------- Flight game ---------- */
+
+.flight-host {
+  width: min(100%, 560px);
+}
+.flight-canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 640 / 300;
+  border-radius: calc(var(--u) * 1);
+  border: 3px solid var(--paper-edge);
+  touch-action: none;
+  cursor: pointer;
+}
+@media (max-height: 420px) {
+  .flight-host {
+    width: min(100%, 440px);
+  }
+}
+
+/* Route tracing on the map */
+.map button.cell {
+  background: transparent;
+  border: 1px solid #d8c49a;
+  padding: 0;
+  font: inherit;
+  font-size: calc(var(--u) * 1.4);
+  cursor: pointer;
+}
+.map .cell.route {
+  background: #ffe6a8;
+}
+.map .cell .dot {
+  display: inline-block;
+  width: 40%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--berry);
 }

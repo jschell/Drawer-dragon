@@ -5,7 +5,8 @@
  */
 import { sfx } from '../audio/sfx';
 import { content, dayDef } from '../core/content';
-import { boardItems, flightAnswer, inZone } from '../core/chapters';
+import { boardItems, flightAnswer, flightPower } from '../core/chapters';
+import { mountFlightGame } from './flightGame';
 import type { Action, GameEvent, GameState, TaskState } from '../core/state';
 
 const $ = <T extends HTMLElement = HTMLElement>(sel: string) => document.querySelector(sel) as T;
@@ -24,11 +25,11 @@ export interface ChapterHost {
   askReading(panelId: string, paragraphs: string[], then: () => void): void;
   readPipButton(panelId: string): string;
   bindReadPip(panelId: string): void;
+  /** Pauses the room scene's drawing while a mini-game has the screen (smoother on older devices). */
+  pauseScene(paused: boolean): void;
 }
 
 export class ChapterScreens {
-  private flapTimer = 0;
-
   constructor(private h: ChapterHost) {}
 
   private get s() {
@@ -154,12 +155,13 @@ export class ChapterScreens {
     draw();
   }
 
-  /** Flight practice (morning) and the hill flight (evening): tap Flap! when the meter is green. */
+  /** Flight practice (morning) and the hill flight (evening): fly through the rings. */
   showFlight(slot: 'morning' | 'evening') {
     const f = A.flight;
     const hill = slot === 'evening';
     let question = false;
     let lookAgain = false;
+    let flying = false;
     const wrong = new Set<string>();
     const task = (): TaskState => (hill ? this.s.evening.special : this.s.activity);
     const draw = () => {
@@ -172,39 +174,54 @@ export class ChapterScreens {
       const done = t.tries.length >= f.tries;
       const ans = flightAnswer(t.tries);
       const choices = [...new Set([ans, ans + 5, Math.max(...t.tries, 0)])].sort((a, b) => a - b);
+      const intro = hill
+        ? `The warm wind is blowing over Larkspur Hill. BLINK flies lookout, and the Keeper Circle cheers ${this.name} on. Tap to flap and fly through the rings!`
+        : this.h.fill(f.intro);
       this.h.openPanel(`
         <h2>🪽 ${hill ? 'Flight over Larkspur Hill' : esc(f.title)}</h2>
-        <p>${hill ? `The warm wind is blowing. BLINK flies lookout, and the Keeper Circle cheers ${this.name} on. Tap <b>Flap!</b> when the meter is in the green zone.` : this.h.fill(f.intro)}</p>
+        <p>${intro}</p>
         <div class="flight-wrap">
-          <div class="flap-meter" aria-hidden="true"><div class="zone" style="left:${f.zone[0]}%;width:${f.zone[1] - f.zone[0]}%"></div><div class="needle"></div></div>
-          <div class="bars" role="img" aria-label="Bar graph of flight distances">${bars}</div>
+          ${flying ? '<div class="flight-host"></div>' : `<div class="bars" role="img" aria-label="Bar graph of flight distances">${bars}</div>`}
         </div>
         ${
-          !done
-            ? `<div class="row"><button class="btn big" data-x="flap">🪽 Flap!</button></div>`
-            : hill
-              ? ''
-              : question
-                ? `<p><b>${esc(f.question)}</b></p>
-                   ${lookAgain ? `<p class="hint look-again">Look at the graph: best try ${Math.max(...t.tries)} ft − first try ${t.tries[0]} ft = ?</p>` : ''}
-                   <div class="row">${choices.map((c) => `<button class="choice ${wrong.has(String(c)) ? 'wrong' : ''}" data-a="${c}" ${wrong.has(String(c)) ? 'disabled' : ''}>${c} feet</button>`).join('')}</div>`
-                : `<div class="row"><button class="btn big" data-x="graph">Look at the graph ➜</button></div>`
+          flying
+            ? '<p class="sub">Tap the picture (or press Space) to flap.</p>'
+            : !done
+              ? `<div class="row"><button class="btn big" data-x="fly">🪽 Fly! (try ${t.tries.length + 1} of ${f.tries})</button></div>`
+              : hill
+                ? ''
+                : question
+                  ? `<p><b>${esc(f.question)}</b></p>
+                     ${lookAgain ? `<p class="hint look-again">Look at the graph: best try ${Math.max(...t.tries)} ft − first try ${t.tries[0]} ft = ?</p>` : ''}
+                     <div class="row">${choices.map((c) => `<button class="choice ${wrong.has(String(c)) ? 'wrong' : ''}" data-a="${c}" ${wrong.has(String(c)) ? 'disabled' : ''}>${c} feet</button>`).join('')}</div>`
+                  : `<div class="row"><button class="btn big" data-x="graph">Look at the graph ➜</button></div>`
         }`);
-      this.animateMeter();
-      this.on('[data-x="flap"]', () => {
-        const power = this.power();
-        const evs = this.h.dispatch({ type: 'flap', power });
-        const r = evs.find((e) => e.type === 'flapped');
-        if (r?.type === 'flapped') {
-          sfx.play(r.inZone ? 'trill' : 'chirp');
-          this.h.toast(r.inZone ? `Whoosh! A strong flap: ${r.distance} feet!` : power > f.zone[1] ? `Too hard! ${this.name} wobbles and lands after ${r.distance} feet.` : `A small flap: ${r.distance} feet. Try for the green zone!`);
-        }
-        if (hill && task().done) {
-          this.stopMeter();
-          this.h.closePanel();
-          this.h.card(`${this.name} soars over Larkspur Hill, higher than ever, then glides back to the treehouse. Everyone cheers!`);
-          return;
-        }
+      const host = document.querySelector<HTMLElement>('#panel .flight-host');
+      if (host) {
+        this.h.pauseScene(true);
+        mountFlightGame(host, {
+          onStop: () => this.h.pauseScene(false),
+          night: hill,
+          seed: this.s.day * 31 + t.tries.length * 7 + 1,
+          onLand: ({ rings, total }) => {
+            const evs = this.h.dispatch({ type: 'flap', power: flightPower(rings, total) });
+            const r = evs.find((e) => e.type === 'flapped');
+            if (r?.type === 'flapped') {
+              sfx.play(r.inZone ? 'trill' : 'chirp');
+              this.h.toast(rings === total ? `Every ring! ${this.name} glides ${r.distance} feet! 🌟` : `${rings} of ${total} rings: ${this.name} glides ${r.distance} feet.`);
+            }
+            flying = false;
+            if (hill && task().done) {
+              this.h.closePanel();
+              this.h.card(`${this.name} soars over Larkspur Hill, higher than ever, then glides back to the treehouse. Everyone cheers!`);
+              return;
+            }
+            setTimeout(draw, 600);
+          },
+        });
+      }
+      this.on('[data-x="fly"]', () => {
+        flying = true;
         draw();
       });
       this.on('[data-x="graph"]', () => {
@@ -216,7 +233,6 @@ export class ChapterScreens {
         const r = evs.find((e) => e.type === 'answered');
         if (r?.type === 'answered' && r.correct) {
           sfx.play('sparkle');
-          this.stopMeter();
           this.h.closePanel();
           this.h.card(`Right: ${Math.max(...task().tries)} − ${task().tries[0]} = ${ans} feet. ${this.h.fill(f.after)}`);
         } else {
@@ -228,34 +244,6 @@ export class ChapterScreens {
       });
     };
     draw();
-  }
-
-  private meterStart = 0;
-
-  /** The needle sweeps slowly back and forth (slower with reduced motion). */
-  private power(): number {
-    const period = matchMedia('(prefers-reduced-motion: reduce)').matches ? 4200 : 2800;
-    const ph = ((performance.now() - this.meterStart) % period) / period;
-    return Math.round(100 * (ph < 0.5 ? ph * 2 : 2 - ph * 2));
-  }
-
-  private animateMeter() {
-    if (!this.meterStart) this.meterStart = performance.now();
-    cancelAnimationFrame(this.flapTimer);
-    const tick = () => {
-      const n = document.querySelector<HTMLElement>('#panel .needle');
-      if (!n) return;
-      const p = this.power();
-      n.style.left = `${p}%`;
-      n.classList.toggle('in', inZone(p, content));
-      this.flapTimer = requestAnimationFrame(tick);
-    };
-    this.flapTimer = requestAnimationFrame(tick);
-  }
-
-  private stopMeter() {
-    cancelAnimationFrame(this.flapTimer);
-    this.meterStart = 0;
   }
 
   private showFire() {
@@ -483,28 +471,77 @@ export class ChapterScreens {
     const m = A.map;
     let said = '';
     const wrong = new Set<string>();
+    // First, trace the route with a finger: one square at a time, from home to the lakes.
+    let route: [number, number][] = [[m.home[0], m.home[1]]];
+    let routeDone = false;
+    const shortest = Math.abs(m.lakes[0] - m.home[0]) + Math.abs(m.lakes[1] - m.home[1]);
     const draw = () => {
       const t = this.s.task;
       const q = m.questions.find((x) => !t.correct.includes(x.id));
       if (!q) return;
+      const tracing = !routeDone;
+      const onRoute = (x: number, y: number) => route.findIndex(([rx, ry]) => rx === x && ry === y);
       const cells = Array.from({ length: m.rows * m.cols }, (_, i) => {
         const x = i % m.cols;
         const y = Math.floor(i / m.cols);
         const home = x === m.home[0] && y === m.home[1];
         const lakes = x === m.lakes[0] && y === m.lakes[1];
-        return `<div class="cell">${home ? '🏠' : lakes ? '🏔️' : ''}</div>`;
+        const step = onRoute(x, y);
+        const mark = home ? '🏠' : lakes ? '🏔️' : step > 0 ? '<span class="dot"></span>' : '';
+        const cls = `cell ${step >= 0 ? 'route' : ''}`;
+        return tracing ? `<button class="${cls}" data-cell="${x},${y}" aria-label="Square ${x + 1} across, ${y + 1} down">${mark}</button>` : `<div class="${cls}">${mark}</div>`;
       }).join('');
+      const moves = route.length - 1;
       this.h.openPanel(`
         <h2>🗺️ ${esc(m.title)}</h2>
         <p>${this.h.fill(m.intro)}</p>
         <div class="map-wrap">
-          <div class="map" style="grid-template-columns:repeat(${m.cols},1fr);grid-template-rows:repeat(${m.rows},1fr)" role="img" aria-label="A map: home is near the bottom left, the high lakes are up and to the right">${cells}</div>
+          <div class="map" style="grid-template-columns:repeat(${m.cols},1fr);grid-template-rows:repeat(${m.rows},1fr)" ${tracing ? '' : 'role="img"'} aria-label="A map: home is near the bottom left, the high lakes are up and to the right">${cells}</div>
           <div class="compass" aria-hidden="true">N<br/>W ✛ E<br/>S</div>
         </div>
         <p class="sub">🏠 Larkspur Lane · 🏔️ The high lakes · each square is 10 miles</p>
         ${said ? `<p class="hint">${said}</p>` : ''}
-        <p class="riddle">${this.h.fill(q.question)}</p>
-        <div class="row">${q.choices.map((c) => `<button class="choice ${wrong.has(q.id + c) ? 'wrong' : ''}" data-m="${esc(c)}" ${wrong.has(q.id + c) ? 'disabled' : ''}>${esc(c)}</button>`).join('')}</div>`);
+        ${
+          tracing
+            ? `<p class="riddle">Trace ${this.name}'s route: tap the squares one by one, from 🏠 to 🏔️.</p>
+               <p><b>${moves} square${moves === 1 ? '' : 's'} · ${moves * 10} miles</b></p>
+               <div class="row"><button class="btn ghost" data-x="undo" ${moves ? '' : 'disabled'}>Undo</button><button class="btn ghost" data-x="clear" ${moves ? '' : 'disabled'}>Start over</button></div>`
+            : `<p class="riddle">${this.h.fill(q.question)}</p>
+               <div class="row">${q.choices.map((c) => `<button class="choice ${wrong.has(q.id + c) ? 'wrong' : ''}" data-m="${esc(c)}" ${wrong.has(q.id + c) ? 'disabled' : ''}>${esc(c)}</button>`).join('')}</div>`
+        }`);
+      this.on('[data-cell]', (b) => {
+        const [x, y] = b.dataset.cell!.split(',').map(Number);
+        const [lx, ly] = route[route.length - 1];
+        const at = onRoute(x, y);
+        if (at === route.length - 1 && at > 0) {
+          route.pop(); // tap the last square again to take it back
+        } else if (at < 0 && Math.abs(x - lx) + Math.abs(y - ly) === 1) {
+          route.push([x, y]);
+          sfx.play('tap');
+        } else {
+          said = 'Tap a square right next to the last one (up, down, left or right).';
+          return draw();
+        }
+        said = '';
+        if (x === m.lakes[0] && y === m.lakes[1]) {
+          routeDone = true;
+          sfx.play('sparkle');
+          const n = route.length - 1;
+          said =
+            n === shortest
+              ? `🗺️ You made it in ${n} squares: ${n * 10} miles. That's the shortest way!`
+              : `🗺️ You made it in ${n} squares: ${n * 10} miles. Can you spot a shorter way? (The shortest is ${shortest} squares.)`;
+        }
+        draw();
+      });
+      this.on('[data-x="undo"]', () => {
+        if (route.length > 1) route.pop();
+        draw();
+      });
+      this.on('[data-x="clear"]', () => {
+        route = [[m.home[0], m.home[1]]];
+        draw();
+      });
       this.on('[data-m]', (b) => {
         const evs = this.h.dispatch({ type: 'answer', qid: q.id, value: b.dataset.m! });
         const r = evs.find((e) => e.type === 'answered');

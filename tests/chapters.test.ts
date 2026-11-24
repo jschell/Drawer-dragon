@@ -396,3 +396,16 @@ describe('old Chapter 1 saves', () => {
     delete (globalThis as { localStorage?: unknown }).localStorage;
   });
 });
+
+describe('the flight game score', () => {
+  it('more rings always flies farther, all but one ring is still green-zone, and the best needs every ring', async () => {
+    const { flightPower, inZone } = await import('../src/core/chapters');
+    const total = 6;
+    const d = Array.from({ length: total + 1 }, (_, r) => flightDistance(flightPower(r, total), content));
+    for (let r = 1; r <= total; r++) expect(d[r]).toBeGreaterThan(d[r - 1]);
+    expect(inZone(flightPower(total, total), content)).toBe(true);
+    expect(inZone(flightPower(total - 1, total), content)).toBe(true);
+    expect(inZone(flightPower(total - 2, total), content)).toBe(false);
+    expect(flightPower(99, total)).toBe(flightPower(total, total)); // can't score more than every ring
+  });
+});

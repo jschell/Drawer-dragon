@@ -70,7 +70,7 @@
   },
   "flight": {
     "title": "Flight practice",
-    "intro": "Dawn in the backyard. The fence and hedge hide {name} from the street. Tap Flap! when the wing meter is in the green zone. You get three tries; each one goes on the bar graph.",
+    "intro": "Dawn in the backyard. The fence and hedge hide {name} from the street. Tap to flap and fly through the rings: the more rings, the farther {name} glides. You get three tries, and each one goes on the bar graph.",
     "tries": 3,
     "zone": [
       60,

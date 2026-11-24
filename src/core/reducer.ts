@@ -3,6 +3,7 @@ import { dayDef, eveningFor } from './content';
 import { stepAfternoon, stepEvening, tickEvening } from './day';
 import { stepDays } from './days';
 import { stepChapters } from './chapters';
+import { stepPlay } from './play';
 import type { Action, GameEvent, GameState, NoiseKind, SpiceOutcome, StepResult } from './state';
 
 /** Tuning constants for the morning care prototype. */
@@ -49,7 +50,7 @@ export function isReady(s: GameState): boolean {
 
 /** Calming actions (hum, petting) work in the morning and in the evening. */
 function canCalm(s: GameState): boolean {
-  return (s.part === 'morning' && s.phase === 'care') || (s.part === 'evening' && !s.evening.over && !s.evening.awaiting);
+  return (s.part === 'morning' && s.phase === 'care') || (s.part === 'evening' && !s.evening.over && !s.evening.awaiting) || s.part === 'free';
 }
 
 export function plateMissing(s: GameState, c: Content = defaultContent): Nutrient[] {
@@ -90,6 +91,10 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
         const dt = Math.min(action.dt, 1);
         s.t += dt; // keeps hum cooldowns running
         tickEvening(s, dt, events, c);
+        break;
+      }
+      if (s.part === 'free') {
+        s.t += Math.min(action.dt, 1); // only the toy rest and hum timers run
         break;
       }
       if (s.part !== 'morning' || s.phase !== 'care') break;
@@ -241,7 +246,7 @@ export function step(prev: GameState, action: Action, c: Content = defaultConten
       break;
     }
     default:
-      if (!stepAfternoon(s, action, events, c) && !stepEvening(s, action, events, c) && !stepChapters(s, action, events, c)) stepDays(s, action, events, c);
+      if (!stepAfternoon(s, action, events, c) && !stepEvening(s, action, events, c) && !stepChapters(s, action, events, c) && !stepPlay(s, action, events, c)) stepDays(s, action, events, c);
   }
 
   const wasReady = isReady(prev);

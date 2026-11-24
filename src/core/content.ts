@@ -10,6 +10,7 @@ import daysJson from '../../content/days.json';
 import readingJson from '../../content/reading.json';
 import activitiesJson from '../../content/activities.json';
 import namesJson from '../../content/names.json';
+import playJson from '../../content/play.json';
 
 export const NUTRIENTS = ['protein', 'greens', 'minerals'] as const;
 export type Nutrient = (typeof NUTRIENTS)[number];
@@ -246,6 +247,33 @@ const NamesSchema = z
   .refine((n) => n.names.includes(n.default), { message: 'The default name must be in the list' })
   .refine((n) => !n.names.some((x) => STORY_NAMES.includes(x)), { message: "A dragon name can't be a story character's name" });
 
+export const TWIST_ANIMS = ['hide', 'hearts', 'zoomies', 'sparkles'] as const;
+
+/** Toys, tricks and each morning's little surprise (docs/FUN-PLAN.md). */
+const PlaySchema = z.object({
+  toys: z
+    .array(
+      z.object({
+        id: z.string(),
+        label: z.string(),
+        emoji: z.string(),
+        fromDay: z.number().int().positive().default(1),
+        firstCalm: z.number().positive(),
+        againCalm: z.number().nonnegative(),
+        rest: z.number().positive(),
+        lines: z.array(z.string()).min(1),
+        tiredLine: z.string(),
+      }),
+    )
+    .min(1)
+    // Fair play: playing again is always worth less than the first game of the day.
+    .refine((ts) => ts.every((t) => t.againCalm < t.firstCalm), { message: 'Playing again must calm less than the first play' }),
+  tricks: z.array(z.object({ id: z.string(), label: z.string(), emoji: z.string(), fromDay: z.number().int().positive(), learned: z.string(), line: z.string() })).min(1),
+  trickCalm: z.number().nonnegative(),
+  twists: z.array(z.object({ day: z.number().int().positive(), anim: z.enum(TWIST_ANIMS), text: z.string() })),
+});
+export type PlayDef = z.infer<typeof PlaySchema>;
+
 export const ACTIVITIES = ['insulation', 'flight', 'fire', 'letter', 'favorites'] as const;
 export type ActivityKind = (typeof ACTIVITIES)[number];
 export const AFTERNOONS = ['research', 'store', 'clues', 'board', 'map', 'farewell'] as const;
@@ -457,6 +485,7 @@ export interface Content {
   reading: ReadingDef;
   activities: ActivitiesDef;
   names: z.infer<typeof NamesSchema>;
+  play: PlayDef;
 }
 
 /** The text of a story panel, as written in the content files ({name} not filled in). */
@@ -568,6 +597,7 @@ export function parseContent(raw: { items: unknown; recipes: unknown; thoughts: 
     reading: ReadingSchema.parse(readingJson),
     activities,
     names: NamesSchema.parse(namesJson),
+    play: PlaySchema.parse(playJson),
   };
 }
 

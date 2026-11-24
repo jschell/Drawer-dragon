@@ -33,6 +33,24 @@ async function nextMorning(page: Page) {
   await okCards(page);
 }
 
+/** One try in the flight game: tap to flap until the dragon lands. */
+async function flyTry(page: Page, where: 'activity' | 'special', n: number) {
+  await page.locator('[data-x="fly"]').click();
+  const canvas = page.locator('#panel .flight-canvas');
+  await expect(canvas).toBeVisible();
+  for (let i = 0; i < 200; i++) {
+    const s = await state(page);
+    const tries: number[] = where === 'activity' ? s.activity.tries : s.evening.special.tries;
+    if (tries.length >= n) break;
+    // A tap on the game picture, sent straight to it (a toast may be showing on top).
+    if (await canvas.count()) await canvas.dispatchEvent('pointerdown').catch(() => {});
+    await page.waitForTimeout(250);
+  }
+  const s = await state(page);
+  expect((where === 'activity' ? s.activity.tries : s.evening.special.tries).length).toBe(n);
+  await page.waitForTimeout(700); // the panel redraws with the new bar
+}
+
 /** Skips morning care (tested elsewhere) and opens the afternoon. */
 async function toAfternoon(page: Page) {
   await page.evaluate(() => ((document.querySelector('#overlay') as HTMLElement).hidden = true));
@@ -41,8 +59,11 @@ async function toAfternoon(page: Page) {
 }
 
 test('Chapters 2–3: treehouse, flight, fire, Crane, the Evidence Board, the map and the choice', async ({ page }) => {
-  test.setTimeout(240_000);
-  await page.goto('/');
+  // Plays Days 4–9 through the real screens, including six flight-game tries: on
+  // CI machines with no GPU that takes several minutes.
+  test.setTimeout(360_000);
+  // ?speed=4 makes each flight-game try take a few seconds instead of ten.
+  await page.goto('/?speed=4');
   await page.getByRole('button', { name: 'Tap to wake the egg' }).click();
   for (let i = 0; i < 3; i++) await go(page, { type: 'tapEgg' });
   await pickName(page, 'Pip');
@@ -94,10 +115,7 @@ test('Chapters 2–3: treehouse, flight, fire, Crane, the Evidence Board, the ma
   // ---- Day 5: flight practice with a bar graph ----
   await nextMorning(page);
   await expect(page.locator('#panel h2')).toContainText('Flight practice');
-  for (let i = 0; i < 3; i++) {
-    await page.locator('[data-x="flap"]').click();
-    await page.waitForTimeout(350);
-  }
+  for (let i = 1; i <= 3; i++) await flyTry(page, 'activity', i);
   await page.locator('[data-x="graph"]').click();
   await shot(page, '05-flight');
   const tries: number[] = (await state(page)).activity.tries;
@@ -161,6 +179,11 @@ test('Chapters 2–3: treehouse, flight, fire, Crane, the Evidence Board, the ma
   await okCards(page);
   await toAfternoon(page);
   await expect(page.locator('#panel h2')).toContainText('Mapping');
+  // Trace the route square by square: up three, then across three.
+  await page.locator('[data-cell="3,3"]').click();
+  await expect(page.locator('#panel .hint')).toContainText('right next to');
+  for (const c of ['1,3', '1,2', '1,1', '2,1', '3,1', '4,1']) await page.locator(`[data-cell="${c}"]`).click();
+  await expect(page.locator('#panel .hint')).toContainText('shortest way');
   await page.locator('[data-m="South-west"]').click();
   await expect(page.locator('#panel .hint')).toContainText('north');
   await shot(page, '11-map');
@@ -171,10 +194,7 @@ test('Chapters 2–3: treehouse, flight, fire, Crane, the Evidence Board, the ma
   await page.locator('#panel [data-x="go"]').click();
   await page.evaluate(finishEvening('quiet'));
   await expect(page.locator('#panel h2')).toContainText('Larkspur Hill');
-  for (let i = 0; i < 3; i++) {
-    await page.locator('[data-x="flap"]').click();
-    await page.waitForTimeout(300);
-  }
+  for (let i = 1; i <= 3; i++) await flyTry(page, 'special', i);
   await okCards(page);
 
   // ---- Day 9: favorites, farewells, the choice and the epilogue ----

@@ -339,6 +339,13 @@ export const strawFront = art(
    ${Array.from({ length: 9 }, (_, i) => `<path d="M${22 + i * 22},${30 + (i % 2) * 8} l16,-8" stroke="#B8902E" stroke-width="4" stroke-linecap="round"/>`).join('')}`,
 );
 
+/** The whole dragon as one picture (parts share one frame), for the flight game. */
+export function dragonWhole(): Art {
+  const p = dragonParts as Record<string, Art>;
+  const inner = ['tail', 'wingL', 'wingR', 'body', 'head', 'eyes', 'mouthSmile'].map((k) => p[k].svg).join('');
+  return art(300, 300, inner);
+}
+
 export const blanketArt = art(
   240,
   120,

@@ -1,8 +1,11 @@
 import { dataUri, foodArt, slipperArt, sockArt } from '../art/svg';
 import { sfx } from '../audio/sfx';
+import { music } from '../audio/music';
 import { archiveFor, chapterFor, content, dayDef, eveningFor, lastDay, type Nutrient, type ThoughtDef } from '../core/content';
 import { bondExtras, morningActivityDone } from '../core/chapters';
 import { ChapterScreens } from './chapters';
+import { toysFor, tricksKnown, tricksLearnedToday, twistFor } from '../core/play';
+import { addScrapPage, clearScrapbook, loadScrapbook } from './scrapbook';
 import { attentionWord, visitorDef } from '../core/day';
 import { classifyMix, isReady, step, TUNING } from '../core/reducer';
 import { clearSave, loadPref, savePref, writeSave } from '../core/save';
@@ -40,6 +43,7 @@ export class Hud {
   constructor(initial: GameState) {
     this.state = initial;
     sfx.enabled = loadPref('sound', true);
+    music.setEnabled(loadPref('music', true));
     this.research = new ResearchScreen(this);
     this.storeScreen = new StoreScreen(this);
     this.chapters = new ChapterScreens(this);
@@ -54,7 +58,7 @@ export class Hud {
     const speed = Math.min(20, Math.max(1, Number(new URLSearchParams(location.search).get('speed')) || 1));
     setInterval(() => {
       const s = this.state;
-      const live = (s.part === 'morning' && s.phase === 'care') || (s.part === 'evening' && !s.evening.over);
+      const live = (s.part === 'morning' && s.phase === 'care') || (s.part === 'evening' && !s.evening.over) || s.part === 'free';
       if (!this.paused && !this.cardOpen && !document.hidden && live) this.dispatch({ type: 'tick', dt: 1 });
     }, 1000 / speed);
     window.addEventListener('resize', () => this.placeBubble());
@@ -291,6 +295,24 @@ export class Hud {
         this.card(`${this.fill(ss.firstFeedback[e.order[0]])} ${this.fill(ss.after)}`, kitNext ? () => this.showVisitor('kit') : undefined);
         break;
       }
+      case 'toy': {
+        const toy = content.play.toys.find((t) => t.id === e.id)!;
+        sfx.play(e.first ? 'trill' : 'chirp');
+        this.toast(`${toy.emoji} ${this.fill(toy.lines[e.line])}`);
+        break;
+      }
+      case 'toy-rest': {
+        const toy = content.play.toys.find((t) => t.id === e.id)!;
+        sfx.play('purr');
+        this.toast(this.fill(toy.tiredLine));
+        break;
+      }
+      case 'trick': {
+        const t = content.play.tricks.find((x) => x.id === e.id)!;
+        sfx.play(e.first ? 'sparkle' : 'chirp');
+        this.toast(`${t.emoji} ${this.fill(t.line)}`);
+        break;
+      }
       case 'evening-over':
         setTimeout(() => this.showBedtime(), 1200);
         break;
@@ -316,6 +338,9 @@ export class Hud {
     $('#meters').hidden = !caring && !evening;
     $('#actions').hidden = !caring;
     $('#actions-evening').hidden = !evening;
+    $('#actions-free').hidden = s.part !== 'free';
+    // The music follows the time of day; it starts once a tap has unlocked audio.
+    music.setMood(s.phase === 'egg' && s.part === 'morning' ? null : s.part === 'afternoon' ? 'afternoon' : s.part === 'evening' || s.part === 'end' ? 'night' : 'morning');
     if (!caring) $('#tray').hidden = true;
     if (caring) this.renderMeters();
     if (evening) this.renderEvening();
@@ -544,7 +569,12 @@ export class Hud {
       <p>You found a warm, speckled stone by the creek...<br/>and now it's wiggling!</p>
       <div class="row">
         ${hasSave ? '<button class="btn big" data-go="continue">Continue</button><button class="btn ghost" data-go="new">New game</button>' : '<button class="btn big" data-go="new">Tap to wake the egg</button>'}
+        ${hasSave && loadScrapbook().length ? '<button class="btn ghost" data-x="scrapbook">📷 Scrapbook</button>' : ''}
       </div>`);
+    $('#panel [data-x="scrapbook"]')?.addEventListener('click', () => {
+      sfx.unlock();
+      this.showScrapbook(() => this.showTitle(hasSave));
+    });
     $('#panel').querySelectorAll<HTMLButtonElement>('[data-go]').forEach((b) =>
       b.addEventListener('click', () => {
         sfx.unlock();
@@ -570,6 +600,7 @@ export class Hud {
 
   private newGame() {
     clearSave();
+    clearScrapbook();
     const fresh = initialState((Date.now() >>> 0) ^ 0x9e3779b9);
     this.state = fresh;
     this.scene.scene.restart(this.scene.bootData);
@@ -666,6 +697,13 @@ export class Hud {
       p.querySelector('[data-x="later"]')!.addEventListener('click', () => this.closePanel());
     };
     draw();
+  }
+
+  pauseScene(paused: boolean) {
+    const loop = this.scene?.game?.loop;
+    if (!loop) return;
+    if (paused) loop.sleep();
+    else loop.wake();
   }
 
   speakText(text: string) {
@@ -1222,12 +1260,15 @@ export class Hud {
       <div class="row">
         ${chapterEnd ? '<button class="btn big" data-x="end">What happens next? ➜</button>' : `<button class="btn big" data-x="next">Good morning, Day ${s.day + 1} ➜</button>`}
         <button class="btn big ghost" data-x="more">📖 Find out more</button>
+        <button class="btn ghost" data-x="scrapbook">📷 Scrapbook</button>
       </div>`);
     sfx.play('trill');
+    if (shot) void addScrapPage({ day: s.day, title: this.today.title, name: s.dragon.name, img: shot });
     $('#panel [data-x="more"]').addEventListener('click', () => {
       sfx.play('tap');
       showFindOutMore($('#panel'), () => void this.showDaySummary());
     });
+    $('#panel [data-x="scrapbook"]').addEventListener('click', () => this.showScrapbook(() => void this.showDaySummary()));
     $('#panel [data-x="next"]')?.addEventListener('click', () => this.goToNextDay());
     $('#panel [data-x="end"]')?.addEventListener('click', () => {
       if (s.day >= lastDay(content)) this.chapters.epilogue(bondExtras(this.state, content), () => this.showChapterSummary());
@@ -1240,6 +1281,96 @@ export class Hud {
     return labels[this.today.morning.activity!];
   }
 
+  /** Each morning's little surprise, then any trick learned today, then the day's lesson. */
+  private morningExtras(then: () => void) {
+    const steps: (() => void)[] = [];
+    const twist = twistFor(this.state.day, content);
+    if (twist) {
+      steps.push(() => {
+        this.scene.twist(twist.anim);
+        this.card(`🌅 ${this.fill(twist.text)}`, next);
+      });
+    }
+    for (const t of tricksLearnedToday(this.state, content)) {
+      steps.push(() => this.card(`${t.emoji} ${this.fill(t.learned)} <span class="sub">Try it with the 🧶 Play button.</span>`, next));
+    }
+    let i = 0;
+    function next() {
+      const step = steps[i++];
+      if (step) step();
+      else then();
+    }
+    next();
+  }
+
+  /** Toys and tricks. The panel closes so the player can watch the dragon. */
+  private showPlay() {
+    const toys = toysFor(this.state, content);
+    const tricks = tricksKnown(this.state, content);
+    this.openPanel(`
+      <h2>🧶 Play with ${this.name}</h2>
+      <p><b>Toys</b></p>
+      <div class="play-grid">${toys.map((t) => `<button class="act" data-toy="${t.id}"><span class="emo">${t.emoji}</span><span>${esc(t.label)}</span></button>`).join('')}</div>
+      <p><b>Tricks</b></p>
+      ${
+        tricks.length
+          ? `<div class="play-grid">${tricks
+              .map((t) => `<button class="act" data-trick="${t.id}"><span class="emo">${t.emoji}</span><span>${esc(t.label)}</span>${this.state.play.tricksToday.includes(t.id) ? '<span class="sub">done today ✓</span>' : ''}</button>`)
+              .join('')}</div>`
+          : `<p class="sub">${this.name} will learn its first trick tomorrow.</p>`
+      }
+      <div class="row"><button class="btn ghost" data-x="close">Close</button></div>`);
+    const p = $('#panel');
+    p.querySelectorAll<HTMLButtonElement>('[data-toy]').forEach((b) =>
+      b.addEventListener('click', () => {
+        this.closePanel();
+        this.dispatch({ type: 'toy', id: b.dataset.toy! });
+      }),
+    );
+    p.querySelectorAll<HTMLButtonElement>('[data-trick]').forEach((b) =>
+      b.addEventListener('click', () => {
+        this.closePanel();
+        this.dispatch({ type: 'trick', id: b.dataset.trick! });
+      }),
+    );
+    p.querySelector('[data-x="close"]')!.addEventListener('click', () => this.closePanel());
+  }
+
+  /** The week's photos, kept on this device. */
+  private showScrapbook(back: () => void) {
+    const pages = loadScrapbook();
+    this.openPanel(`
+      <h2>📷 ${pages.length ? `${esc(pages[0].name)}'s scrapbook` : 'Scrapbook'}</h2>
+      ${
+        pages.length
+          ? `<div class="scrapbook">${pages
+              .map((p) => `<figure class="polaroid scrap"><img src="${p.img}" alt="${esc(p.name)} asleep on Day ${p.day}" /><figcaption>Day ${p.day}: ${esc(p.title)}</figcaption></figure>`)
+              .join('')}</div>`
+          : '<p>No photos yet. A new photo is added at the end of each day.</p>'
+      }
+      <p class="sub">Photos stay on this device.</p>
+      <div class="row"><button class="btn" data-x="back">Back</button></div>`);
+    $('#panel [data-x="back"]').addEventListener('click', () => {
+      sfx.play('tap');
+      back();
+    });
+  }
+
+  /** After the ending: time with the dragon, with no clock and no goals. */
+  private startFreePlay() {
+    sfx.play('trill');
+    this.closePanel();
+    this.clearCards();
+    this.dispatch({ type: 'freePlay' });
+    this.scene.scene.restart(this.scene.bootData);
+    this.paused = false;
+    const line =
+      this.state.world.ending === 'fly'
+        ? `It's next summer, and ${this.name} has flown home for a visit! Play, do tricks, and just enjoy being together.`
+        : `A sunny afternoon in the treehouse with ${this.name}. Play, do tricks, and just enjoy being together.`;
+    setTimeout(() => this.card(line), 700);
+  }
+
   private goToNextDay() {
     sfx.play('tap');
     this.closePanel();
@@ -1247,7 +1378,7 @@ export class Hud {
     this.dispatch({ type: 'nextDay' });
     this.scene.scene.restart(this.scene.bootData); // back to daytime, dragon on the rug
     this.paused = false;
-    setTimeout(() => this.card(this.fill(this.today.morning.intro), () => this.chapters.morningStart()), 700);
+    setTimeout(() => this.card(this.fill(this.today.morning.intro), () => this.morningExtras(() => this.chapters.morningStart())), 700);
   }
 
   private showCliffhanger() {
@@ -1293,14 +1424,18 @@ export class Hud {
       <div>${s.stickers.map((x) => `<span class="sticker">⭐ ${esc(x)}</span>`).join('')}</div>
       ${final ? `<p class="sub">Thanks for being such a wonderful dragon keeper. Want more dragon stories? Tap Find out more for the books that inspired this game.</p>` : ''}
       <div class="row">
-        ${next && !final ? `<button class="btn big" data-x="next">Start Chapter ${next.n}: ${esc(next.title)} ➜</button>` : '<button class="btn big" data-x="again">Play again</button>'}
+        ${next && !final ? `<button class="btn big" data-x="next">Start Chapter ${next.n}: ${esc(next.title)} ➜</button>` : `<button class="btn big" data-x="visit">🐉 Visit ${this.name}</button>`}
         <button class="btn big ghost" data-x="more">📖 Find out more</button>
+        <button class="btn ghost" data-x="scrapbook">📷 Scrapbook</button>
+        ${final ? '<button class="btn ghost" data-x="again">Play again</button>' : ''}
       </div>`);
     sfx.play('trill');
     $('#panel [data-x="more"]').addEventListener('click', () => {
       sfx.play('tap');
       showFindOutMore($('#panel'), () => this.showChapterSummary());
     });
+    $('#panel [data-x="scrapbook"]').addEventListener('click', () => this.showScrapbook(() => this.showChapterSummary()));
+    $('#panel [data-x="visit"]')?.addEventListener('click', () => this.startFreePlay());
     $('#panel [data-x="next"]')?.addEventListener('click', () => this.goToNextDay());
     $('#panel [data-x="again"]')?.addEventListener('click', () => {
       this.newGame();
@@ -1321,6 +1456,7 @@ export class Hud {
         else if (act === 'spice') this.showSpice();
         else if (act === 'hum') this.dispatch({ type: 'hum' });
         else if (act === 'sock') this.dispatch({ type: 'sock' });
+        else if (act === 'play') this.showPlay();
         else if (act === 'finish') {
           if (!morningActivityDone(this.state, content)) this.chapters.morningStart();
           else if (isReady(this.state)) void this.finish();
@@ -1342,6 +1478,17 @@ export class Hud {
         }
       }),
     );
+    document.querySelectorAll<HTMLButtonElement>('[data-free]').forEach((b) =>
+      b.addEventListener('click', () => {
+        sfx.unlock();
+        sfx.play('tap');
+        const act = b.dataset.free;
+        if (act === 'play') this.showPlay();
+        else if (act === 'hum') this.dispatch({ type: 'hum' });
+        else if (act === 'scrapbook') this.showScrapbook(() => this.closePanel());
+        else if (act === 'menu') this.showTitle(true);
+      }),
+    );
     $('#bubble').addEventListener('click', () => {
       sfx.play('tap');
       this.showThought();
@@ -1358,15 +1505,24 @@ export class Hud {
     });
     const soundBtn = $('#btn-sound');
     const readBtn = $('#btn-read');
+    const musicBtn = $('#btn-music');
     const syncToggles = () => {
       soundBtn.classList.toggle('off', !sfx.enabled);
       soundBtn.textContent = sfx.enabled ? '🔊' : '🔇';
+      musicBtn.classList.toggle('off', !music.enabled || !sfx.enabled);
+      music.refresh();
       readBtn.classList.toggle('off', !this.readAloud);
     };
     soundBtn.addEventListener('click', () => {
       sfx.unlock();
       sfx.enabled = !sfx.enabled;
       savePref('sound', sfx.enabled);
+      syncToggles();
+    });
+    musicBtn.addEventListener('click', () => {
+      sfx.unlock();
+      music.setEnabled(!music.enabled);
+      savePref('music', music.enabled);
       syncToggles();
     });
     readBtn.addEventListener('click', () => {

@@ -5,7 +5,8 @@ export const SAVE_VERSION = 5;
 /** Morning care sub-phase. */
 export type Phase = 'egg' | 'naming' | 'care' | 'done';
 /** Which part of the day the player is in. */
-export type Part = 'morning' | 'afternoon' | 'evening' | 'end';
+/** 'free' is the no-goals visit with your dragon after the ending. */
+export type Part = 'morning' | 'afternoon' | 'evening' | 'end' | 'free';
 export type Rating = 'trust' | 'unsure' | 'distrust';
 export type TrapChoice = 'share' | 'ask' | 'close';
 export type SearchFeedback = 'ok' | 'too-many' | 'none' | 'empty';
@@ -141,6 +142,8 @@ export interface GameState {
     favorites: Record<string, string>;
     ending: Ending | null;
   };
+  /** Toys and tricks played today (reset each day). */
+  play: { toyCount: Record<string, number>; restUntil: number; tricksToday: string[] };
   /** Today's morning lesson and afternoon task (Chapters 2–3). */
   activity: TaskState;
   task: TaskState;
@@ -220,7 +223,10 @@ export type Action =
   | { type: 'flap'; power: number }
   | { type: 'answer'; qid: string; value: string }
   | { type: 'activityDone' }
-  | { type: 'chooseEnding'; choice: Ending };
+  | { type: 'chooseEnding'; choice: Ending }
+  | { type: 'toy'; id: string }
+  | { type: 'trick'; id: string }
+  | { type: 'freePlay' };
 
 export type GameEvent =
   | { type: 'egg-crack'; taps: number }
@@ -289,6 +295,10 @@ export type GameEvent =
   | { type: 'special'; kind: SpecialKind }
   | { type: 'crane-left' }
   | { type: 'ending-chosen'; choice: Ending }
+  | { type: 'toy'; id: string; first: boolean; calm: number; line: number }
+  | { type: 'toy-rest'; id: string; secondsLeft: number }
+  | { type: 'trick'; id: string; first: boolean; calm: number }
+  | { type: 'free-play' }
 
 export interface StepResult {
   state: GameState;
@@ -320,6 +330,7 @@ export function initialState(seed = 12345): GameState {
       favorites: {},
       ending: null,
     },
+    play: { toyCount: {}, restUntil: 0, tricksToday: [] },
     activity: emptyTask(),
     task: emptyTask(),
     store: emptyStore(),
