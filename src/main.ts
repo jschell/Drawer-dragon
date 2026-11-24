@@ -5,6 +5,7 @@ import { initialState } from './core/state';
 import { BedroomScene, TEX_SCALE, textureList } from './scenes/BedroomScene';
 import { Hud } from './ui/hud';
 import './ui/style.css';
+import { startOfflineSupport } from './ui/offline';
 
 /** Rasterises every generated SVG once, before Phaser starts. */
 async function rasterise(): Promise<Record<string, HTMLImageElement>> {
@@ -54,12 +55,5 @@ async function boot() {
 
 void boot();
 
-// Offline play: the built game registers a service worker that keeps every file on the
-// device (see vite.config.ts). Development builds skip it so changes show up at once.
-if (import.meta.env.PROD && 'serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js').catch(() => {
-      /* the game still works online without it */
-    });
-  });
-}
+// Only the published build installs a service worker.
+startOfflineSupport();

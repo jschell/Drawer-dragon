@@ -43,3 +43,19 @@ self.addEventListener('fetch', (event) => {
     }),
   );
 });
+
+// Only confirm readiness after this worker controls the page and every build file
+// is present. A retry also repairs a cache whose files were removed by the browser.
+self.addEventListener('message', (event) => {
+  if (!['OFFLINE_STATUS', 'OFFLINE_RETRY'].includes(event.data?.type) || !event.ports[0]) return;
+  event.waitUntil((async () => {
+    try {
+      const cache = await caches.open(CACHE);
+      if (event.data.type === 'OFFLINE_RETRY') await cache.addAll(FILES);
+      const files = await Promise.all(FILES.map((file) => cache.match(file, { ignoreVary: true })));
+      event.ports[0].postMessage({ ready: files.every(Boolean) });
+    } catch {
+      event.ports[0].postMessage({ ready: false });
+    }
+  })());
+});

@@ -12,6 +12,7 @@ import { clearSave, loadPref, savePref, writeSave } from '../core/save';
 import { initialState, type Action, type GameEvent, type GameState, type StoneId } from '../core/state';
 import type { BedroomScene } from '../scenes/BedroomScene';
 import { showFindOutMore } from './findOutMore';
+import { mountOfflineStatus } from './offline';
 import { ResearchScreen } from './research';
 import { money, StoreScreen } from './store';
 
@@ -571,6 +572,7 @@ export class Hud {
         ${hasSave ? '<button class="btn big" data-go="continue">Continue</button><button class="btn ghost" data-go="new">New game</button>' : '<button class="btn big" data-go="new">Tap to wake the egg</button>'}
         ${hasSave && loadScrapbook().length ? '<button class="btn ghost" data-x="scrapbook">📷 Scrapbook</button>' : ''}
       </div>`);
+    mountOfflineStatus($('#panel'));
     $('#panel [data-x="scrapbook"]')?.addEventListener('click', () => {
       sfx.unlock();
       this.showScrapbook(() => this.showTitle(hasSave));

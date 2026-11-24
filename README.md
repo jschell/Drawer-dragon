@@ -107,7 +107,7 @@ Tip for playtesting: add `?speed=4` to the address to run the clock 4× faster (
 
 Everything is generated in code: art (SVG), sound effects (Web Audio) and optional read-aloud (the device's built-in voice). The game itself makes no network requests (the only outside links are on the grown-ups' Find out more page) and stores its save only in the browser.
 
-**Offline:** after the game has loaded once, it plays with no connection, in the browser or from the Home Screen. A service worker (`src/sw.js`, filled in at build time by `vite.config.ts`) stores every file of the build on the device. Each new version replaces the old one the next time the game is opened online, and saves carry over. Only the grown-ups' Find out more links need the internet, and that page says so when the device is offline. Read-aloud uses the device's own voices, which work offline on iPad and iPhone.
+**Offline:** the title screen shows **“Saving for offline play…”**, then **“Ready to play offline ✓”** once every game file is stored and offline play is active. Wait for that confirmation before disconnecting. If setup is incomplete, connect to the internet and tap **Retry**. After the game has loaded once, it plays with no connection, in the browser or from the Home Screen. A service worker (`src/sw.js`, filled in at build time by `vite.config.ts`) stores every file of the build on the device. Each new version replaces the old one the next time the game is opened online, and saves carry over. Only the grown-ups' Find out more links need the internet, and that page says so when the device is offline. Read-aloud uses the device's own voices, which work offline on iPad and iPhone.
 
 ## Running it
 
