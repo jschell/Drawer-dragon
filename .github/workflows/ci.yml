@@ -1,15 +1,22 @@
 name: CI
 
+# Runs on pull requests and on main. (Branch pushes used to start a second,
+# identical run next to the pull request's run.)
 on:
-  push:
   pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same pull request cancels the older run.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  test:
+  checks:
+    name: Typecheck and unit tests
     runs-on: ubuntu-latest
-    # The browser tests run one at a time in CI (see playwright.config.ts): about 20–25
-    # minutes, plus room for a retry.
-    timeout-minutes: 45
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,6 +26,35 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
-      - run: npx playwright install --with-deps chromium webkit
-      - name: Browser tests (iPhone SE, iPad, desktop Safari & Chrome)
-        run: npx playwright test --trace off
+
+  # One job per device setup, all at the same time, each on its own machine. Each
+  # job still runs one browser at a time (see playwright.config.ts): CI machines
+  # have no GPU, and two browsers on one machine starved each other.
+  browser:
+    name: Browser (${{ matrix.project }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - project: iphone-se-webkit
+            browser: webkit
+          - project: ipad-webkit
+            browser: webkit
+          - project: desktop-safari
+            browser: webkit
+          - project: desktop-chrome
+            browser: chromium
+          - project: iphone-se-chromium
+            browser: chromium
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Browser tests (${{ matrix.project }})
+        run: npx playwright test --project=${{ matrix.project }} --trace off
