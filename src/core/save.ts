@@ -10,6 +10,7 @@ export function loadSave(): GameState | null {
     if (!raw) return null;
     const s = JSON.parse(raw) as GameState;
     if (s?.version === 4) migrate4(s);
+    if (s && !s.play) s.play = initialState().play; // saves from before toys and tricks
     if (s?.version !== SAVE_VERSION || s.part === 'end') return null;
     // Older versions let players type a name. Only listed names are shown now.
     if (s.dragon?.name && !content.names.names.includes(s.dragon.name)) s.dragon.name = content.names.default;
@@ -24,6 +25,7 @@ function migrate4(s: GameState) {
   const fresh = initialState();
   s.world = { ...fresh.world, ...s.world };
   s.activity = emptyTask();
+  s.play = fresh.play;
   s.task = emptyTask();
   s.evening = { ...fresh.evening, ...s.evening, special: fresh.evening.special };
   s.version = SAVE_VERSION;

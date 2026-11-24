@@ -389,6 +389,15 @@ export class BedroomScene extends Phaser.Scene {
       case 'day-finished':
         this.sleep();
         break;
+      case 'toy':
+        this.playToy(content.play.toys.find((t) => t.id === e.id)?.emoji ?? '🧶', e.first);
+        break;
+      case 'toy-rest':
+        this.tweens.add({ targets: this.headC, angle: 10, duration: 400, yoyo: true });
+        break;
+      case 'trick':
+        this.doTrick(e.id);
+        break;
       default:
         break;
     }
@@ -478,6 +487,72 @@ export class BedroomScene extends Phaser.Scene {
   private sparklesAt(x: number, y: number, n: number) {
     for (let i = 0; i < n; i++) {
       this.time.delayedCall(i * 60, () => this.floatUp('sparkle', x + Phaser.Math.Between(-150, 150), y + Phaser.Math.Between(-120, 60)));
+    }
+  }
+
+  // ---------- play (toys, tricks, morning surprises) ----------
+
+  /** A toy bounces across the floor; the dragon pounces on it. */
+  private playToy(emoji: string, first: boolean) {
+    this.busy(1600);
+    const startX = this.bx + 260;
+    const floor = this.by + 70 * this.bs;
+    const toy = this.add.text(startX, floor - 120, emoji, { fontSize: '64px' }).setOrigin(0.5).setDepth(DEPTH.fx);
+    this.tweens.add({ targets: toy, x: this.bx + 60, duration: 700, ease: 'Sine.inOut' });
+    this.tweens.add({ targets: toy, y: floor, duration: 350, ease: 'Bounce.out' });
+    this.tweens.add({ targets: toy, angle: -360, duration: 700 });
+    this.time.delayedCall(650, () => {
+      this.showMouth('mouthOpen');
+      this.tweens.add({ targets: this.dragon, x: this.bx + 40, y: this.by - 40 * this.bs, duration: 220, yoyo: true, ease: 'Quad.out' });
+      this.hop(1);
+      this.floatUp('heart', this.bx + 40, this.by - 90);
+      if (first) this.time.delayedCall(250, () => this.floatUp('heart', this.bx - 20, this.by - 80));
+    });
+    this.time.delayedCall(1500, () => {
+      this.showMouth('mouthSmile');
+      this.tweens.add({ targets: toy, alpha: 0, duration: 300, onComplete: () => toy.destroy() });
+    });
+  }
+
+  private doTrick(id: string) {
+    this.busy(1800);
+    const d = this.dragon;
+    if (id === 'spin') {
+      this.tweens.add({ targets: d, angle: 360 * 3, duration: 1200, ease: 'Sine.inOut', onComplete: () => d.setAngle(0) });
+    } else if (id === 'roll') {
+      this.tweens.add({ targets: d, angle: 180, duration: 450, yoyo: true, hold: 500, ease: 'Sine.inOut', onComplete: () => d.setAngle(0) });
+      this.time.delayedCall(500, () => this.floatUp('heart', this.bx, this.by - 60));
+    } else if (id === 'smoke-ring') {
+      this.tweens.add({ targets: this.headC, angle: -8, duration: 250, yoyo: true });
+      this.time.delayedCall(250, () => this.smokeRing(this.bx, this.by - 60));
+    } else if (id === 'loop') {
+      this.tweens.add({ targets: d, y: this.by - 160 * this.bs, duration: 400, ease: 'Quad.out', yoyo: true, hold: 500 });
+      this.tweens.add({ targets: d, angle: 360, duration: 500, delay: 400, onComplete: () => d.setAngle(0) });
+      this.hop(1);
+    }
+    this.time.delayedCall(1300, () => this.sparkles(4));
+  }
+
+  /** The morning's little surprise (content/play.json). */
+  twist(anim: string) {
+    if (!this.dragon?.visible) return;
+    const d = this.dragon;
+    if (anim === 'hide') {
+      d.setAlpha(0);
+      this.time.delayedCall(900, () => {
+        this.tweens.add({ targets: d, alpha: 1, duration: 300 });
+        this.hop(2);
+      });
+    } else if (anim === 'zoomies') {
+      this.busy(2200);
+      this.tweens.add({ targets: d, x: this.bx - 220, duration: 350, yoyo: true, repeat: 2, ease: 'Sine.inOut', onComplete: () => d.setX(this.bx) });
+      this.tweens.add({ targets: d, scaleX: -this.bs, duration: 1, delay: 350, yoyo: true, hold: 350, repeat: 2, onComplete: () => d.setScale(this.bs) });
+    } else if (anim === 'hearts') {
+      for (let i = 0; i < 4; i++) this.time.delayedCall(i * 250, () => this.floatUp('heart', this.bx - 60 + i * 40, this.by - 80));
+      this.hop(1);
+    } else {
+      this.sparkles(8);
+      this.hop(1);
     }
   }
 
